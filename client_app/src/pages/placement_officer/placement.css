@@ -1,0 +1,206 @@
+.app {
+  display: flex;
+  height: auto;
+  justify-content: left;
+  margin-left: 22%;
+  width: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.ribbon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20vh;
+  width: 100%;
+  background-color: royalblue;
+}
+
+.main_section {
+  background-color: white;
+  color: black;
+}
+
+.sidebar {
+  width: 20%;
+  background-color: white;
+  color: #153f74;
+  padding: 20px;
+  border-radius: 24px;
+  margin: 20px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logo {
+  height: 80px;
+  margin-bottom: 10px;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-item {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  color: #153f74;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+}
+
+.menu-icon {
+  height: 1.5rem;
+  margin-right: 10px;
+}
+
+.menu-item:hover {
+  color: #1b4d96;
+}
+
+.bottom-menu {
+  display: flex;
+  justify-content: space-between;
+}
+
+.profile-icon img,
+.logout-icon img {
+  width: 50px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.profile-icon img:hover,
+.logout-icon img:hover {
+  box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.2);
+}
+
+.main-content1 {
+  flex-grow: 1;
+  padding: 20px;
+  color: #fbf4eb;
+  background-color: #253e5d00;
+  border-radius: 24px;
+  width: 70dvw;
+  margin: 20px;
+}
+.statistic {
+  flex-grow: 1;
+  padding: 20px;
+  color: #000000;
+  background-color: #ffffff;
+  border-radius: 24px;
+  margin: 20px;
+  /* Automatically adjust height based on content */
+}
+
+.statistic table {
+  background-color: #fff;
+  width: 100%; /* Make the table responsive */
+  margin-top: 10px; /* Add space above the table */
+  margin-bottom: 10px;
+  border-collapse: collapse; /* Ensure proper border spacing */
+}
+
+.statistic table th,
+.statistic table td {
+  padding: 3px;
+  text-align: center;
+  border: 1px solid #ddd; /* Light border for clarity */
+  word-wrap: break-word; /* Wrap long text inside cells */
+}
+
+.statistic table th {
+  background-color: #f2f2f2; /* Light background for headers */
+}
+
+.statistic .chart-container {
+  width: 100%; /* Allow charts to take full width */
+  max-width: 500px; /* Restrict max width for responsiveness */
+  height: auto; /* Dynamic height based on content */
+  margin: 0 auto 20px; /* Center the chart and add spacing */
+  padding: 10px;
+}
+
+.statistic .chart-container canvas {
+  width: 100% !important;
+  height: auto !important;
+}
+
+.statistic .table-container {
+  width: 100%; /* Ensure tables fit the parent width */
+  overflow-x: auto; /* Add horizontal scrolling for small screens */
+  margin-top: 20px; /* Space above the table */
+}
+
+.main-content h1 {
+  font-size: 38px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+section {
+  background-color: #1b4d96;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+}
+
+section h2 {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+section p {
+  margin-top: 10px;
+  font-size: 1rem;
+  color: #d1e3f0;
+}
+
+.app-container {
+  text-align: center;
+  padding: 20px;
+}
+
+.charts-container {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.chart-box {
+  flex: 1 1 45%;
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.error-message {
+  color: red;
+  font-weight: bold;
+}
+
+#shadow-host-companion {
+  display: none !important;
+}

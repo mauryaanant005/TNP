@@ -1,0 +1,174 @@
+{% load resume_filters %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ resume.name }} - Resume</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 10pt;
+            line-height: 1.15;
+            color: black;
+            margin: 0;
+            padding: 0;
+        }
+
+        .resume-container {
+            max-width: 8.5in;
+            min-height: 11in;
+            padding: 0.5in;
+            margin: 0 auto;
+            background: white;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .resume-container {
+                font-size: 10pt !important;
+                line-height: 1.15 !important;
+            }
+            .section {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="resume-container">
+        <!-- Header -->
+        <header style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #9ca3af; padding-bottom: 8px; margin-bottom: 16px;">
+            <div style="flex: 1; margin: 0 16px; text-align: center;">
+                <h1 style="font-size: 16pt; font-weight: bold; color: black; margin-bottom: 4px;">
+                    {{ resume.name }}
+                </h1>
+                <div style="font-size: 12pt; color: black; line-height: 1.2;">
+                    <div style="margin-bottom: 2px;">
+                        +91 {{ resume.phone_no }} | {{ resume.email }}
+                    </div>
+                    <div>
+                        {% for contact in contacts %}
+                            {% if not forloop.first %} | {% endif %}
+                            <a href="{{ contact }}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: none; font-size: 12pt;">
+                                {{ contact|format_contact_url }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Education Section -->
+        <div class="section" style="margin-bottom: 20px;">
+            <h2 style="font-size: 12pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; color: #1d4ed8; margin-bottom: 4px;">
+                Education
+            </h2>
+            <hr style="border: none; border-top: 1px solid #9ca3af; margin-bottom: 8px;">
+
+            {% for edu in education %}
+            <div style="margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                    <div style="font-size: 10pt; font-weight: bold; color: black;">
+                        {{ edu.degree }}, {{ edu.institution }}, CGPA: {{ edu.percentage }}/10
+                    </div>
+                    <div style="font-size: 10pt; color: black; white-space: nowrap; margin-left: 4px;">
+                        {{ edu.start_date }} – {{ edu.end_date }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Technical Skills Section -->
+        <div class="section" style="margin-bottom: 20px;">
+            <h2 style="font-size: 12pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; color: #1d4ed8; margin-bottom: 4px;">
+                Technical Skills
+            </h2>
+            <hr style="border: none; border-top: 1px solid #9ca3af; margin-bottom: 8px;">
+
+            <div>
+                {% for skill in skills %}
+                <div style="font-size: 10pt; line-height: 1.2; margin-bottom: 2px;">
+                    {% with parsed=skill|parse_skill %}
+                    <span style="font-weight: bold; color: black;">{{ parsed.category }}:</span>
+                    <span style="color: black;"> {{ parsed.list }}</span>
+                    {% endwith %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Projects Section -->
+        <div class="section" style="margin-bottom: 20px;">
+            <h2 style="font-size: 12pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; color: #1d4ed8; margin-bottom: 4px;">
+                Projects
+            </h2>
+            <hr style="border: none; border-top: 1px solid #9ca3af; margin-bottom: 8px;">
+
+            {% for proj in projects %}
+            <div style="margin-bottom: 8px;">
+                <h3 style="font-size: 12pt; font-weight: bold; color: black; margin-bottom: 4px;">
+                    {{ proj.title }}
+                </h3>
+                <div style="font-size: 10pt; line-height: 1.2; color: black;">
+                    {{ proj.description|safe }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Experience Section -->
+        <div class="section" style="margin-bottom: 20px;">
+            <h2 style="font-size: 12pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; color: #1d4ed8; margin-bottom: 4px;">
+                Experience
+            </h2>
+            <hr style="border: none; border-top: 1px solid #9ca3af; margin-bottom: 8px;">
+
+            {% for work in work_exps %}
+            <div style="margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px;">
+                    <h3 style="font-size: 12pt; font-weight: bold; color: black;">
+                        {{ work.position }}
+                    </h3>
+                    <span style="font-size: 10pt; color: black; white-space: nowrap; margin-left: 8px;">
+                        {{ work.start_date }} – {{ work.end_date }}
+                    </span>
+                </div>
+                <h4 style="font-size: 10pt; font-weight: bold; color: black; margin-bottom: 2px;">
+                    {{ work.company }}
+                </h4>
+                <div style="font-size: 10pt; line-height: 1.2; color: black;">
+                    {{ work.description|safe }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Activities Section -->
+        <div class="section" style="margin-bottom: 20px;">
+            <h2 style="font-size: 12pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; color: #1d4ed8; margin-bottom: 4px;">
+                Activities
+            </h2>
+            <hr style="border: none; border-top: 1px solid #9ca3af; margin-bottom: 8px;">
+
+            {% for activity in achievements %}
+            <div style="font-size: 10pt; line-height: 1.2; color: black; margin-bottom: 4px;">
+                {{ activity.description|safe }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

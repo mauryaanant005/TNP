@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+{% load static %}
+{% load static tailwind_tags %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>
+        {% block title %}{% endblock title %}
+    </title>
+    {% tailwind_css %}
+</head>
+<body class="m-0 p-0 min-h-screen font-sans flex overflow-x-hidden">
+    {% block content %}{% endblock content %}
+</body>
+</html>

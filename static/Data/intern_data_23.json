@@ -1,0 +1,30 @@
+[{
+    "branch_data": {
+        "COMP": 212,
+        "ELEX": 71,
+        "E&TC": 138,
+        "IT": 141,
+        "Mech": 131,
+        "CIVIL": 135
+    },
+    "Companies_Offering_Internship": {
+        "off- Sahu Technologies Ltd.": 93,
+        "The Sparks Foundation": 70,
+        "Suven Consultants and Technology Pvt Ltd.": 20,
+        "off- OASIS Infobyte": 16,
+        "Exposys Data Lab": 14,
+        "off- Lets Grow More": 12,
+        "off- Ketan Bricks": 11,
+        "off- BRIJAY ENGINEERING WORKS": 10,
+        "off- KP Webmate": 10,
+        "off- Team Mavericks Racing": 9
+    },
+    "stipend_per_branch": {
+        "COMP": 284100,
+        "ELEX": 93000,
+        "E&TC": 175000,
+        "IT": 71000,
+        "MECH": 15000,
+        "CIVIL": 83000
+    }
+}]

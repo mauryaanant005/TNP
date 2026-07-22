@@ -1,0 +1,11 @@
+{% load static %}
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;">
+  <a href="{% url "user_profile" %}">
+      <img src="{% static 'img/user_profile.png' %}" alt="Students working" style="width: 50px; border-radius: 0.5rem;" />
+  </a>
+  <a href="{% url 'logout' %}">
+      <img src="{% static 'img/logout.png' %}" alt="Logout" style="width: 50px; border-radius: 0.5rem;" />
+  </a>
+  
+</div>
+

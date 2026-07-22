@@ -1,0 +1,30 @@
+[{
+    "branch_data": {
+        "COMP": 154,
+        "ELEX": 68,
+        "E&TC": 145,
+        "IT": 139,
+        "Mech": 132,
+        "CIVIL": 109
+    },
+    "Companies_Offering_Internship": {
+        "Efcom infotech": 23.0,
+        "CRP electricals": 18.0,
+        "Across the Globe": 12.0,
+        "Impex Industrial Corporation": 11.0,
+        "DEC": 10.0,
+        "Agastya Corporation": 9.0,
+        "Patel Trading Co.": 9.0,
+        "EDUFIED PTE LTD": 9.0,
+        "Ami advertising": 9.0,
+        "Sheetal creation": 8.0
+    },
+    "stipend_per_branch": {
+        "COMP": 38200.0,
+        "ELEX": 19000.0,
+        "E&TC": 18600.0,
+        "IT": 19200.0,
+        "Mech": 7100.0,
+        "CIVIL": 48000.0
+    }
+}]

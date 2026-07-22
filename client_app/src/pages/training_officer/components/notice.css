@@ -1,0 +1,45 @@
+.body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  margin: 0;
+  color: black;
+}
+.flex-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  color: black;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+table,
+th,
+td {
+  border: 1px solid black;
+}
+th,
+td {
+  padding: 8px;
+  text-align: left;
+  color: black;
+}
+.content-header {
+  margin-bottom: 5px;
+  text-align: center;
+  color: black;
+}
+.fromto {
+  float: right;
+  margin-right: 20px;
+  color: black;
+}
+
+.footerImage {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  margin-top: 30px;
+}

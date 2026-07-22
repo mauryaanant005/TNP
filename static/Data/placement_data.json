@@ -1,0 +1,60 @@
+[{
+    "Total_placements_comparison": {
+        "Total_placements_2022": 459,
+        "Total_placements_2023": 638,
+        "Total_placements_2024": 460
+    },
+    "branch_comparison": {
+        "2022": {
+            "AI&DS": 0.0,
+            "AI&ML": 0.0,
+            "CIVIL-A": 35.0,
+            "CIVIL-B": 25.0,
+            "COMP-A": 48.0,
+            "COMP-B": 47.0,
+            "COMP-C": 0.0,
+            "E&TC-A": 48.0,
+            "E&TC-B": 52.0,
+            "ELEX": 47.0,
+            "IOT": 0.0,
+            "IT-A": 41.0,
+            "IT-B": 48.0,
+            "MECH-A": 33.0,
+            "MECH-B": 35.0
+        },
+        "2023": {
+            "AI&DS": 0.0,
+            "AI&ML": 0.0,
+            "CIVIL-A": 37.0,
+            "CIVIL-B": 37.0,
+            "COMP-A": 61.0,
+            "COMP-B": 61.0,
+            "COMP-C": 55.0,
+            "E&TC-A": 54.0,
+            "E&TC-B": 58.0,
+            "ELEX": 52.0,
+            "IOT": 0.0,
+            "IT-A": 60.0,
+            "IT-B": 51.0,
+            "MECH-A": 57.0,
+            "MECH-B": 52.0
+        },
+        "2024": {
+            "AI&DS": 39,
+            "AI&ML": 40,
+            "CIVIL-A": 20,
+            "CIVIL-B": 17,
+            "COMP-A": 44,
+            "COMP-B": 44,
+            "COMP-C": 42,
+            "E&TC-A": 33,
+            "E&TC-B": 25,
+            "ELEX": 21,
+            "IOT": 18,
+            "IT-A": 32,
+            "IT-B": 37,
+            "MECH-A": 19,
+            "MECH-B": 26
+        }
+    }
+}]

@@ -1,0 +1,69 @@
+/* TablePage Styles */
+
+.page-container {
+  /* display: flex; */
+  height: 20vh;
+  width: 200vh;
+  padding: 15px;
+  background-color: orange;
+  margin-bottom: 50%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.back {
+  /* flex: 1; */
+  border-radius: 24px;
+  margin-top: 6%;
+  margin-left: 30%;
+  padding: 20px;
+  width: 130vh;
+  color: rgb(6, 6, 6);
+  background-color: #ffffff;
+}
+
+.main-layout {
+  /* flex: 1; */
+  border-radius: 24px;
+  margin-top: 6%;
+  margin-left: 30%;
+  padding: 20px;
+  width: 200vh;
+  background-color: #ffffff;
+}
+
+h1,
+h2 {
+  color: #000000;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+table th,
+table td {
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+button {
+  margin-top: 30px;
+  margin: 10px;
+  padding: 10px 20px;
+  background-color: #ffa500;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #ff8c00;
+}

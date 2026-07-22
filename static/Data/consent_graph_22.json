@@ -1,0 +1,63 @@
+{
+  "Consent_graph": {
+    "Placement": 538,
+    "Higher Studies": 204,
+    "Entrepreneur": 10
+  },
+
+  "consent_counts_by_branch": {
+    "civil-a": {
+        "Higher Studies": 29,
+        "Placement": 41,
+        "Entrepreneur": 3
+    },
+    "civil-b": {
+        "Placement": 58,
+        "Higher Studies": 18,
+        "Entrepreneur": 2
+    },
+    "comp-a": {
+        "Placement": 49,
+        "Higher Studies": 27
+    },
+    "comp-b": {
+        "Placement": 63,
+        "Higher Studies": 15
+    },
+    "e&tc-a": {
+        "Higher Studies": 17,
+        "Placement": 55,
+        "Entrepreneur": 1
+    },
+    "e&tc-b": {
+        "Placement": 67,
+        "Higher Studies": 7
+    },
+    "elex": {
+        "Higher Studies": 19,
+        "Placement": 53,
+        "Entrepreneur": 1
+    },
+    "it-a": {
+        "Higher Studies": 20,
+        "Placement": 47,
+        "Entrepreneur": 1
+    },
+    "it-b": {
+        "Placement": 49,
+        "Higher Studies": 22,
+        "Entrepreneur": 1
+    },
+    "mech-a": {
+        "Placement": 41,
+        "Higher Studies": 26,
+        "Core": 1
+    },
+    "mech-b": {
+        "Placement": 15,
+        "Higher Studies": 4,
+        "Entrepreneur": 1
+    }
+        
+    }  
+}

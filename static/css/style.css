@@ -1,0 +1,1020 @@
+n.training-programme {
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+}
+
+.training-programme .div {
+  background-color: #ffffff;
+  height: 1024px;
+  overflow: hidden;
+  position: relative;
+  width: 1440px;
+}
+
+.training-programme .overlap {
+  height: 976px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 1440px;
+}
+
+.training-programme .frame {
+  background-color: #d48525;
+  box-shadow: 0px 4px 4px #00000040;
+  height: 223px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 1440px;
+}
+
+.training-programme .text-wrapper {
+  color: #0b0a0a;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 38px;
+  font-weight: 600;
+  left: 425px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-decoration: underline;
+  top: 33px;
+  width: 796px;
+}
+
+
+.training-programme .frame-2 {
+  background-color: #ffffff;
+  border-radius: 18px;
+  box-shadow: -7px 4px 35px #00000040;
+  height: 959px;
+  left: 20px;
+  overflow: hidden;
+  position: absolute;
+  top: 17px;
+  width: 362px;
+}
+
+.training-programme .text-wrapper-2 {
+  color: #153f74;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 40px;
+  font-weight: 600;
+  left: 86px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 24px;
+  width: 238px;
+}
+
+.training-programme .tcet-logo {
+  height: 61px;
+  left: 11px;
+  object-fit: cover;
+  position: absolute;
+  top: 22px;
+  width: 71px;
+}
+
+.training-programme .frame-3 {
+  background-color: #153f74;
+  border-radius: 18px;
+  box-shadow: 0px 4px 4px #00000040;
+  height: 194px;
+  left: 425px;
+  overflow: hidden;
+  position: absolute;
+  top: 108px;
+  width: 964px;
+}
+
+.training-programme .text-wrapper-3 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 38px;
+  font-weight: 600;
+  left: 200px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: center;
+  text-decoration: underline;
+  top: 96px;
+}
+
+.training-programme .text-wrapper-4 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 38px;
+  font-weight: 600;
+  left: 61px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: center;
+  text-decoration: underline;
+  top: 96px;
+}
+
+.training-programme .text-wrapper-5 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 38px;
+  font-weight: 600;
+  left: 471px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: center;
+  text-decoration: underline;
+  top: 96px;
+}
+
+.training-programme .text-wrapper-6 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 38px;
+  font-weight: 600;
+  left: 689px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: center;
+  text-decoration: underline;
+  top: 96px;
+}
+
+.training-programme .text-wrapper-7 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 38px;
+  font-weight: 600;
+  left: 279px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: center;
+  text-decoration: underline;
+  top: 13px;
+}
+
+.training-programme .group {
+  height: 173px;
+  left: 55px;
+  position: absolute;
+  top: 137px;
+  width: 340px;
+}
+
+.training-programme .group-2 {
+  height: 60px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 342px;
+}
+
+.training-programme .workstation {
+  height: 30px;
+  left: 0;
+  position: absolute;
+  top: 15px;
+  width: 30px;
+}
+
+.training-programme .group-3 {
+  height: 30px;
+  left: 0;
+  position: absolute;
+  top: 86px;
+  width: 342px;
+}
+
+.training-programme .text-wrapper-8 {
+  /* -webkit-background-clip: text !important;
+  -webkit-text-fill-color: #153f74; */
+  /* background: linear-gradient(180deg, rgb(38, 118, 216) 100%); */
+  /* background-clip: text; */
+  color: #153f74;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  left: 41px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  /* text-fill-color: transparent; */
+  top: 0;
+  width: 299px;
+}
+
+.training-programme .text-wrapper-9 {
+  color: #153f74;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  left: 41px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 0;
+  width: 299px;
+}
+
+.training-programme .img {
+  height: 30px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 30px;
+}
+
+.training-programme .group-4 {
+  height: 30px;
+  left: 0;
+  position: absolute;
+  top: 143px;
+  width: 246px;
+}
+
+.training-programme .text-wrapper-10 {
+  color: #153f74;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  left: 41px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 0;
+}
+
+.training-programme .frame-4 {
+  background-color: #153f74;
+  border-radius: 18px;
+  box-shadow: 0px 4px 4px #00000040;
+  height: 290px;
+  left: 425px;
+  overflow: hidden;
+  position: absolute;
+  top: 337px;
+  width: 700px;
+}
+
+.training-programme .overlap-wrapper {
+  height: 241px;
+  left: 45px;
+  position: absolute;
+  top: 25px;
+  width: 243px;
+}
+
+.training-programme .overlap-group {
+  height: 241px;
+  position: relative;
+}
+
+.training-programme .overlap-group-wrapper {
+  height: 241px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 243px;
+}
+
+.training-programme .overlap-group-2 {
+  height: 242px;
+  position: relative;
+  width: 242px;
+}
+
+.training-programme .vector {
+  height: 181px;
+  left: 120px;
+  position: absolute;
+  top: 0;
+  width: 121px;
+}
+
+.training-programme .vector-2 {
+  height: 241px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 225px;
+}
+
+.training-programme .text-wrapper-11 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 30px;
+  font-weight: 600;
+  left: 148px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 68px;
+  width: 66px;
+}
+
+.training-programme .text-wrapper-12 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 30px;
+  font-weight: 600;
+  left: 46px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 122px;
+  width: 66px;
+}
+
+.training-programme .group-5 {
+  height: 65px;
+  left: 350px;
+  position: absolute;
+  top: 154px;
+  width: 283px;
+}
+
+.training-programme .group-6 {
+  height: 59px;
+  left: 0;
+  position: absolute;
+  top: 3px;
+  width: 20px;
+}
+
+.training-programme .frame-5 {
+  background-color: #6975ff;
+  height: 24px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 20px;
+}
+
+.training-programme .frame-6 {
+  background-color: #64bdc6;
+  height: 24px;
+  left: 0;
+  position: absolute;
+  top: 35px;
+  width: 20px;
+}
+
+.training-programme .text-wrapper-13 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  left: 29px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 0;
+  width: 250px;
+}
+
+.training-programme .text-wrapper-14 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  left: 29px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 35px;
+  width: 238px;
+}
+
+.training-programme .text-wrapper-15 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 32px;
+  font-weight: 600;
+  left: 350px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-decoration: underline;
+  top: 41px;
+  width: 361px;
+}
+
+.training-programme .div-wrapper {
+  background-color: #153f74;
+  border-radius: 18px;
+  box-shadow: 0px 4px 4px #00000040;
+  height: 314px;
+  left: 425px;
+  overflow: hidden;
+  position: absolute;
+  top: 662px;
+  width: 700px;
+}
+
+.training-programme .overlap-2 {
+  height: 300px;
+  left: 24px;
+  position: relative;
+  width: 676px;
+}
+
+.training-programme .overlap-3 {
+  height: 300px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 676px;
+}
+
+.training-programme .frame-7 {
+  height: 300px;
+  left: 176px;
+  position: absolute;
+  top: 0;
+  width: 500px;
+}
+
+.training-programme .overlap-group-3 {
+  height: 221px;
+  left: 39px;
+  position: absolute;
+  top: 40px;
+  width: 422px;
+}
+
+.training-programme .vector-3 {
+  height: 220px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 1px;
+}
+
+.training-programme .vector-4 {
+  height: 220px;
+  left: 106px;
+  position: absolute;
+  top: 0;
+  width: 1px;
+}
+
+.training-programme .vector-5 {
+  height: 220px;
+  left: 210px;
+  position: absolute;
+  top: 0;
+  width: 1px;
+}
+
+.training-programme .vector-6 {
+  height: 220px;
+  left: 316px;
+  position: absolute;
+  top: 0;
+  width: 1px;
+}
+
+.training-programme .vector-7 {
+  height: 220px;
+  left: 420px;
+  position: absolute;
+  top: 0;
+  width: 1px;
+}
+
+.training-programme .vector-8 {
+  height: 105px;
+  left: 1px;
+  position: absolute;
+  top: 115px;
+  width: 45px;
+}
+
+.training-programme .vector-9 {
+  height: 220px;
+  left: 111px;
+  position: absolute;
+  top: 0;
+  width: 45px;
+}
+
+.training-programme .vector-10 {
+  height: 81px;
+  left: 221px;
+  position: absolute;
+  top: 139px;
+  width: 45px;
+}
+
+.training-programme .vector-11 {
+  height: 196px;
+  left: 331px;
+  position: absolute;
+  top: 24px;
+  width: 45px;
+}
+
+.training-programme .vector-12 {
+  height: 78px;
+  left: 46px;
+  position: absolute;
+  top: 142px;
+  width: 45px;
+}
+
+.training-programme .vector-13 {
+  height: 178px;
+  left: 156px;
+  position: absolute;
+  top: 42px;
+  width: 45px;
+}
+
+.training-programme .vector-14 {
+  height: 51px;
+  left: 266px;
+  position: absolute;
+  top: 169px;
+  width: 45px;
+}
+
+.training-programme .vector-15 {
+  height: 163px;
+  left: 376px;
+  position: absolute;
+  top: 57px;
+  width: 45px;
+}
+
+.training-programme .vector-16 {
+  height: 2px;
+  left: 1px;
+  position: absolute;
+  top: 219px;
+  width: 420px;
+}
+
+.training-programme .vector-17 {
+  height: 220px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 2px;
+}
+
+.training-programme .text-wrapper-16 {
+  color: #ffffff;
+  font-family: "Poppins-Bold", Helvetica;
+  font-size: 12px;
+  font-weight: 700;
+  left: 54px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: center;
+  top: 267px;
+}
+
+.training-programme .text-wrapper-17 {
+  color: #ffffff;
+  font-family: "Poppins-Bold", Helvetica;
+  font-size: 12px;
+  font-weight: 700;
+  left: 164px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: center;
+  top: 267px;
+}
+
+.training-programme .text-wrapper-18 {
+  color: #ffffff;
+  font-family: "Poppins-Bold", Helvetica;
+  font-size: 12px;
+  font-weight: 700;
+  left: 274px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: center;
+  top: 267px;
+}
+
+.training-programme .text-wrapper-19 {
+  color: #ffffff;
+  font-family: "Poppins-Bold", Helvetica;
+  font-size: 12px;
+  font-weight: 700;
+  left: 382px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: center;
+  top: 267px;
+}
+
+.training-programme .text-wrapper-20 {
+  color: #ffffff;
+  font-family: "Poppins-Bold", Helvetica;
+  font-size: 12px;
+  font-weight: 700;
+  left: 22px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: right;
+  top: 247px;
+}
+
+.training-programme .text-wrapper-21 {
+  color: #ffffff;
+  font-family: "Poppins-Bold", Helvetica;
+  font-size: 12px;
+  font-weight: 700;
+  left: 23px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: right;
+  top: 225px;
+}
+
+.training-programme .text-wrapper-22 {
+  color: #ffffff;
+  font-family: "Poppins-Bold", Helvetica;
+  font-size: 12px;
+  font-weight: 700;
+  left: 17px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: right;
+  top: 203px;
+}
+
+.training-programme .text-wrapper-23 {
+  color: #ffffff;
+  font-family: "Poppins-Bold", Helvetica;
+  font-size: 12px;
+  font-weight: 700;
+  left: 16px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: right;
+  top: 181px;
+}
+
+.training-programme .text-wrapper-24 {
+  color: #ffffff;
+  font-family: "Poppins-Bold", Helvetica;
+  font-size: 12px;
+  font-weight: 700;
+  left: 15px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: right;
+  top: 159px;
+}
+
+.training-programme .text-wrapper-25 {
+  color: #ffffff;
+  font-family: "Poppins-Bold", Helvetica;
+  font-size: 12px;
+  font-weight: 700;
+  left: 16px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: right;
+  top: 137px;
+}
+
+.training-programme .text-wrapper-26 {
+  color: #ffffff;
+  font-family: "Poppins-Bold", Helvetica;
+  font-size: 12px;
+  font-weight: 700;
+  left: 13px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: right;
+  top: 115px;
+}
+
+.training-programme .text-wrapper-27 {
+  color: #ffffff;
+  font-family: "Poppins-Bold", Helvetica;
+  font-size: 12px;
+  font-weight: 700;
+  left: 17px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: right;
+  top: 93px;
+}
+
+.training-programme .text-wrapper-28 {
+  color: #ffffff;
+  font-family: "Poppins-Bold", Helvetica;
+  font-size: 12px;
+  font-weight: 700;
+  left: 14px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: right;
+  top: 71px;
+}
+
+.training-programme .text-wrapper-29 {
+  color: #ffffff;
+  font-family: "Poppins-Bold", Helvetica;
+  font-size: 12px;
+  font-weight: 700;
+  left: 14px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: right;
+  top: 49px;
+}
+
+.training-programme .text-wrapper-30 {
+  color: #ffffff;
+  font-family: "Poppins-Bold", Helvetica;
+  font-size: 12px;
+  font-weight: 700;
+  left: 16px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: right;
+  top: 27px;
+}
+
+.training-programme .text-wrapper-31 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 29px;
+  font-weight: 600;
+  left: 0;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-decoration: underline;
+  top: 36px;
+  width: 182px;
+}
+
+.training-programme .group-7 {
+  height: 65px;
+  left: 0;
+  position: absolute;
+  top: 152px;
+  width: 117px;
+}
+
+.training-programme .frame-8 {
+  background-color: #5687f2;
+  height: 24px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 20px;
+}
+
+.training-programme .frame-9 {
+  background-color: #eab308;
+  height: 24px;
+  left: 0;
+  position: absolute;
+  top: 35px;
+  width: 20px;
+}
+
+.training-programme .text-wrapper-32 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  left: 29px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 0;
+  width: 84px;
+}
+
+.training-programme .text-wrapper-33 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  left: 29px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 35px;
+  width: 84px;
+}
+
+.training-programme .frame-10 {
+  background-color: #153f74;
+  border-radius: 18px;
+  box-shadow: 0px 4px 4px #00000040;
+  height: 646px;
+  left: 1170px;
+  overflow: hidden;
+  position: absolute;
+  top: 330px;
+  width: 238px;
+}
+
+.training-programme .TCET-s-shastra {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 31px;
+  font-weight: 600;
+  left: 7px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: center;
+  text-decoration: underline;
+  top: 6px;
+  width: 224px;
+}
+
+.training-programme .group-8 {
+  height: 180px;
+  left: 29px;
+  position: absolute;
+  top: 160px;
+  width: 186px;
+}
+
+.training-programme .overlap-group-4 {
+  background-image: url(./group.png);
+  background-size: 100% 100%;
+  height: 180px;
+  position: relative;
+  width: 181px;
+}
+
+.training-programme .text-wrapper-34 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 16px;
+  font-weight: 600;
+  left: 106px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 37px;
+  width: 53px;
+}
+
+.training-programme .text-wrapper-35 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 16px;
+  font-weight: 600;
+  left: 118px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 106px;
+  width: 53px;
+}
+
+.training-programme .text-wrapper-36 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 16px;
+  font-weight: 600;
+  left: 30px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 83px;
+  width: 53px;
+}
+
+.training-programme .group-9 {
+  height: 130px;
+  left: 20px;
+  position: absolute;
+  top: 367px;
+  width: 292px;
+}
+
+.training-programme .group-10 {
+  height: 94px;
+  left: 0;
+  position: absolute;
+  top: 3px;
+  width: 21px;
+}
+
+.training-programme .frame-11 {
+  background-color: #084fd7;
+  height: 24px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 21px;
+}
+
+.training-programme .frame-12 {
+  background-color: #6975ff;
+  height: 24px;
+  left: 0;
+  position: absolute;
+  top: 35px;
+  width: 21px;
+}
+
+.training-programme .frame-13 {
+  background-color: #64bdc6;
+  height: 24px;
+  left: 0;
+  position: absolute;
+  top: 70px;
+  width: 21px;
+}
+
+.training-programme .text-wrapper-37 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  left: 30px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 0;
+  width: 244px;
+}
+
+.training-programme .text-wrapper-38 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  left: 30px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 35px;
+  width: 256px;
+}
+
+.training-programme .text-wrapper-39 {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  left: 30px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 70px;
+  width: 161px;
+}
+
+.training-programme .p {
+  color: #ffffff;
+  font-family: "Poppins-SemiBold", Helvetica;
+  font-size: 20px;
+  font-weight: 600;
+  left: 30px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: center;
+  top: 563px;
+  width: 178px;
+}
+
+.training-programme .boy-and-girl-sitting {
+  height: 238px;
+  left: -662px;
+  position: absolute;
+  top: 206px;
+  width: 286px;
+}

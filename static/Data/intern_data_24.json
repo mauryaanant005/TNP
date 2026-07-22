@@ -1,0 +1,64 @@
+[
+    {
+        "branch_data":{
+            "AIDS":70,
+            "IT-B":70,
+            "E&TC-A":70,
+            "AI&ML":69,
+            "IT-A":69,
+            "COMP-C":69,
+            "COMP-B":69,
+            "CIVIL A":69,
+            "E&TC-B":69,
+            "COMP-A":69,
+            "CIVIL B":67,
+            "ELEX":63,
+            "MECH A":62,
+            "MECH B":62,
+            "IOT":33
+        },
+        "Compqnies_Offering_Internship":{
+            "Vallinakart":63.0,
+            "Code Clause":61.0,
+            "Prodigiy Infotech":54.0,
+            "Oasis Infobye":38.0,
+            "Edunet Foundation":22.0,
+            "Lets Grow more":13.0,
+            "Udemy":13.0,
+            "AICTE-Indian Knowledge System-Jal Dharovar Sarankshan":12.0,
+            "TechnoHacks EduTech":11.0,
+            "Bureau of Indian Standards":9.0
+        },
+        "stipend_data":{
+            "773":95000.0,
+            "667":70000.0,
+            "846":40000.0,
+            "644":30000.0,
+            "145":25000.0,
+            "466":25000.0,
+            "146":25000.0,
+            "144":25000.0,
+            "25":25000.0,
+            "870":22000.0
+        },
+        "stipend_per_branch":{
+            "AI&ML":7000.0,
+            "AIDS":16000.0,
+            "CIVIL A":215000.0,
+            "CIVIL B":78000.0,
+            "COMP-A":102000.0,
+            "COMP-B":197500.0,
+            "COMP-C":81000.0,
+            "Date:":0.0,
+            "Dean (TP & IL)":0.0,
+            "E&TC-A":8000.0,
+            "E&TC-B":0.0,
+            "ELEX":28000.0,
+            "IOT":19000.0,
+            "IT-A":25000.0,
+            "IT-B":172500.0,
+            "MECH A":20000.0,
+            "MECH B":70000.0
+        }
+    }
+]
