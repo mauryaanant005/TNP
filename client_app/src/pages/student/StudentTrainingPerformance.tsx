@@ -124,7 +124,7 @@ const StudentTrainingPerformance: React.FC = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Box p={4} bgcolor="#fff3e0" minHeight="100vh">
+      <Box p={4} bgcolor="#f0f4ff" minHeight="100vh">
         <Box
           maxWidth={800}
           mx="auto"

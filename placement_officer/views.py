@@ -75,7 +75,7 @@ def filter_by_department(request, department, year=None):
     batch_year_suffix = str(year)[-2:]
     try:
         filtered_data = list(
-            Student.objects.filter(department=department)
+            Student.objects.filter(department__istartswith=department)
             .values("consent")
             .annotate(count=Count("consent"))
         )
@@ -130,7 +130,7 @@ def get_category_by_department(request, department, year=None):
     batch_year_suffix = str(year)[-2:]
     try:
         category = list(
-            Student.objects.filter(department=department)
+            Student.objects.filter(department__istartswith=department)
             .values("current_category")
             .annotate(count=Count("current_category"))
         )
@@ -248,13 +248,13 @@ class ConsolidationReportAPIView(APIView):
 
             annotations_to_add[f'applied_{dept_key}'] = Count(
                 'offer',
-                filter=Q(offer__student__department=dept, offer__student__batch=batch),
+                filter=Q(offer__student__department__istartswith=dept, offer__student__batch=batch),
                 distinct=True
             )
 
             annotations_to_add[f'selected_{dept_key}'] = Count(
                 'student_offers',
-                filter=Q(student_offers__student__department=dept),
+                filter=Q(student_offers__student__department__istartswith=dept),
                 distinct=True
             )
 
@@ -466,7 +466,7 @@ class StudentDetailReportAPIView(APIView):
             'applied_companies__application'
         ).order_by('uid')
         if department:
-            students_qs = students_qs.filter(department=department)
+            students_qs = students_qs.filter(department__istartswith=department)
         paginator = self.pagination_class()
         paginated_students = paginator.paginate_queryset(students_qs, request, view=self)
         all_progress = PlacementCompanyProgress.objects.filter(

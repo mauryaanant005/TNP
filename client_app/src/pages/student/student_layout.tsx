@@ -49,7 +49,7 @@ const StudentLayout = () => {
 
   return (
     <div className="absolute top-0 left-0 w-full min-w-fit">
-      <header className="min-w-fit bg-[#d17a00] px-4 py-3 shadow-lg flex justify-between items-center">
+      <header className="min-w-fit bg-[#4169e1] px-4 py-3 shadow-lg flex justify-between items-center">
         <h1 className="text-xl md:text-2xl font-bold text-white flex h-full">
           Student Dashboard
         </h1>

@@ -402,7 +402,7 @@ const CreateNotification = () => {
             disabled={mutation.isPending}
             sx={{
               mt: 1,
-              backgroundColor: "#d17a00",
+              backgroundColor: "#4169e1",
               "&:hover": { backgroundColor: "#b86800" },
             }}
             startIcon={mutation.isPending ? <CircularProgress size={18} color="inherit" /> : null}

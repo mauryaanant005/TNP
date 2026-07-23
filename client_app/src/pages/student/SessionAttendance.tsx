@@ -104,7 +104,7 @@ const SessionAttendance: React.FC = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Box p={4} bgcolor="#fff3e0" minHeight="100vh">
+      <Box p={4} bgcolor="#f0f4ff" minHeight="100vh">
         <Box maxWidth={800} mx="auto" p={3} bgcolor="#ffffff" borderRadius={2} boxShadow={3}>
           <Typography variant="h5" fontWeight="bold" color="primary" textAlign="center" mb={3}>
             Attendance Record
