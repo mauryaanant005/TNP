@@ -17,10 +17,10 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 const theme = createTheme({
   palette: {
-    primary: { main: "#ff9800" }, // Orange
-    secondary: { main: "#ff5722" }, // Deep Orange
+    primary: { main: "#4169e1" }, // Orange
+    secondary: { main: "#4169e1" }, // Deep Orange
     success: { main: "#4caf50" }, // Green
-    warning: { main: "#f57c00" }, // Warning Orange
+    warning: { main: "#4169e1" }, // Warning Orange
   },
 });
 
@@ -225,7 +225,7 @@ const StudentTrainingPerformance: React.FC = () => {
                     <TableContainer component={Paper} variant="outlined">
                       <Table>
                         <TableHead>
-                          <TableRow sx={{ backgroundColor: "#ff9800" }}>
+                          <TableRow sx={{ backgroundColor: "#4169e1" }}>
                             <TableCell
                               sx={{ color: "black", fontWeight: "bold" }}
                             >

@@ -353,7 +353,7 @@ export default function AcademicDashboard({ groupBy, batch, department, semester
                           <CardTitle className="text-sm font-medium text-slate-600">Late Sessions</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="text-3xl font-bold text-orange-600">
+                          <div className="text-3xl font-bold text-blue-600">
                             {selectedBatchData.attendance_summary?.late_sessions || 0}
                           </div>
                         </CardContent>

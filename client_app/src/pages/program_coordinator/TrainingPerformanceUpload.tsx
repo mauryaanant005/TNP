@@ -169,7 +169,7 @@ const TrainingPerformanceUpload: React.FC = () => {
           maxWidth: "900px",
           p: 4,
           borderRadius: "15px",
-          border: "8px solid #FFA500", // orange border
+          border: "8px solid #4169e1", // orange border
           backgroundColor: "white",
           boxShadow: "0px 3px 10px rgba(0,0,0,0.1)",
         }}

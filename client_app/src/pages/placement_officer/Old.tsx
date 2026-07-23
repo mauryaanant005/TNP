@@ -330,25 +330,25 @@ function App() {
 
       <div className="stats-highlights">
         <div className="stat-card">
-          <h3 className="text-orange-500">Students Placed</h3>
+          <h3 className="text-blue-500">Students Placed</h3>
           <p className="stat-value">
             {totalData["Total Single Offers (On Campus)"] || 0}
           </p>
         </div>
         <div className="stat-card">
-          <h3 className="text-orange-500">Companies Visited</h3>
+          <h3 className="text-blue-500">Companies Visited</h3>
           <p className="stat-value">
             {totalData["No of Companies Visited"] || 0}
           </p>
         </div>
         <div className="stat-card">
-          <h3 className="text-orange-500">Super Dream/Dream</h3>
+          <h3 className="text-blue-500">Super Dream/Dream</h3>
           <p className="stat-value">
             {totalData["No of Super Dream/Dream"] || 0}
           </p>
         </div>
         <div className="stat-card">
-          <h3 className="text-orange-500">Avg. Salary (LPA)</h3>
+          <h3 className="text-blue-500">Avg. Salary (LPA)</h3>
           <p className="stat-value">
             ₹{Number(totalData["Average Salary ( INR- LPA)"] || 0).toFixed(2)}
           </p>

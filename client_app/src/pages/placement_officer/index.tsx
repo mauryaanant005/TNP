@@ -95,7 +95,7 @@ export function PlacementDashboard() {
             ))}
           </Select>
         </div>
-        <NavLink to={'placement_old'} className={'bg-orange-600 text-white p-2 '}>Go to Old Placement Data</NavLink>
+        <NavLink to={'placement_old'} className={'bg-blue-600 text-white p-2 '}>Go to Old Placement Data</NavLink>
       </div>
 
       {/* Error */}

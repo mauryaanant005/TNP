@@ -17,7 +17,7 @@ const StaffNotice = () => {
         return (
           <button
             onClick={() => setNoticeType(type)}
-            className="border-white border-[2px] bg-orange-500"
+            className="border-white border-[2px] bg-blue-500"
             key={type}
           >
             {type}

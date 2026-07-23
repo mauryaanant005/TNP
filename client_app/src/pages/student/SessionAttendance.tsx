@@ -22,10 +22,10 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#ff9800", // Orange theme
+      main: "#4169e1", // Orange theme
     },
     secondary: {
-      main: "#ff5722",
+      main: "#4169e1",
     }, 
   },
 });
@@ -160,7 +160,7 @@ const SessionAttendance: React.FC = () => {
             <TableContainer component={Paper} sx={{ mt: 3 }}>
               <Table>
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: "#ff9800" }}>
+                  <TableRow sx={{ backgroundColor: "#4169e1" }}>
                     <TableCell sx={{ color: "black" }}>Date</TableCell>
                     <TableCell sx={{ color: "black" }}>Session</TableCell>
                     <TableCell sx={{ color: "black" }}>Status</TableCell>

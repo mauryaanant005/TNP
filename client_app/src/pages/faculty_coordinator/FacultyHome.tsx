@@ -256,7 +256,7 @@ function FacultyHome() {
               sx={{
                 mb: 4,
                 textAlign: "center",
-                color: "#f57c00",
+                color: "#4169e1",
                 fontWeight: "bold",
                 letterSpacing: "-0.5px",
               }}
@@ -266,7 +266,7 @@ function FacultyHome() {
 
             {loading ? (
               <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-                <CircularProgress sx={{ color: "#f57c00" }} />
+                <CircularProgress sx={{ color: "#4169e1" }} />
               </Box>
             ) : (
               <Fade in={!loading}>
@@ -282,11 +282,11 @@ function FacultyHome() {
                           borderColor: "#fb8c00",
                         },
                         "&.Mui-focused fieldset": {
-                          borderColor: "#f57c00",
+                          borderColor: "#4169e1",
                         },
                       },
                       "& .MuiInputLabel-root.Mui-focused": {
-                        color: "#f57c00",
+                        color: "#4169e1",
                       },
                     }}
                   >
@@ -325,11 +325,11 @@ function FacultyHome() {
                           borderColor: "#fb8c00",
                         },
                         "&.Mui-focused fieldset": {
-                          borderColor: "#f57c00",
+                          borderColor: "#4169e1",
                         },
                       },
                       "& .MuiInputLabel-root.Mui-focused": {
-                        color: "#f57c00",
+                        color: "#4169e1",
                       },
                     }}
                   >
@@ -368,11 +368,11 @@ function FacultyHome() {
                           borderColor: "#fb8c00",
                         },
                         "&.Mui-focused fieldset": {
-                          borderColor: "#f57c00",
+                          borderColor: "#4169e1",
                         },
                       },
                       "& .MuiInputLabel-root.Mui-focused": {
-                        color: "#f57c00",
+                        color: "#4169e1",
                       },
                     }}
                   >
@@ -413,11 +413,11 @@ function FacultyHome() {
                           borderColor: "#fb8c00",
                         },
                         "&.Mui-focused fieldset": {
-                          borderColor: "#f57c00",
+                          borderColor: "#4169e1",
                         },
                       },
                       "& .MuiInputLabel-root.Mui-focused": {
-                        color: "#f57c00",
+                        color: "#4169e1",
                       },
                     }}
                   >
@@ -466,7 +466,7 @@ function FacultyHome() {
                       padding: "12px",
                       textTransform: "none",
                       fontSize: "1.1rem",
-                      backgroundColor: "#f57c00",
+                      backgroundColor: "#4169e1",
                       "&:hover": {
                         backgroundColor: "#fb8c00",
                       },

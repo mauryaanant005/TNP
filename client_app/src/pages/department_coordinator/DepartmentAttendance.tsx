@@ -92,11 +92,11 @@ export default function DepartmentAttendance() {
         <footer className="mt-12 text-center text-blue-200 text-sm">
           <div className="flex justify-center space-x-8 mb-4">
             <div className="flex items-center">
-              <UserCheck className="w-5 h-5 mr-2 text-orange-400" />
+              <UserCheck className="w-5 h-5 mr-2 text-blue-400" />
               <span>Attendance Tracking</span>
             </div>
             <div className="flex items-center">
-              <GraduationCap className="w-5 h-5 mr-2 text-orange-400" />
+              <GraduationCap className="w-5 h-5 mr-2 text-blue-400" />
               <span>Performance Analytics</span>
             </div>
           </div>
