@@ -45,11 +45,33 @@ const InternshipRegistration = () => {
     const fetchData = async () => {
       try {
         const response = await fetch(`/api/internship/company/${id}`);
+        if (!response.ok) throw new Error("Failed to fetch company");
         const data = await response.json();
-        console.log(data);
         setData(data);
-      } catch (error) {
+      } catch (error: any) {
         console.error(error);
+        const dummyData: CompanyData & { isDummy?: boolean } = {
+          company: {
+            name: "Demo Internship Corp",
+            min_tenth_marks: 60,
+            min_higher_secondary_marks: 60,
+            min_cgpa: 6.5,
+            min_attendance: 75,
+            is_kt: false,
+            is_backLog: false,
+            domain: "Software Development",
+            Departments: "Computer Engineering, IT",
+            is_pli: true,
+            batch: "2026",
+          },
+          offers: [
+            { id: "offer1", type: "Summer Internship", stipend: 15000, position: "Frontend Developer" },
+            { id: "offer2", type: "6-Months Co-op", stipend: 20000, position: "Backend Developer" },
+          ],
+          isDummy: true
+        };
+        setData(dummyData);
+        toast.error("Company not found. Displaying dummy data.");
       }
     };
     fetchData();
@@ -78,7 +100,14 @@ const InternshipRegistration = () => {
   };
   if (!data) return <div>Loading...</div>;
   return (
-    <div className="flex flex-col md:flex-row gap-6 p-6">
+    <div className="flex flex-col gap-4 p-6">
+      {(data as any).isDummy && (
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow-sm w-full" role="alert">
+          <p className="font-bold">Displaying Sample Data</p>
+          <p>The internship opportunity you are trying to view could not be loaded. Showing fallback content.</p>
+        </div>
+      )}
+      <div className="flex flex-col md:flex-row gap-6">
       <Card className="w-full md:w-1/2">
         <CardHeader>
           <CardTitle>Company Requirements</CardTitle>
@@ -130,6 +159,7 @@ const InternshipRegistration = () => {
           </form>
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 };

@@ -204,6 +204,13 @@ PRs welcome. Open an issue for significant changes. No formal style guide — ma
 
 ---
 
+## Security Warning
+
+> **CRITICAL:** If any secrets (such as `EMAIL_PASSWORD`, `DATABASE_PASSWORD`, or API keys) were previously hardcoded in the codebase, they remain embedded in the Git history. 
+> You MUST rotate (change) these passwords/keys immediately in the external services and ensure they are only loaded via the `.env` file moving forward. Do not rely on removing them from the current working tree, as the Git history is still exposed.
+
+---
+
 ## License
 
 Internal tool — Thakur College of Engineering and Technology.

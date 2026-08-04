@@ -6,8 +6,6 @@ import {
   Legend,
   Line,
   LineChart,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -17,8 +15,9 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Select, MenuItem } from "@mui/material";
+import { Select, MenuItem, Chip } from "@mui/material";
 import { NavLink } from "react-router";
+import { sampleDashboardData } from "./fallbackData";
 
 interface DashboardData {
   placementsOverTime: { month: string; placements: number }[];
@@ -39,20 +38,30 @@ const PIE_COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
 export function PlacementDashboard() {
   const [data, setData] = React.useState<DashboardData | null>(null);
-  const [loading, setLoading] = React.useState(true);
+  const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [isSampleData, setIsSampleData] = React.useState(false);
   const [selectedBatch, setSelectedBatch] = React.useState<string>("");
   const [batches, setBatches] = React.useState<string[]>([]);
 
   React.useEffect(() => {
-    fetch("/api/staff/companies/batches/")
+    fetch("/api/staff/companies/batches/", { credentials: "include" })
       .then((res) => res.json())
-      .then((data) => setBatches(data))
+      .then((data) => {
+        setBatches(data);
+        if (data.length > 0) {
+          setSelectedBatch(data[0]);
+        }
+      })
       .catch((err) => console.error("Error fetching batches:", err));
   }, []);
+
   React.useEffect(() => {
     async function fetchData(batchToFetch: string) {
-      if (!batchToFetch) return;
+      if (!batchToFetch) {
+        setLoading(false);
+        return;
+      }
 
       setLoading(true);
       setError(null);
@@ -64,10 +73,30 @@ export function PlacementDashboard() {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const jsonData: DashboardData = await response.json();
-        setData(jsonData);
+        const hasData =
+          jsonData.placementStatusFunnel?.some(
+            (d) => d.name === "Total Students" && d.value > 0
+          ) ||
+          jsonData.topRecruiters?.length > 0 ||
+          jsonData.departmentPerformance?.length > 0;
+
+        if (!hasData) {
+          React.startTransition(() => {
+            setData(sampleDashboardData);
+            setIsSampleData(true);
+          });
+        } else {
+          React.startTransition(() => {
+            setData(jsonData);
+            setIsSampleData(false);
+          });
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : "An unknown error occurred");
-        setData(null);
+        React.startTransition(() => {
+          setData(sampleDashboardData);
+          setIsSampleData(true);
+        });
       } finally {
         setLoading(false);
       }
@@ -95,7 +124,18 @@ export function PlacementDashboard() {
             ))}
           </Select>
         </div>
-        <NavLink to={'placement_old'} className={'bg-blue-600 text-white p-2 '}>Go to Old Placement Data</NavLink>
+        <div className="flex items-center space-x-4 mt-10">
+          {isSampleData && (
+            <Chip
+              label="Viewing Sample Data"
+              color="warning"
+              variant="outlined"
+            />
+          )}
+          <NavLink to={'placement_old'} className={'bg-blue-600 text-white p-2 rounded'}>
+            Go to Old Placement Data
+          </NavLink>
+        </div>
       </div>
 
       {/* Error */}
@@ -184,9 +224,9 @@ function DashboardCard({
       </CardHeader>
       <CardContent>
         {loading ? (
-          <Skeleton className="h-[250px] w-full" />
+          <Skeleton className="h-[300px] w-full" />
         ) : (
-          <div className="h-[250px] w-full">
+          <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <>{children}</>
             </ResponsiveContainer>
@@ -203,24 +243,22 @@ function PlacementStatusChart({
   data: { name: string; value: number }[];
 }) {
   return (
-    <ResponsiveContainer width={250} height={250}>
-      <BarChart
-        data={data}
-        margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
-      >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Bar
-          dataKey="value"
-          fill="#8884d8"
-          name="Count"
-          radius={[6, 6, 0, 0]}
-        />
-      </BarChart>
-    </ResponsiveContainer>
+    <BarChart
+      data={data}
+      margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+    >
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+      <YAxis />
+      <Tooltip />
+      <Legend />
+      <Bar
+        dataKey="value"
+        fill="#8884d8"
+        name="Count"
+        radius={[6, 6, 0, 0]}
+      />
+    </BarChart>
   );
 }
 
@@ -230,7 +268,7 @@ function OfferCategoryChart({
   data: { name: string; value: number }[];
 }) {
   return (
-    <BarChart data={data} height={250} width={200} style={{ margin: "0 auto" }}>
+    <BarChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="name" tick={{ fontSize: 12 }} />
       <YAxis />
@@ -254,7 +292,7 @@ function SalaryDistributionChart({
   data: { range: string; count: number }[];
 }) {
   return (
-    <BarChart data={data} height={250} width={200} style={{ margin: "0 auto" }}>
+    <BarChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="range" />
       <YAxis />
@@ -272,9 +310,7 @@ function PlacementsTimeChart({
   return (
     <LineChart
       data={data}
-      height={250}
-      width={200}
-      style={{ margin: "0 auto" }}
+      margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
     >
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="month" />
@@ -297,7 +333,7 @@ function DepartmentChart({
   data: { department: string; total: number; placed: number }[];
 }) {
   return (
-    <BarChart data={data} height={250} width={200} style={{ margin: "0 auto" }}>
+    <BarChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="department" />
       <YAxis />
@@ -311,26 +347,17 @@ function DepartmentChart({
 
 function TopRolesChart({ data }: { data: { role: string; count: number }[] }) {
   return (
-    <PieChart height={250} width={200} style={{ margin: "0 auto" }}>
-      <Pie
-        data={data}
-        dataKey="count"
-        nameKey="role"
-        cx="50%"
-        cy="50%"
-        outerRadius={80}
-        label
-      >
-        {data.map((_, index) => (
-          <Cell
-            key={`cell-${index}`}
-            fill={PIE_COLORS[index % PIE_COLORS.length]}
-          />
-        ))}
-      </Pie>
+    <BarChart
+      data={data}
+      layout="vertical"
+      margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+    >
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis type="number" />
+      <YAxis dataKey="role" type="category" width={100} tick={{ fontSize: 11 }} />
       <Tooltip />
-      <Legend />
-    </PieChart>
+      <Bar dataKey="count" fill="#0088FE" name="Count" radius={[0, 4, 4, 0]} />
+    </BarChart>
   );
 }
 
@@ -340,25 +367,16 @@ function TopRecruitersChart({
   data: { company__name: string; hires: number }[];
 }) {
   return (
-    <PieChart height={250} width={200} style={{ margin: "0 auto" }}>
-      <Pie
-        data={data}
-        dataKey="hires"
-        nameKey="company__name"
-        cx="50%"
-        cy="50%"
-        outerRadius={80}
-        label
-      >
-        {data.map((_, index) => (
-          <Cell
-            key={`cell-${index}`}
-            fill={PIE_COLORS[index % PIE_COLORS.length]}
-          />
-        ))}
-      </Pie>
+    <BarChart
+      data={data}
+      layout="vertical"
+      margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+    >
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis type="number" />
+      <YAxis dataKey="company__name" type="category" width={100} tick={{ fontSize: 11 }} />
       <Tooltip />
-      <Legend />
-    </PieChart>
+      <Bar dataKey="hires" fill="#00C49F" name="Hires" radius={[0, 4, 4, 0]} />
+    </BarChart>
   );
 }

@@ -4,11 +4,17 @@ import { Box, Typography, IconButton, Divider } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { MessageCircle, Users, BarChart3, Calendar, Upload, AlertCircle} from "lucide-react";
 import { logout, redirectToProfile } from "@/utils";
+import { SERVER_URL } from "@/constant";
 import LogoIcon from "@/assets/img/logo.png";
 import ProfileUserIcon from "@/assets/img/user_profile.png";
 import LogoutUserIcon from "@/assets/img/logout.png";
 
 const Sidebar = () => {
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = `${SERVER_URL}/auth/login/`;
+  };
+
   const location = useLocation();
 
   const menuItems = [
@@ -103,7 +109,7 @@ const Sidebar = () => {
           <ActionButton
             component={Link}
             to="/logout"
-            onClick={logout}
+            onClick={handleLogout}
             title="Logout"
           >
             <LogoutIcon src={LogoutUserIcon} alt="Logout" />

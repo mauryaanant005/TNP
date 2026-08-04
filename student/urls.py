@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import ResumeView, SessionAttendanceAPIView,PlacementCompanyAPIView,StudentProfileView,PlacementCard,StudentInternshipListView
-from .views import StudentTrainingPerformanceAPIView
+from .views import StudentTrainingPerformanceAPIView, DeleteAccountView
 
 urlpatterns = [
     path("info/", StudentProfileView.as_view(), name="sdp-api"),
@@ -14,4 +14,5 @@ urlpatterns = [
         name="student_training_performance"
     ),
     path("internships/", StudentInternshipListView.as_view(), name="student-internships"),
+    path("delete-account/", DeleteAccountView.as_view(), name="delete-account"),
 ]

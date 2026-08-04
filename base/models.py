@@ -15,19 +15,18 @@ class CustomUserManager(UserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
-        print("Hello")
         try:
             send_mail(
-                "Subject here",
-                f"Your account is created. Your username is {email} and your password is tcet@1234. Please change your password after login.",
+                "Account Created",
+                f"Your account has been created. Your username is {email}. Please use the forgot password option or contact your administrator to set your password.",
                 settings.EMAIL_HOST_USER,  # Use settings.EMAIL_HOST_USER as the from email
                 [email],  # Recipient list should be a list of email addresses
                 fail_silently=False,  # Make sure to catch actual errors
             )
         except Exception as e:
-            print(f"Error sending email: {e}")
+            # Error log removed to prevent PII leakage
+            pass
         user.save(using=self._db)
-        print(user)
         return user
 
     def create_user(self, email=None, password=None, **extra_fields):

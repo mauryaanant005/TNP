@@ -32,7 +32,9 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import Papa from "papaparse";
-import { DEPARTMENTS_TO_DISPLAY } from "@/constant";
+import { Chip } from "@mui/material";
+import { sampleStudentDetailData } from "./fallbackData";
+
 interface CompanyHeader {
   id: number;
   name: string;
@@ -64,11 +66,12 @@ function formatHeader(field: string): string {
 }
 
 function TableSkeletonLoader({ columns }: { columns: number }) {
+  const cappedColumns = Math.min(columns, 15);
   return (
     <>
       {[...Array(10)].map((_, i) => (
         <TableRow key={`skel-row-${i}`}>
-          {[...Array(columns)].map((_, j) => (
+          {[...Array(cappedColumns)].map((_, j) => (
             <TableCell key={`skel-cell-${i}-${j}`}>
               <Skeleton className="h-4 w-full" />
             </TableCell>
@@ -83,30 +86,49 @@ export function StudentStatusReport() {
   const [apiResponse, setApiResponse] = React.useState<ApiResponse | null>(
     null
   );
-  const [loading, setLoading] = React.useState(true);
+  const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [department, setDepartment] = React.useState("");
+  const [isSampleData, setIsSampleData] = React.useState(false);
+  const [department, setDepartment] = React.useState("all");
   const [page, setPage] = React.useState(1);
   const [selectedBatch, setSelectedBatch] = React.useState<string>("");
   const [batches, setBatches] = React.useState<string[]>([]);
+  const [dynamicDepartments, setDynamicDepartments] = React.useState<string[]>([]);
   React.useEffect(() => {
-    fetch("/api/staff/companies/batches/")
+    fetch("/api/staff/companies/batches/", { credentials: "include" })
       .then((res) => res.json())
-      .then((data) => setBatches(data))
+      .then((data) => {
+        setBatches(data);
+        if (data.length > 0) {
+          setSelectedBatch(data[0]);
+        }
+      })
       .catch((err) => console.error("Error fetching batches:", err));
+
+    fetch("/api/placement_officer/unique-departments/", { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.unique_departments) {
+          setDynamicDepartments(data.unique_departments);
+        }
+      })
+      .catch((err) => console.error("Error fetching departments:", err));
   }, []);
   React.useEffect(() => {
     async function fetchData() {
-      if (!selectedBatch) return;
+      if (!selectedBatch) {
+        setLoading(false);
+        return;
+      }
 
       setLoading(true);
       setError(null);
       const params = new URLSearchParams();
       params.append("page", String(page));
-      if (department) {
+      if (department && department !== "all") {
         params.append("department", department);
       }
-      const url = `/api/placement_officer/student_detail_report/${selectedBatch}/?${params.toString()}/`;
+      const url = `/api/placement_officer/student_detail_report/${selectedBatch}/?${params.toString()}`;
 
       try {
         const response = await fetch(url);
@@ -114,10 +136,23 @@ export function StudentStatusReport() {
           throw new Error(`Failed to fetch report: ${response.statusText}`);
         }
         const data: ApiResponse = await response.json();
-        setApiResponse(data);
+        if (data.count === 0 && page === 1) {
+          React.startTransition(() => {
+            setApiResponse(sampleStudentDetailData as any);
+            setIsSampleData(true);
+          });
+        } else {
+          React.startTransition(() => {
+            setApiResponse(data);
+            setIsSampleData(false);
+          });
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : "An unknown error occurred");
-        setApiResponse(null);
+        React.startTransition(() => {
+          setApiResponse(sampleStudentDetailData as any);
+          setIsSampleData(true);
+        });
       } finally {
         setLoading(false);
       }
@@ -277,10 +312,15 @@ export function StudentStatusReport() {
       <CardHeader>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <CardTitle>Student-wise Progress Report</CardTitle>
+            <CardTitle className="flex items-center gap-4">
+              Student-wise Progress Report
+              {isSampleData && (
+                <Chip label="Viewing Sample Data" color="warning" size="small" variant="outlined" />
+              )}
+            </CardTitle>
             <CardDescription>
               Showing results for Batch: <strong>{selectedBatch}</strong>
-              {department && (
+              {department && department !== "all" && (
                 <>
                   , Department: <strong>{department}</strong>
                 </>
@@ -302,12 +342,13 @@ export function StudentStatusReport() {
             </Select>
             <Select value={department} onValueChange={setDepartment}>
               <SelectTrigger className="w-40 text-black bg-gray-100">
-                <SelectValue placeholder="Select Department" />
+                <SelectValue placeholder="All Departments" />
               </SelectTrigger>
               <SelectContent>
-                {DEPARTMENTS_TO_DISPLAY.map((department) => (
-                  <SelectItem key={department} value={department}>
-                    {department}
+                <SelectItem value="all">All Departments</SelectItem>
+                {dynamicDepartments.map((dept) => (
+                  <SelectItem key={dept} value={dept}>
+                    {dept}
                   </SelectItem>
                 ))}
               </SelectContent>

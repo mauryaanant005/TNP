@@ -196,6 +196,8 @@ function TablePage() {
         }
       )
       .then(() => {
+        localStorage.removeItem("attendanceData");
+        setAttendanceData({});
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
       })

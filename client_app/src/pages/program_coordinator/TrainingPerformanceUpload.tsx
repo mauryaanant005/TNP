@@ -165,13 +165,12 @@ const TrainingPerformanceUpload: React.FC = () => {
     >
       <Paper
         sx={{
-          width: "90%",
+          width: "100%",
           maxWidth: "900px",
-          p: 4,
-          borderRadius: "15px",
-          border: "8px solid #4169e1", // orange border
+          p: { xs: 3, md: 5 },
+          borderRadius: "12px",
           backgroundColor: "white",
-          boxShadow: "0px 3px 10px rgba(0,0,0,0.1)",
+          boxShadow: "0px 4px 20px rgba(0,0,0,0.05)",
         }}
       >
         <Typography
@@ -252,30 +251,26 @@ const TrainingPerformanceUpload: React.FC = () => {
             }}
           />
 
-          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "flex-end", mt: 2 }}>
             <Button
-              variant="contained"
-              sx={{
-                backgroundColor: "#007bff",
-                "&:hover": { backgroundColor: "#0056b3" },
-              }}
+              variant="outlined"
+              color="primary"
               onClick={handleDownloadTemplate}
               disabled={loading}
+              sx={{ px: 3, py: 1 }}
             >
               {loading ? (
                 <CircularProgress size={20} color="inherit" />
               ) : (
-                "UPLOAD TEMPLATE"
+                "DOWNLOAD SAMPLE TEMPLATE"
               )}
             </Button>
 
             <Button
               variant="contained"
               component="label"
-              sx={{
-                backgroundColor: "#007bff",
-                "&:hover": { backgroundColor: "#0056b3" },
-              }}
+              color="primary"
+              sx={{ px: 3, py: 1 }}
             >
               CHOOSE FILE
               <input
@@ -302,20 +297,15 @@ const TrainingPerformanceUpload: React.FC = () => {
 
           <Button
             variant="contained"
+            color="success"
             onClick={handleUpload}
-            disabled={loading || !file || !semester} // NEW: Disable if no semester
-            sx={{
-              backgroundColor: "#FF8C00",
-              "&:hover": { backgroundColor: "#e07b00" },
-              alignSelf: "center",
-              px: 4,
-              mt: 1,
-            }}
+            disabled={loading || !file || !trainingType || !semester}
+            sx={{ px: 4, py: 1 }}
           >
             {loading ? (
-              <CircularProgress size={24} color="inherit" />
+              <CircularProgress size={20} color="inherit" />
             ) : (
-              "UPLOAD TO SERVER"
+              "UPLOAD"
             )}
           </Button>
         </Box>

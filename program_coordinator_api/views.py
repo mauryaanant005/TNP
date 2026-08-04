@@ -23,6 +23,7 @@ from rest_framework.decorators import (
     permission_classes,
 )
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.utils import timezone
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -61,6 +62,7 @@ def _normalize_header(h):
 
 @csrf_exempt
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def download_training_template(request, training_type: str):
     training_type = str(training_type).strip()
     if training_type not in TRAINING_CONFIG:
@@ -79,11 +81,17 @@ def download_training_template(request, training_type: str):
     ws.title = f"{training_type}_Template"
     ws.append(headers)
 
-    # sample data row
-    sample_row = ["101", "John Doe", "CSE_A"] + [
-        75 for _ in TRAINING_CONFIG[training_type]
+    # sample data rows
+    import random
+    sample_rows = [
+        ["101", "John Doe", "CMPN-A"] + [random.randint(60, 95) for _ in TRAINING_CONFIG[training_type]],
+        ["102", "Jane Smith", "CMPN-B"] + [random.randint(60, 95) for _ in TRAINING_CONFIG[training_type]],
+        ["103", "Alice Johnson", "IT-A"] + [random.randint(60, 95) for _ in TRAINING_CONFIG[training_type]],
+        ["104", "Bob Brown", "EXTC-A"] + [random.randint(60, 95) for _ in TRAINING_CONFIG[training_type]],
+        ["105", "Charlie Davis", "INFT-A"] + [random.randint(60, 95) for _ in TRAINING_CONFIG[training_type]],
     ]
-    ws.append(sample_row)
+    for row in sample_rows:
+        ws.append(row)
 
     output = io.BytesIO()
     wb.save(output)
@@ -99,6 +107,7 @@ def download_training_template(request, training_type: str):
 
 
 class UploadTrainingPerformanceView(APIView):
+    permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, *args, **kwargs):
@@ -435,35 +444,91 @@ def save_branch_attendance(request, table_name):
 @permission_classes([IsAuthenticated])
 def get_avg_data(request, table_name):
     try:
-        # Validate table_name to prevent SQL injection
-        valid_tables = [
-            "program1",
-            "another_program_table",
-        ]  # Add valid table names here
-        if table_name not in valid_tables:
-            return JsonResponse({"error": "Invalid table name"}, status=400)
+        from student.models import Student
+        from .models import AttendanceData, TrainingPerformance
+        from django.db.models import Avg, Count, Q
 
-        # Construct query to fetch average attendance and performance by Branch_Div with dynamic table name
-        query = f"""
-            SELECT Branch_Div,
-           Year,
-           AVG(training_attendance) AS avg_attendance,
-           AVG(training_performance) AS avg_performance
-    FROM {table_name}
-    GROUP BY Branch_Div, Year
-        """
+        # 1. Fetch Students to map uid -> (Branch_Div, Year)
+        students = Student.objects.values('uid', 'department', 'division', 'batch')
+        student_map = {
+            s['uid']: {
+                'Branch_Div': f"{s['department']}-{s['division']}",
+                'Year': s['batch']
+            } for s in students
+        }
 
-        with connection.cursor() as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            # Convert the rows into a list of dictionaries
-            columns = [col[0] for col in cursor.description]
-            result = [dict(zip(columns, row)) for row in rows]
+        stats_map = {}
+
+        # 2. Process Attendance Data
+        att_aggs = AttendanceData.objects.values('uid', 'program_name').annotate(
+            total=Count('id'),
+            present=Count('id', filter=Q(present='Present'))
+        )
+        for att in att_aggs:
+            uid = att['uid']
+            if uid not in student_map:
+                continue
+            
+            branch_div = student_map[uid]['Branch_Div']
+            year = student_map[uid]['Year']
+            program = att['program_name']
+            key = (branch_div, year, program)
+
+            if key not in stats_map:
+                stats_map[key] = {'att_total': 0, 'att_present': 0, 'perf_sum': 0, 'perf_count': 0}
+            
+            stats_map[key]['att_total'] += att['total']
+            stats_map[key]['att_present'] += att['present']
+
+        # 3. Process Performance Data
+        perf_aggs = TrainingPerformance.objects.values('student__uid', 'training_type').annotate(
+            avg_marks=Avg('categories__marks')
+        ).filter(avg_marks__isnull=False)
+
+        for perf in perf_aggs:
+            uid = perf['student__uid']
+            if uid not in student_map:
+                continue
+
+            branch_div = student_map[uid]['Branch_Div']
+            year = student_map[uid]['Year']
+            program = perf['training_type']
+            key = (branch_div, year, program)
+
+            if key not in stats_map:
+                stats_map[key] = {'att_total': 0, 'att_present': 0, 'perf_sum': 0, 'perf_count': 0}
+
+            stats_map[key]['perf_sum'] += perf['avg_marks']
+            stats_map[key]['perf_count'] += 1
+
+        # 4. Format Result
+        result = []
+        for (branch_div, year, program), stats in stats_map.items():
+            try:
+                year_num = int(year)
+            except (ValueError, TypeError):
+                year_num = year
+
+            avg_attendance = 0
+            if stats['att_total'] > 0:
+                avg_attendance = round((stats['att_present'] / stats['att_total']) * 100, 2)
+
+            avg_performance = 0
+            if stats['perf_count'] > 0:
+                avg_performance = round(stats['perf_sum'] / stats['perf_count'], 2)
+
+            if stats['att_total'] > 0 or stats['perf_count'] > 0:
+                result.append({
+                    "Branch_Div": branch_div,
+                    "Year": year_num,
+                    "Program_name": program,
+                    "avg_attendance": avg_attendance,
+                    "avg_performance": avg_performance
+                })
 
         return JsonResponse(result, safe=False)
 
     except Exception as e:
-        logger.exception(str(e))
         return JsonResponse(
             {"error": f"Failed to fetch average data: {str(e)}"}, status=500
         )
@@ -546,11 +611,40 @@ class CreateAttendanceRecord(APIView):
 
         # Clean the 'attendance_data' to remove unnecessary fields
         cleaned_attendance_data = []
+        attendance_objects = []
+        now = timezone.now()
+
         for record in data["attendance_data"]:
             if "student_data" in record:
                 student_data = record["student_data"]
+                sessions_data = record.get("sessions", [])
                 if isinstance(student_data, list) and len(student_data) == 3:
-                    cleaned_attendance_data.append({"student_data": student_data})
+                    uid, name, batch = student_data[:3]
+                    cleaned_attendance_data.append({"student_data": student_data, "sessions": sessions_data})
+                    
+                    # Create AttendanceData records for ORM queries
+                    for day_idx, date_str in enumerate(data.get("dates", [])):
+                        if day_idx < len(sessions_data):
+                            day_sessions = sessions_data[day_idx]
+                            for sess_idx, present_val in enumerate(day_sessions):
+                                session_name = f"{date_str} - Session {sess_idx + 1}"
+                                
+                                if not present_val:
+                                    present_val = "Absent"
+                                
+                                attendance_objects.append(
+                                    AttendanceData(
+                                        uid=uid,
+                                        name=name,
+                                        batch=batch,
+                                        program_name=data.get("program_name"),
+                                        year=data.get("year"),
+                                        semester=data.get("semester"),
+                                        session=session_name,
+                                        present=present_val,
+                                        timestamp=now
+                                    )
+                                )
                 else:
                     return Response(
                         {
@@ -558,6 +652,9 @@ class CreateAttendanceRecord(APIView):
                         },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
+        
+        if attendance_objects:
+            AttendanceData.objects.bulk_create(attendance_objects)
 
         # Prepare the SQL insert statement for attendance record
         program_name = data["program_name"]
@@ -611,6 +708,7 @@ class CreateAttendanceRecord(APIView):
 
 
 class StudentAnalyticsViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [IsAuthenticated]
     serializer_class = StudentAnalyticsSerializer
 
     def get_queryset(self):
@@ -674,6 +772,7 @@ class StudentAnalyticsViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
 
 class AggregateAnalyticsView(views.APIView):
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         batch_filter = request.query_params.get("batch")

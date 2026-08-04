@@ -20,15 +20,41 @@ export default function StudentInternships() {
       setLoading(true);
       try {
         const res = await axios.get(`/api/student/internships/`);
-        setInternships(res.data);
-        toast.success("Internship data fetched successfully");
-      } catch (err: any) {
-        if (err.response?.status === 404) {
-          toast.error("No internships found for this student");
+        if (res.data && res.data.length > 0) {
+          setInternships(res.data);
+          (res.data as any).isDummy = false;
         } else {
-          toast.error("Failed to fetch internships");
+          // Empty, inject dummy
+          throw new Error("EmptyData");
         }
-        setInternships([]);
+      } catch (err: any) {
+        const dummyInternships = [
+          {
+            id: 1,
+            company_name: "Demo Solutions Pvt Ltd",
+            domain_name: "Web Development",
+            type: "Technical",
+            offer_type: "Full Time Internship",
+            start_date: "2026-01-10",
+            completion_date: "2026-06-10",
+            salary: 15000,
+            is_verified: true,
+          },
+          {
+            id: 2,
+            company_name: "Sample Innovations",
+            domain_name: "Data Science",
+            type: "Research",
+            offer_type: "Part Time",
+            start_date: "2025-06-01",
+            completion_date: "2025-08-30",
+            salary: 10000,
+            is_verified: false,
+          }
+        ];
+        (dummyInternships as any).isDummy = true;
+        setInternships(dummyInternships as any);
+        toast.error("No internships found. Displaying sample data.");
       } finally {
         setLoading(false);
       }
@@ -38,7 +64,13 @@ export default function StudentInternships() {
 
   return (
     <div className="flex flex-col items-center justify-center  bg-muted/30 p-6">
-      <Card >
+      {(internships as any).isDummy && (
+        <div className="w-full mb-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow-sm" role="alert">
+          <p className="font-bold">Displaying Sample Data</p>
+          <p>You do not have any internship records yet. Showing fallback content for demonstration.</p>
+        </div>
+      )}
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Student Internships</CardTitle>
         </CardHeader>

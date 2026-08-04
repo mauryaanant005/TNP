@@ -338,15 +338,19 @@ class NotificationListCreate(generics.ListCreateAPIView):
                 from asgiref.sync import async_to_sync
                 
                 channel_layer = get_channel_layer()
-                for recipient in final_recipient_list:
-                    group_name = f"user_{recipient.id}_notifications"
-                    async_to_sync(channel_layer.group_send)(
-                        group_name,
-                        {
-                            "type": "new_notification",
-                            "message": f"New notification: {title}"
-                        }
-                    )
+                if channel_layer:
+                    for recipient in final_recipient_list:
+                        group_name = f"user_{recipient.id}_notifications"
+                        try:
+                            async_to_sync(channel_layer.group_send)(
+                                group_name,
+                                {
+                                    "type": "new_notification",
+                                    "message": f"New notification: {title}"
+                                }
+                            )
+                        except Exception as e:
+                            logger.error(f"Failed to send websocket notification: {e}")
             else:
                 logger.warning(
                     "No recipients resolved for notification %s (audience=%s, depts=%s, years=%s)",

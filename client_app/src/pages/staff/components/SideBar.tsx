@@ -2,10 +2,15 @@ import { NavLink } from "react-router"; // Import Link for routing
 import "../../placement_officer/components/sidebar.css";
 import { Building2, NotebookPen, Send, Verified } from "lucide-react";
 import { logout, redirectToProfile } from "@/utils";
+import { SERVER_URL } from "@/constant";
 import Logo from "@/assets/img/logo.png";
 import ProfileIcon from "@/assets/img/user_profile.png";
 import LogoutIcon from "@/assets/img/logout.png";
 const Sidebar = () => {
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = `${SERVER_URL}/auth/login/`;
+  };
   return (
     <aside className="sidebar">
       <div className="logo-container">
@@ -51,7 +56,7 @@ const Sidebar = () => {
         </button>
         <button
           className="logout-icon bg-transparent hover:bg-transparent"
-          onClick={logout}
+          onClick={handleLogout}
         >
           <img src={LogoutIcon} alt="Logout" />
         </button>

@@ -31,6 +31,8 @@ services:
       - media:/app/media
     env_file:
       - .env
+    environment:
+      - REDIS_HOST=redis
 
   caddy:
     image: caddy:latest

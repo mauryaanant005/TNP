@@ -10,6 +10,7 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
+  Alert,
 } from "@mui/material";
 
 interface ProgramData {
@@ -39,8 +40,18 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+const DUMMY_ANALYTICS: ProgramData[] = [
+  { Branch_Div: "CMPN-A", Year: 2028, Program_name: "Aptitude", avg_attendance: 85, avg_performance: 75 },
+  { Branch_Div: "CMPN-B", Year: 2028, Program_name: "Aptitude", avg_attendance: 82, avg_performance: 78 },
+  { Branch_Div: "IT-A", Year: 2028, Program_name: "Technical", avg_attendance: 90, avg_performance: 88 },
+  { Branch_Div: "EXTC-A", Year: 2027, Program_name: "Coding", avg_attendance: 75, avg_performance: 82 },
+  { Branch_Div: "CMPN-A", Year: 2027, Program_name: "Technical", avg_attendance: 88, avg_performance: 92 },
+  { Branch_Div: "IT-B", Year: 2028, Program_name: "Coding", avg_attendance: 80, avg_performance: 86 },
+];
+
 const TrainingStats = () => {
   const [avgData, setAvgData] = useState<ProgramData[]>([]);
+  const [isDummyData, setIsDummyData] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [branchDiv, setBranchDiv] = useState<string[]>([]); // Holds selected branch/division
@@ -59,19 +70,27 @@ const TrainingStats = () => {
         return response.json();
       })
       .then((data) => {
-        setAvgData(data);
+        let displayData = data;
+        if (!data || data.length === 0) {
+          displayData = DUMMY_ANALYTICS;
+          setIsDummyData(true);
+        } else {
+          setIsDummyData(false);
+        }
+
+        setAvgData(displayData);
         const uniqueYears = [
-          ...new Set(data.map((item: ProgramData) => item.Year)),
+          ...new Set(displayData.map((item: ProgramData) => item.Year)),
         ] as number[];
         setUniqueYears(uniqueYears);
 
         const uniqueBranchDiv = [
-          ...new Set(data.map((item: ProgramData) => item.Branch_Div)),
+          ...new Set(displayData.map((item: ProgramData) => item.Branch_Div)),
         ] as string[];
         setUniqueBranchDiv(uniqueBranchDiv);
 
         const uniqueProgramNames = [
-          ...new Set(data.map((item: ProgramData) => item.Program_name)),
+          ...new Set(displayData.map((item: ProgramData) => item.Program_name)),
         ];
         // @ts-expect-error: Argument of type 'string[]' is not assignable to parameter of type 'Set<string>'
         setUniqueProgramNames(uniqueProgramNames);
@@ -227,6 +246,12 @@ const TrainingStats = () => {
           This graph shows both the average attendance and performance of each
           branch division.
         </Typography>
+
+        {isDummyData && (
+          <Alert severity="info" sx={{ mb: 3, mx: "auto", maxWidth: 800 }}>
+            Displaying sample analytics data. Real data will appear automatically once training records are uploaded.
+          </Alert>
+        )}
 
         {/* Dropdowns for Filtering */}
         <Box sx={{ marginBottom: "2rem", textAlign: "center" }}>

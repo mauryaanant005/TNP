@@ -304,13 +304,13 @@ function Session() {
   };
 
   return (
-    <Box sx={{ p: 3, backgroundColor: "white", borderRadius: "20px" }}>
-      <Typography variant="h4" gutterBottom>
+    <Box sx={{ p: { xs: 3, md: 5 }, backgroundColor: "white", borderRadius: "12px", boxShadow: "0px 4px 20px rgba(0,0,0,0.05)", mb: 4 }}>
+      <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ color: "#222", mb: 3 }}>
         Generate Session Table
       </Typography>
 
-      <Box sx={{ mb: 2 }}>
-        <Button variant="contained" component="label">
+      <Box sx={{ mb: 3, display: "flex", alignItems: "center" }}>
+        <Button variant="outlined" component="label" sx={{ px: 3, py: 1 }}>
           Upload File
           <input
             type="file"
@@ -319,16 +319,15 @@ function Session() {
             accept=".csv,.xlsx,.xls"
           />
         </Button>
-        <br />
-        <br />
       </Box>
 
-      <Box sx={{ mb: 2 }}>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
         <FormControl fullWidth>
           <InputLabel>Choose a Year</InputLabel>
           <Select
             value={formData.year}
             onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+            label="Choose a Year"
           >
             <MenuItem value="fe">First Year</MenuItem>
             <MenuItem value="se">Second Year</MenuItem>
@@ -336,9 +335,7 @@ function Session() {
             <MenuItem value="be">Final Year</MenuItem>
           </Select>
         </FormControl>
-      </Box>
-      <br />
-      <Box sx={{ mb: 2 }}>
+
         <FormControl fullWidth>
           <InputLabel>Choose a Phase</InputLabel>
           <Select
@@ -346,6 +343,7 @@ function Session() {
             onChange={(e) =>
               setFormData({ ...formData, phase: e.target.value })
             }
+            label="Choose a Phase"
           >
             <MenuItem value="Phase 1">Phase I</MenuItem>
             <MenuItem value="Phase 2">Phase II</MenuItem>
@@ -353,27 +351,22 @@ function Session() {
             <MenuItem value="Not Applicable">Not Applicable</MenuItem>
           </Select>
         </FormControl>
-      </Box>
-      <br />
-      <Box sx={{ mb: 2 }}>
+
         <FormControl fullWidth>
           <InputLabel>Choose a Semester</InputLabel>
-          <br />
           <Select
             value={formData.semester}
             onChange={(e) =>
               setFormData({ ...formData, semester: e.target.value })
             }
+            label="Choose a Semester"
           >
             {SEM_OPTIONS.map((sem) => (
-              <MenuItem value={sem}>{sem}</MenuItem>
+              <MenuItem key={sem} value={sem}>{sem}</MenuItem>
             ))}
           </Select>
         </FormControl>
-      </Box>
-      <br />
 
-      <Box sx={{ mb: 2 }}>
         <TextField
           label="Number of Days"
           type="number"
@@ -386,9 +379,7 @@ function Session() {
             })
           }
         />
-      </Box>
 
-      <Box sx={{ mb: 2 }}>
         <TextField
           label="Number of Sessions"
           type="number"
@@ -401,36 +392,37 @@ function Session() {
             })
           }
         />
-      </Box>
 
-      <Box sx={{ mb: 2 }}>
-        <Button variant="contained" onClick={generateDateInputs}>
-          Generate Date Inputs
-        </Button>
+        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+          <Button variant="outlined" onClick={generateDateInputs} sx={{ px: 3, py: 1 }}>
+            Generate Date Inputs
+          </Button>
+        </Box>
       </Box>
 
       {formData.dates.length > 0 && (
-        <Box sx={{ mb: 2 }}>
+        <Box sx={{ mb: 3, display: "flex", flexDirection: "column", gap: 2 }}>
           {formData.dates.map((date, index) => (
-            <Box key={index} sx={{ display: "flex", gap: 2, mb: 1 }}>
-              <Typography>Day {index + 1}</Typography>
+            <Box key={index} sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Typography sx={{ minWidth: "60px", fontWeight: "medium" }}>Day {index + 1}</Typography>
               <TextField
                 label="Date"
                 type="date"
                 fullWidth
+                InputLabelProps={{ shrink: true }}
                 value={date.date}
                 onChange={(e) => handleDateChange(index, e.target.value)}
               />
             </Box>
           ))}
+          
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}>
+            <Button variant="contained" color="primary" onClick={generateTable} sx={{ px: 4, py: 1 }}>
+              Generate Table
+            </Button>
+          </Box>
         </Box>
       )}
-
-      <Box sx={{ mb: 2 }}>
-        <Button variant="contained" onClick={generateTable}>
-          Generate Table
-        </Button>
-      </Box>
 
       {formData.tableData.length > 0 && (
         <Box sx={{ width: "100%", overflow: "auto" }}>

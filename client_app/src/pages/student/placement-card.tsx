@@ -36,6 +36,46 @@ export default function PlacementCard() {
 
         const result = await response.json();
 
+        if (result.applications?.length === 0 && result.offers?.length === 0 && result.academic_year === 'BE') {
+           result.applications = [
+             {
+               application_id: 1,
+               company_id: 101,
+               company_name: "TCS",
+               job_offer: { id: 1, role: "Software Engineer" },
+               interested: true,
+               not_interested_reason: "",
+               application_date: new Date().toISOString(),
+               progress: {
+                 id: 1,
+                 registered: true,
+                 aptitude_test: true,
+                 coding_test: true,
+                 technical_interview: false,
+                 hr_interview: false,
+                 gd: false,
+                 final_result: "Pending",
+               }
+             }
+           ];
+           result.offers = [
+             {
+               offer_id: 1,
+               company_id: 102,
+               company_name: "Infosys",
+               job_offer: { id: 2, role: "System Engineer" },
+               offer_type: "Full Time",
+               status: "Accepted",
+               salary: 3.6,
+               role: "System Engineer",
+               offer_date: new Date().toISOString(),
+               is_aedp_pli: false,
+               is_aedp_ojt: false,
+             }
+           ];
+           result.isDummy = true;
+        }
+
         setData(result);
 
       } catch (err:any) {
@@ -76,8 +116,13 @@ export default function PlacementCard() {
     </div>
   )
   return (
-    <div className="w-[100dvw] flex justify-center p-4 md:p-8 ">
-
+    <div className="w-[100dvw] flex flex-col items-center p-4 md:p-8 ">
+      {(data as any).isDummy && (
+        <div className="w-full md:w-2/3 mb-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow-sm" role="alert">
+          <p className="font-bold">Displaying Sample Data</p>
+          <p>You have no placement applications or offers yet. Showing fallback content for demonstration.</p>
+        </div>
+      )}
       <Tabs defaultValue="applications" className='w-full md:w-2/3'>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="applications">

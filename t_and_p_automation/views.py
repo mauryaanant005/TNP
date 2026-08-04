@@ -21,8 +21,8 @@ def my_protected_view(request):
     try:
         current_user = User.objects.get(email=request.user.email)
         if current_user.role == "faculty":
-            try:
-                faculty = FacultyResponsibility.objects.get(user=current_user)
+            faculty = FacultyResponsibility.objects.filter(user=current_user).first()
+            if faculty:
                 return JSONResponse(
                     {
                         "role": "faculty",
@@ -31,7 +31,7 @@ def my_protected_view(request):
                         "program": faculty.program,
                     }
                 )
-            except FacultyResponsibility.DoesNotExist:
+            else:
                 return JSONResponse(
                     {
                         "role": "faculty",
@@ -41,8 +41,8 @@ def my_protected_view(request):
                     }
                 )
         if current_user.role == "student":
-            try:
-                student = Student.objects.get(user=current_user)
+            student = Student.objects.filter(user=current_user).first()
+            if student:
                 return JSONResponse(
                     {
                         "role": "student",
@@ -51,7 +51,7 @@ def my_protected_view(request):
                         "academic_year": student.academic_year,
                     }
                 )
-            except Student.DoesNotExist:
+            else:
                 return JSONResponse(
                     {
                         "role": "student",
@@ -69,7 +69,9 @@ def my_protected_view(request):
 @permission_classes([IsAuthenticated])
 def logout_api(request):
     logout(request)
-    return JSONResponse({"message": "Logged out successfully."})
+    response = JSONResponse({"message": "Logged out successfully."})
+    response.delete_cookie("is_logged_in")
+    return response
 
 @login_required
 def index(request):

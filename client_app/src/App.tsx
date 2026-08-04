@@ -23,6 +23,10 @@ const App = () => {
   const setUser = useSetAtom(authAtom);
   useEffect(() => {
     const onAuthenticate = async () => {
+      if (getCookie("is_logged_in") !== "true") {
+        window.location.href = `${SERVER_URL}/auth/login/`;
+        return;
+      }
       const res = await fetch("/api/", {
         method: "GET",
         credentials: "include",
@@ -32,7 +36,7 @@ const App = () => {
       });
       if (res.ok) {
         const data = await res.json();
-        console.log(data);
+
         setUser(data);
       } else {
         window.open(`${SERVER_URL}/auth/login/`, "_self");

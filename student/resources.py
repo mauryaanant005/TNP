@@ -49,29 +49,11 @@ class StudentResource(resources.ModelResource):
         user = getattr(self, "existing_users", {}).get(email) or getattr(self, "created_users_cache", {}).get(email)
         
         if not user:
-            # We must create the user
-            raw_password = row.get("password") or "Student@123"
+            # The user should have been bulk created in import_data
+            pass
             
-            # CPU/Time optimization: If it's a dry run, bypass PBKDF2 hashing!
-            # The transaction is rolled back at the end of the preview step.
-            if getattr(self, "dry_run", False) or kwargs.get("dry_run", False):
-                hashed_password = "dummy_hash_for_dry_run"
-            else:
-                hashed_password = make_password(raw_password)
-                
-            user = User.objects.create(
-                id=uuid4(),
-                email=email,
-                full_name=row.get("full_name", "") or "",
-                password=hashed_password,
-                role="student",
-            )
-            # Store in cache
-            if not hasattr(self, "created_users_cache"):
-                self.created_users_cache = {}
-            self.created_users_cache[email] = user
-            
-        row["user"] = user.id
+        if user:
+            row["user"] = user.id
 
         # Validate and set fields with default values if not provided
         row["current_category"] = row.get("current_category", "No category")
@@ -122,6 +104,33 @@ class StudentResource(resources.ModelResource):
         }
         self.created_users_cache = {}
         
+        # Bulk create missing users
+        users_to_create = []
+        for row in dataset.dict:
+            email = row.get("email")
+            if not email or not str(email).strip():
+                continue
+            email = str(email).strip()
+            if email not in self.existing_users and email not in self.created_users_cache:
+                raw_password = row.get("password") or "Student@123"
+                if dry_run or kwargs.get("dry_run", False):
+                    hashed_password = "dummy_hash_for_dry_run"
+                else:
+                    hashed_password = make_password(raw_password)
+                
+                new_user = User(
+                    id=uuid4(),
+                    email=email,
+                    full_name=row.get("full_name", "") or "",
+                    password=hashed_password,
+                    role="student",
+                )
+                users_to_create.append(new_user)
+                self.created_users_cache[email] = new_user
+
+        if users_to_create:
+            User.objects.bulk_create(users_to_create, batch_size=500)
+
         return super().import_data(
             dataset,
             dry_run,

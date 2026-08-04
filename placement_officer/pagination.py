@@ -7,9 +7,15 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 1000
 
     def get_paginated_response(self, data):
-        batch = self.request.parser_context['view'].kwargs.get('batch')
-        companies = CompanyRegistration.objects.filter(batch=batch)
-        company_headers = list(companies.values('id', 'name'))
+        companies = getattr(self, 'active_companies', None)
+        if companies is None:
+            batch = self.request.parser_context['view'].kwargs.get('batch')
+            companies = CompanyRegistration.objects.filter(batch=batch)
+            
+        if isinstance(companies, list):
+            company_headers = [{'id': c.id, 'name': c.name} for c in companies]
+        else:
+            company_headers = list(companies.values('id', 'name'))
         progress_fields = [
             'eligible', 'registered', 'aptitude_test', 'coding_test',
             'technical_interview', 'gd', 'hr_interview', 'selected'

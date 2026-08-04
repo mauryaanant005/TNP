@@ -85,6 +85,8 @@ class StudentTrainingPerformanceAPIView(APIView):
 
 
 class StudentDataView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         try:
             student = Student.objects.get(user=request.user)
@@ -397,14 +399,25 @@ class PlacementCard(APIView):
 
 
 class StudentInternshipListView(ListAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = InternshipAcceptanceSerializer
 
     def get_queryset(self):
         try:
-            student = get_object_or_404(Student, user=self.request.user)
+            student = Student.objects.get(user=self.request.user)
+            return InternshipAcceptance.objects.filter(student=student)
         except Student.DoesNotExist:
-            return Response(
-                {"error": "No student profile found for this user."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        return InternshipAcceptance.objects.filter(student=student)
+            return InternshipAcceptance.objects.none()
+
+
+class DeleteAccountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        user = request.user
+        try:
+            # User delete cascades to Student, Resume, Offers, etc.
+            user.delete()
+            return Response({"message": "Account successfully deleted"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

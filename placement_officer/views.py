@@ -23,9 +23,6 @@ from rest_framework import status
 from .pagination import StandardResultsSetPagination
 from .serializers import StudentDetailReportSerializer
 
-@api_view(["GET"])
-@authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
 def extract_year_from_uid(uid):
     """Extract batch year from UID."""
     try:
@@ -34,9 +31,6 @@ def extract_year_from_uid(uid):
         return None
 
 
-@api_view(["GET"])
-@authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
 def get_current_year():
     """Get the current year."""
     return datetime.now().year
@@ -148,7 +142,7 @@ def get_data_by_year(request, year):
         batch_year_suffix = str(year)[-2:]
         students = Student.objects.filter(uid__regex=f"^.*-{batch_year_suffix}$")
         student_data = list(students.values("uid", "department", "consent"))
-        print(f"Students for year {year}: {student_data}")
+        pass
     except Exception as e:
         print(f"Error fetching data for year {year}: {e}")
         student_data = []
@@ -473,13 +467,21 @@ class StudentDetailReportAPIView(APIView):
             application__student_id__in=[s.id for s in paginated_students]
         ).select_related('application')
         progress_by_student = defaultdict(list)
+        active_company_ids = set()
         for p in all_progress:
             progress_by_student[p.application.student_id].append(p)
+            active_company_ids.add(p.application.company_id)
         for s in paginated_students:
             s.all_progress = progress_by_student[s.id]
+            for offer in s.student_offers.all():
+                active_company_ids.add(offer.company_id)
+                
+        active_companies = [c for c in companies if c.id in active_company_ids]
+        paginator.active_companies = active_companies
+        
         serializer_context = {
             'request': request,
-            'companies': companies
+            'companies': active_companies
         }
         serializer = StudentDetailReportSerializer(
             paginated_students,

@@ -40,7 +40,9 @@ def send_otp(email, otp, subject="OTP Verification"):
 
 def redirect_user(request, user):
     login_user(request, user)
-    return redirect("/")
+    response = redirect("/")
+    response.set_cookie("is_logged_in", "true", httponly=False, samesite="Lax")
+    return response
 
 
 def login(request):
@@ -119,7 +121,9 @@ def password_reset_confirm(request):
 
 def logout_view(request):
     logout(request)
-    return redirect("/auth/login/")
+    response = redirect('login')
+    response.delete_cookie("is_logged_in")
+    return response
 
 
 @login_required

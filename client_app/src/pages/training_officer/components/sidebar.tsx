@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { Box, Typography, IconButton } from "@mui/material";
 import { styled } from "@mui/system";
 import { logout, redirectToProfile } from "@/utils";
+import { SERVER_URL } from "@/constant";
 import LogoIcon from "@/assets/img/logo.png";
 import UserProfileIcon from "@/assets/img/user_profile.png";
 import UserLogoutIcon from "@/assets/img/logout.png";
@@ -10,6 +11,10 @@ import { Send } from "lucide-react";
 import ImageIcon from "@/assets/img/image.png";
 import StudentIcon from "@/assets/img/student.png";
 const Sidebar = () => {
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = `${SERVER_URL}/auth/login/`;
+  };
   return (
     <SidebarContainer>
       <LogoContainer>
@@ -37,9 +42,9 @@ const Sidebar = () => {
         <IconButton component={Link} to="/profile" onClick={redirectToProfile}>
           <ProfileIcon src={UserProfileIcon} alt="Profile" />
         </IconButton>
-        <IconButton component={Link} to="/logout">
-          <LogoutIcon src={UserLogoutIcon} alt="Logout" onClick={logout} />
-        </IconButton>
+          <IconButton component="button" onClick={handleLogout}>
+            <LogoutIcon src={UserLogoutIcon} alt="Logout" />
+          </IconButton>
       </BottomMenu>
     </SidebarContainer>
   );

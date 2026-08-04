@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import axios from "axios";
 import Select from "react-select";
 import { Bar } from "react-chartjs-2";
@@ -12,7 +12,8 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { Typography } from "@mui/material";
+import { Typography, Chip } from "@mui/material";
+import { sampleCategoryData } from "./fallbackData";
 
 // Register Chart.js components
 ChartJS.register(
@@ -46,6 +47,7 @@ export const CategoryDataStatistics = () => {
   const [departments, setDepartments] = useState([]);
   const [selectedDepartments, setSelectedDepartments] = useState([]);
   const [chartData, setChartData] = useState(null);
+  const [isSampleData, setIsSampleData] = useState(false);
 
   // Fetch departments for the dropdown
   useEffect(() => {
@@ -76,10 +78,19 @@ export const CategoryDataStatistics = () => {
         )
       );
 
-      const combinedData = allData.map((response, index) => ({
-        department: departments[index],
-        data: response.data.category,
-      }));
+      const combinedData = allData.map((response, index) => {
+        let categoryData = response.data.category;
+        if (!categoryData || categoryData.length === 0) {
+          categoryData = sampleCategoryData;
+          setIsSampleData(true);
+        } else {
+          setIsSampleData(false);
+        }
+        return {
+          department: departments[index],
+          data: categoryData,
+        };
+      });
 
       // Transform data for Chart.js
       const labels = [
@@ -100,10 +111,12 @@ export const CategoryDataStatistics = () => {
         borderWidth: 1,
       }));
 
-      setChartData({
-        // @ts-expect-error: Chart data type mismatch
-        labels: labels,
-        datasets: datasets,
+      startTransition(() => {
+        setChartData({
+          // @ts-expect-error: Chart data type mismatch
+          labels: labels,
+          datasets: datasets,
+        });
       });
     } catch (error) {
       console.error("Error fetching chart data:", error);
@@ -116,15 +129,22 @@ export const CategoryDataStatistics = () => {
     if (selectedOptions.length > 0) {
       fetchChartData(selectedOptions.map((option: any) => option.value));
     } else {
-      setChartData(null); // Clear chart if no department is selected
+      startTransition(() => {
+        setChartData(null); // Clear chart if no department is selected
+      });
     }
   };
 
   return (
     <div className="main-content">
-      <Typography variant="h4" gutterBottom>
-        Comparative Category Statistics
-      </Typography>
+      <div className="flex items-center gap-4 mb-4">
+        <Typography variant="h4" gutterBottom style={{ margin: 0 }}>
+          Comparative Category Statistics
+        </Typography>
+        {isSampleData && chartData && (
+          <Chip label="Viewing Sample Data" color="warning" size="small" variant="outlined" />
+        )}
+      </div>
       <Select
         isMulti
         options={departments}

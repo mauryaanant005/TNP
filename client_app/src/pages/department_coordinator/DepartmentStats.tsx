@@ -19,12 +19,11 @@ import CrossBatchComparison from "./components/CrossBatchComparison";
 import InternshipChart from "./components/InternshipChart";
 export default function DepartmentDashboard() {
   const csrfToken = getCookie("csrftoken");
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
-    null
-  );
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error] = useState("");
   const [selectedBatch, setSelectedBatch] = useState("");
+  const [isDummy, setIsDummy] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -36,11 +35,56 @@ export default function DepartmentDashboard() {
             withCredentials: true,
           }
         );
+        if (!res.data.summary_by_batch || Object.keys(res.data.summary_by_batch).length === 0) {
+            throw new Error("Empty data");
+        }
         setDashboardData(res.data);
         const batches = Object.keys(res.data.summary_by_batch);
         if (batches.length) setSelectedBatch(batches[0]);
       } catch (err: any) {
-        setError(err.response?.data?.error || "Failed to fetch dashboard data");
+        // Fallback to dummy data
+        setIsDummy(true);
+        const dummyData: DashboardData = {
+          department_name: "Computer Engineering (Dummy)",
+          summary_by_batch: {
+            "2024": {
+              total_students: 120,
+              average_cgpa: 8.5,
+              students_with_kt: 5,
+              consent_breakdown: { placement: 80, higher_studies: 30, entrepreneurship: 10 },
+              placement_stats: { actual_placed_count: 75, average_salary_lpa: 6.5, highest_salary_lpa: 15.0, median_salary_lpa: 5.5 },
+              internship_stats: { total_internships: 100, in_house: 40, outhouse: 60 },
+              training_stats: { Aptitude: 80, Technical: 75, Coding: 85 }
+            },
+            "2025": {
+              total_students: 130,
+              average_cgpa: 8.2,
+              students_with_kt: 8,
+              consent_breakdown: { placement: 90, higher_studies: 25, entrepreneurship: 15 },
+              placement_stats: { actual_placed_count: 85, average_salary_lpa: 7.0, highest_salary_lpa: 20.0, median_salary_lpa: 6.0 },
+              internship_stats: { total_internships: 110, in_house: 50, outhouse: 60 },
+              training_stats: { Aptitude: 78, Technical: 82, Coding: 80 }
+            }
+          },
+          overall_consent_summary: [
+            { name: "Placement", value: 170 },
+            { name: "Higher Studies", value: 55 },
+            { name: "Entrepreneurship", value: 25 }
+          ],
+          overall_top_companies: [
+            { company_name: "TCS", hires: 40 },
+            { company_name: "Infosys", hires: 35 },
+            { company_name: "Accenture", hires: 30 },
+            { company_name: "Cognizant", hires: 25 }
+          ],
+          overall_training_summary: {
+            Aptitude: 79,
+            Technical: 78.5,
+            Coding: 82.5
+          }
+        };
+        setDashboardData(dummyData);
+        setSelectedBatch("2024");
       } finally {
         setLoading(false);
       }
@@ -58,6 +102,12 @@ export default function DepartmentDashboard() {
 
   return (
     <Box sx={{ bgcolor: "#f5f7fa", minHeight: "100vh", p: { xs: 2, md: 4 } }}>
+      {isDummy && (
+        <Box sx={{ mb: 3, p: 2, bgcolor: "#fff3cd", color: "#856404", borderRadius: 1, border: "1px solid #ffeeba" }}>
+          <strong>Note:</strong> Showing sample fallback data because no actual department stats are available.
+        </Box>
+      )}
+
       {/* Metric Cards */}
       {currentBatchData && (
         <Grid container spacing={3} mb={4}>

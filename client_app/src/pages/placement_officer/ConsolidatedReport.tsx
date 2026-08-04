@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, startTransition } from "react";
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { DEPARTMENTS_TO_DISPLAY } from "@/constant";
 import {
   Table,
   TableBody,
@@ -31,8 +30,10 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import Papa from "papaparse";
+import { Chip } from "@mui/material";
+import { sampleConsolidatedData } from "./fallbackData";
 
-type ReportData = {
+export interface ReportData {
   id: number;
   role: string;
   salary: string;
@@ -40,7 +41,7 @@ type ReportData = {
   form__notice__date: string;
   employee_type?: string;
   [key: string]: any;
-};
+}
 
 const getDeptApiKey = (dept: string) => {
   return dept
@@ -66,77 +67,97 @@ function TableSkeletonLoader({ columns }: { columns: number }) {
   );
 }
 
-const columns: ColumnDef<ReportData>[] = [
-  {
-    header: "Sr. No.",
-    id: "sr_no",
-    cell: ({ row }) => row.index + 1,
-  },
-  {
-    header: "Date of Visit",
-    accessorKey: "form__notice__date",
-    cell: ({ getValue }) => {
-      const dateString = getValue() as string;
-      if (!dateString) return "N/A";
-      return new Date(dateString).toLocaleDateString("en-IN");
-    },
-  },
-  {
-    header: "Name of Employer",
-    accessorKey: "form__name",
-    cell: ({ row }) => (
-      <div>
-        <div className="font-medium">{row.original.form__name}</div>
-        <div className="text-xs text-muted-foreground">{row.original.role}</div>
-      </div>
-    ),
-  },
-  {
-    header: "PLI/AEDP",
-    accessorKey: "form__is_aedp_or_pli",
-    cell: ({ getValue }) => {
-      const val = getValue() as boolean;
-      return val ? "AEDP/PLI" : "Regular";
-    },
-  },
-  {
-    header: "Employer Type",
-    accessorKey: "employee_type",
-  },
-  {
-    header: "Salary Offered",
-    accessorKey: "salary",
-  },
-  ...DEPARTMENTS_TO_DISPLAY.map((dept) => {
-    const appliedKey = `applied_${getDeptApiKey(dept)}`;
-    const selectedKey = `selected_${getDeptApiKey(dept)}`;
-    return {
-      header: dept,
-      columns: [
-        {
-          header: "Appeared & Register",
-          accessorKey: appliedKey,
-        },
-        {
-          header: "Selected",
-          accessorKey: selectedKey,
-        },
-      ],
-    } as ColumnDef<ReportData>;
-  }),
-];
+// Columns are now generated inside the component to use dynamic departments
 
 export function ConsolidationReportPage() {
   const [data, setData] = useState<ReportData[]>([]);
   const [selectedBatch, setSelectedBatch] = useState<string>("");
   const [batches, setBatches] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isSampleData, setIsSampleData] = useState(false);
+  const [dynamicDepartments, setDynamicDepartments] = useState<string[]>([]);
+
+  const columns = useMemo<ColumnDef<ReportData>[]>(() => {
+    return [
+      {
+        header: "Sr. No.",
+        id: "sr_no",
+        cell: ({ row }) => row.index + 1,
+      },
+      {
+        header: "Date of Visit",
+        accessorKey: "form__notice__date",
+        cell: ({ getValue }) => {
+          const dateString = getValue() as string;
+          if (!dateString) return "N/A";
+          return new Date(dateString).toLocaleDateString("en-IN");
+        },
+      },
+      {
+        header: "Name of Employer",
+        accessorKey: "form__name",
+        cell: ({ row }) => (
+          <div>
+            <div className="font-medium">{row.original.form__name}</div>
+            <div className="text-xs text-muted-foreground">{row.original.role}</div>
+          </div>
+        ),
+      },
+      {
+        header: "PLI/AEDP",
+        accessorKey: "form__is_aedp_or_pli",
+        cell: ({ getValue }) => {
+          const val = getValue() as boolean;
+          return val ? "AEDP/PLI" : "Regular";
+        },
+      },
+      {
+        header: "Employer Type",
+        accessorKey: "employee_type",
+      },
+      {
+        header: "Salary Offered",
+        accessorKey: "salary",
+      },
+      ...dynamicDepartments.map((dept) => {
+        const appliedKey = `applied_${getDeptApiKey(dept)}`;
+        const selectedKey = `selected_${getDeptApiKey(dept)}`;
+        return {
+          header: dept,
+          columns: [
+            {
+              header: "Appeared & Register",
+              accessorKey: appliedKey,
+            },
+            {
+              header: "Selected",
+              accessorKey: selectedKey,
+            },
+          ],
+        } as ColumnDef<ReportData>;
+      }),
+    ];
+  }, [dynamicDepartments]);
 
   useEffect(() => {
-    fetch("/api/staff/companies/batches/")
+    fetch("/api/staff/companies/batches/", { credentials: "include" })
       .then((res) => res.json())
-      .then((data) => setBatches(data))
+      .then((data) => {
+        setBatches(data);
+        if (data.length > 0) {
+          setSelectedBatch(data[0]);
+        }
+      })
       .catch((err) => console.error("Error fetching batches:", err));
+
+    fetch("/api/placement_officer/unique-departments/", { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.unique_departments) {
+          setDynamicDepartments(data.unique_departments);
+        }
+      })
+      .catch((err) => console.error("Error fetching departments:", err));
   }, []);
 
   useEffect(() => {
@@ -149,9 +170,23 @@ export function ConsolidationReportPage() {
           `/api/placement_officer/get_data_by_year/${selectedBatch}/`
         );
         const jsonData = await response.json();
-        setData(jsonData);
+        if (!jsonData || jsonData.length === 0) {
+          startTransition(() => {
+            setData(sampleConsolidatedData as any);
+            setIsSampleData(true);
+          });
+        } else {
+          startTransition(() => {
+            setData(jsonData);
+            setIsSampleData(false);
+          });
+        }
       } catch (error) {
         console.error("Failed to fetch report data:", error);
+        startTransition(() => {
+          setData(sampleConsolidatedData as any);
+          setIsSampleData(true);
+        });
       } finally {
         setLoading(false);
       }
@@ -181,7 +216,7 @@ export function ConsolidationReportPage() {
     const topHeader: string[] = [...staticHeaders];
     const subHeader: string[] = [...Array(staticHeaders.length).fill("")];
 
-    DEPARTMENTS_TO_DISPLAY.forEach((dept) => {
+    dynamicDepartments.forEach((dept) => {
       topHeader.push(dept, ""); // two columns per dept
       subHeader.push("Appeared & Register", "Selected");
     });
@@ -196,7 +231,7 @@ export function ConsolidationReportPage() {
         item.salary || "N/A",
       ];
 
-      DEPARTMENTS_TO_DISPLAY.forEach((dept) => {
+      dynamicDepartments.forEach((dept) => {
         const appliedKey = `applied_${getDeptApiKey(dept)}`;
         const selectedKey = `selected_${getDeptApiKey(dept)}`;
         row.push(item[appliedKey] ?? "", item[selectedKey] ?? "");
@@ -222,7 +257,12 @@ export function ConsolidationReportPage() {
       <CardHeader>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <CardTitle>Consolidation Report</CardTitle>
+            <CardTitle className="flex items-center gap-4">
+              Consolidated Placement Report
+              {isSampleData && (
+                <Chip label="Viewing Sample Data" color="warning" size="small" variant="outlined" />
+              )}
+            </CardTitle>
             <CardDescription>
               {selectedBatch
                 ? `Showing results for Batch: ${selectedBatch}`

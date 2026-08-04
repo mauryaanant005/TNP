@@ -135,7 +135,7 @@ const InternshipCompanyRegister = () => {
       })),
     };
 
-    console.log(payload);
+
 
     try {
       const csrfToken = getCookie("csrftoken");

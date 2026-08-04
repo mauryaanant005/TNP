@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { getCookie } from "@/utils";
+import { SERVER_URL } from "@/constant";
 
 export default function StudentDashboard() {
   interface Student {
@@ -28,14 +31,49 @@ export default function StudentDashboard() {
 
   const [student, setStudent] = useState<Student | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isDummy, setIsDummy] = useState<boolean>(false);
 
   useEffect(() => {
     axios
       .get("/api/student/info", { withCredentials: true })
-      .then((res) => setStudent(res.data))
+      .then((res) => {
+        setStudent(res.data);
+        setIsDummy(false);
+      })
       .catch((err) => {
         if (err.response?.status === 404) {
-          setError("Your student profile has not been created yet. Please contact administration.");
+          const DUMMY_STUDENT: Student = {
+            uid: "DUMMY-2026-001",
+            department: "Computer Engineering",
+            batch: "2026",
+            academic_year: "TE",
+            gender: "Male",
+            dob: "2004-01-01",
+            contact: "9876543210",
+            personal_email: "dummy.student@example.com",
+            cgpa: 8.5,
+            attendance: 85,
+            card: "Green",
+            current_category: "Open",
+            consent: "Yes",
+            is_dse_student: false,
+            is_kt: false,
+            is_blacklisted: false,
+            academic_performance: [
+              { semester: "Sem 1", performance: 8.2 },
+              { semester: "Sem 2", performance: 8.4 },
+              { semester: "Sem 3", performance: 8.6 },
+              { semester: "Sem 4", performance: 8.8 },
+            ],
+            academic_attendance: [
+              { semester: "Sem 1", attendance: 80 },
+              { semester: "Sem 2", attendance: 82 },
+              { semester: "Sem 3", attendance: 88 },
+              { semester: "Sem 4", attendance: 90 },
+            ],
+          };
+          setStudent(DUMMY_STUDENT);
+          setIsDummy(true);
         } else {
           setError("Failed to load dashboard. Please try again later.");
         }
@@ -43,11 +81,37 @@ export default function StudentDashboard() {
       });
   }, []);
 
+  const handleDeleteAccount = () => {
+    if (window.confirm("Are you sure you want to delete your account? This action cannot be undone and will delete all your data permanently.")) {
+      axios.delete("/api/student/delete-account/", {
+        headers: {
+          "X-CSRFToken": getCookie("csrftoken") || "",
+        },
+        withCredentials: true
+      })
+      .then(() => {
+        alert("Account deleted successfully.");
+        window.open(`${SERVER_URL}/auth/login/`, "_self");
+      })
+      .catch((err) => {
+        alert("Failed to delete account. Please try again.");
+        console.error(err);
+      });
+    }
+  };
+
   if (error) return <p className="p-6 text-red-500">{error}</p>;
   if (!student) return <p className="p-6">Loading your dashboard...</p>;
-  console.log(student);
+
   return (
     <div className="p-8 space-y-6">
+      {isDummy && (
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow-sm" role="alert">
+          <p className="font-bold">Displaying Sample Data</p>
+          <p>Your actual student profile has not been created yet. Showing fallback content for demonstration.</p>
+        </div>
+      )}
+
       {/* Profile Info */}
       <Card className="shadow-md">
         <CardHeader>
@@ -136,6 +200,23 @@ export default function StudentDashboard() {
               </li>
             ))}
           </ul>
+        </CardContent>
+      </Card>
+
+      <Separator className="my-4" />
+
+      {/* Danger Zone */}
+      <Card className="border-red-500">
+        <CardHeader>
+          <CardTitle className="text-red-500">Danger Zone</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4 text-sm text-gray-600">
+            Deleting your account will permanently remove all your personal data, resume, and application history. This action cannot be undone.
+          </p>
+          <Button variant="destructive" onClick={handleDeleteAccount}>
+            Delete Account
+          </Button>
         </CardContent>
       </Card>
     </div>

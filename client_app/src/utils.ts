@@ -63,7 +63,7 @@ export const Capitalize = (str: string) => {
 };
 
 export const logout = async () => {
-  const res = await fetch("/api/logout/", {
+  const res = await fetch(`${SERVER_URL}/api/logout/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

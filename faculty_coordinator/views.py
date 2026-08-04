@@ -107,8 +107,13 @@ def get_attendance(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 
+@api_view(["POST"])
+@authentication_classes([SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def reset_attendance(request):
     """Reset the attendance table."""
+    if request.user.role != "faculty":
+        return JsonResponse({"error": "Permission denied"}, status=403)
     try:
         query = "TRUNCATE TABLE attendance_attendancerecord"
         execute_query(query, fetch_all=False)

@@ -32,17 +32,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Papa from "papaparse";
+import { Chip } from "@mui/material";
+import { sampleBranchWiseData } from "./fallbackData";
+
+export interface BranchReportData {
+  company_headers: CompanyHeader[];
+  progress_fields: string[];
+  report_data: Record<string, any>[];
+}
 
 interface CompanyHeader {
   id: number;
   name: string;
 }
 
-interface ApiData {
-  company_headers: CompanyHeader[];
-  progress_fields: string[];
-  report_data: Record<string, any>[];
-}
 
 function formatHeader(field: string): string {
   if (field === "gd") return "GD";
@@ -71,22 +74,31 @@ function TableSkeletonLoader({ columns }: { columns: number }) {
 }
 
 export function BranchWiseReport() {
-  const [apiData, setApiData] = React.useState<ApiData | null>(null);
-  const [loading, setLoading] = React.useState(true);
+  const [apiData, setApiData] = React.useState<BranchReportData | null>(null);
+  const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [isSampleData, setIsSampleData] = React.useState(false);
   const [selectedBatch, setSelectedBatch] = React.useState<string>("");
   const [batches, setBatches] = React.useState<string[]>([]);
 
   React.useEffect(() => {
-    fetch("/api/staff/companies/batches/")
+    fetch("/api/staff/companies/batches/", { credentials: "include" })
       .then((res) => res.json())
-      .then((data) => setBatches(data))
+      .then((data) => {
+        setBatches(data);
+        if (data.length > 0) {
+          setSelectedBatch(data[0]);
+        }
+      })
       .catch((err) => console.error("Error fetching batches:", err));
   }, []);
 
   React.useEffect(() => {
     async function fetchData(fetchBatch: string) {
-      if (!fetchBatch) return;
+      if (!fetchBatch) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       setError(null);
       setApiData(null);
@@ -98,10 +110,24 @@ export function BranchWiseReport() {
         if (!response.ok) {
           throw new Error(`Failed to fetch report: ${response.statusText}`);
         }
-        const data: ApiData = await response.json();
-        setApiData(data);
+        const data: BranchReportData = await response.json();
+        if (!data.report_data || data.report_data.length === 0) {
+          React.startTransition(() => {
+            setApiData(sampleBranchWiseData as any);
+            setIsSampleData(true);
+          });
+        } else {
+          React.startTransition(() => {
+            setApiData(data);
+            setIsSampleData(false);
+          });
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : "An unknown error occurred");
+        React.startTransition(() => {
+          setApiData(sampleBranchWiseData as any);
+          setIsSampleData(true);
+        });
       } finally {
         setLoading(false);
       }
@@ -195,7 +221,12 @@ export function BranchWiseReport() {
       <CardHeader>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <CardTitle>Branch-wise Progress Report</CardTitle>
+            <CardTitle className="flex items-center gap-4">
+              Branch-wise Progress Report
+              {isSampleData && (
+                <Chip label="Viewing Sample Data" color="warning" size="small" variant="outlined" />
+              )}
+            </CardTitle>
             <CardDescription>
               {selectedBatch
                 ? `Showing results for Batch: ${selectedBatch}`

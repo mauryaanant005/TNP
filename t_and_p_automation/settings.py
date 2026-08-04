@@ -15,13 +15,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 ENV = os.getenv("ENV", "DEV").upper()  # DEV or PROD
 IS_DEV = ENV == "DEV"
 
-print("🔧 Running Django in:", ENV, "(DEV mode)" if IS_DEV else "(PROD mode)")
+print("Running Django in:", ENV, "(DEV mode)" if IS_DEV else "(PROD mode)")
 
 
 # ---------------------------------
 # SECRET / DEBUG
 # ---------------------------------
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
+if IS_DEV:
+    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
+else:
+    # In production, require SECRET_KEY to be set in environment variables
+    SECRET_KEY = os.environ["SECRET_KEY"]
 DEBUG = True
 
 
@@ -80,6 +84,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "base.middleware.NoCacheMiddleware",
 ]
 
 
@@ -125,7 +130,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("redis" if not IS_DEV else "localhost", 6379)],
+            "hosts": [(os.getenv("REDIS_HOST", "redis" if not IS_DEV else "localhost"), 6379)],
         },
     },
 }
@@ -133,23 +138,34 @@ CHANNEL_LAYERS = {
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://localhost:6379/1" if IS_DEV else "redis://redis:6379/1",
+        "LOCATION": f"redis://{os.getenv('REDIS_HOST', 'redis' if not IS_DEV else 'localhost')}:6379/1",
     }
 }
 
 # ---------------------------------
 # DATABASE
 # ---------------------------------
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": os.getenv("DATABASE_NAME", "t_and_p_db"),
-        "USER": os.getenv("DATABASE_USER", "root"),
-        "PASSWORD": os.getenv("DATABASE_PASSWORD", ""),
-        "HOST": "127.0.0.1" if IS_DEV else "mysql",
-        "PORT": "3306",
+if IS_DEV:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+            "OPTIONS": {
+                "timeout": 20,
+            }
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": os.getenv("DATABASE_NAME", "t_and_p_db"),
+            "USER": os.getenv("DATABASE_USER", "root"),
+            "PASSWORD": os.getenv("DATABASE_PASSWORD", ""),
+            "HOST": "mysql",
+            "PORT": "3306",
+        }
+    }
 
 
 # ---------------------------------
@@ -234,8 +250,8 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")
 DEFAULT_FROM_EMAIL = os.getenv("EMAIL_USERNAME")
 
 
-CELERY_BROKER_URL = "redis://localhost:6379/0" if IS_DEV else "redis://redis:6379/0"
-CELERY_RESULT_BACKEND = "redis://localhost:6379/0" if IS_DEV else "redis://redis:6379/0"
+CELERY_BROKER_URL = f"redis://{os.getenv('REDIS_HOST', 'redis' if not IS_DEV else 'localhost')}:6379/0"
+CELERY_RESULT_BACKEND = f"redis://{os.getenv('REDIS_HOST', 'redis' if not IS_DEV else 'localhost')}:6379/0"
 
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
@@ -295,3 +311,14 @@ UNFOLD = {
 LOGIN_URL = "/auth/login/"
 
 SECURE_SSL_REDIRECT = False
+
+# ---------------------------------
+# COOKIE SECURITY
+# ---------------------------------
+SESSION_COOKIE_SECURE = not IS_DEV
+CSRF_COOKIE_SECURE = not IS_DEV
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True

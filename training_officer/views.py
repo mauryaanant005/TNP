@@ -1,5 +1,4 @@
 from django.http import JsonResponse
-from django.db import connection
 from rest_framework.decorators import (
     api_view,
     permission_classes,
@@ -7,38 +6,92 @@ from rest_framework.decorators import (
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-
+from student.models import Student
+from program_coordinator_api.models import AttendanceData, TrainingPerformance
+from django.db.models import Avg, Count, Q
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([IsAuthenticated])
 def get_avg_data(request, table_name):
     try:
-        # Validate table_name to prevent SQL injection
-        valid_tables = [
-            "program1",
-            "another_program_table",
-        ]  # Add valid table names here
-        if table_name not in valid_tables:
-            return JsonResponse({"error": "Invalid table name"}, status=400)
+        # 1. Fetch Students to map uid -> (Branch_Div, Year)
+        students = Student.objects.values('uid', 'department', 'division', 'batch')
+        student_map = {
+            s['uid']: {
+                'Branch_Div': f"{s['department']}-{s['division']}",
+                'Year': s['batch']
+            } for s in students
+        }
 
-        # Construct query to fetch average attendance and performance by Branch_Div
-        query = f"""
-        SELECT Branch_Div,
-               Year,
-               Program_name,
-               AVG(training_attendance) AS avg_attendance,
-               AVG(training_performance) AS avg_performance
-        FROM {table_name}
-        GROUP BY Branch_Div, Year, Program_name
-        """
+        stats_map = {}
 
-        with connection.cursor() as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            # Convert the rows into a list of dictionaries
-            columns = [col[0] for col in cursor.description]
-            result = [dict(zip(columns, row)) for row in rows]
+        # 2. Process Attendance Data
+        att_aggs = AttendanceData.objects.values('uid', 'program_name').annotate(
+            total=Count('id'),
+            present=Count('id', filter=Q(present='Present'))
+        )
+        for att in att_aggs:
+            uid = att['uid']
+            if uid not in student_map:
+                continue
+            
+            branch_div = student_map[uid]['Branch_Div']
+            year = student_map[uid]['Year']
+            program = att['program_name']
+            key = (branch_div, year, program)
+
+            if key not in stats_map:
+                stats_map[key] = {'att_total': 0, 'att_present': 0, 'perf_sum': 0, 'perf_count': 0}
+            
+            stats_map[key]['att_total'] += att['total']
+            stats_map[key]['att_present'] += att['present']
+
+        # 3. Process Performance Data
+        perf_aggs = TrainingPerformance.objects.values('student__uid', 'training_type').annotate(
+            avg_marks=Avg('categories__marks')
+        ).filter(avg_marks__isnull=False)
+
+        for perf in perf_aggs:
+            uid = perf['student__uid']
+            if uid not in student_map:
+                continue
+
+            branch_div = student_map[uid]['Branch_Div']
+            year = student_map[uid]['Year']
+            program = perf['training_type']
+            key = (branch_div, year, program)
+
+            if key not in stats_map:
+                stats_map[key] = {'att_total': 0, 'att_present': 0, 'perf_sum': 0, 'perf_count': 0}
+
+            stats_map[key]['perf_sum'] += perf['avg_marks']
+            stats_map[key]['perf_count'] += 1
+
+        # 4. Format Result
+        result = []
+        for (branch_div, year, program), stats in stats_map.items():
+            try:
+                year_num = int(year)
+            except (ValueError, TypeError):
+                year_num = year
+
+            avg_attendance = 0
+            if stats['att_total'] > 0:
+                avg_attendance = round((stats['att_present'] / stats['att_total']) * 100, 2)
+
+            avg_performance = 0
+            if stats['perf_count'] > 0:
+                avg_performance = round(stats['perf_sum'] / stats['perf_count'], 2)
+
+            if stats['att_total'] > 0 or stats['perf_count'] > 0:
+                result.append({
+                    "Branch_Div": branch_div,
+                    "Year": year_num,
+                    "Program_name": program,
+                    "avg_attendance": avg_attendance,
+                    "avg_performance": avg_performance
+                })
 
         return JsonResponse(result, safe=False)
 

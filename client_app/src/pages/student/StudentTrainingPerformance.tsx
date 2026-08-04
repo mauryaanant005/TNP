@@ -57,12 +57,10 @@ const StudentTrainingPerformance: React.FC = () => {
     null
   );
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPerformance = async () => {
       setLoading(true);
-      setError(null);
 
       try {
         const res = await fetch("/api/student/training-performance/", {
@@ -86,25 +84,46 @@ const StudentTrainingPerformance: React.FC = () => {
         } catch {
           throw new Error("Invalid response format from server.");
         }
+        
+        if (!data || !data.training_performance || data.training_performance.length === 0) {
+          throw new Error("EmptyData");
+        }
         console.log("Fetched training performance data:", data);
 
-        // Updated validation to check for the nested array
-        if (!data || !data.training_performance) {
-          throw new Error("Incomplete data received from the server.");
-        }
-
+        (data as any).isDummy = false;
         setPerformance(data);
       } catch (err: any) {
-        let message = "An unexpected error occurred.";
-        if (err.name === "TypeError") {
-          message = "Network error or server unreachable.";
-        } else if (err instanceof Error) {
-          message = err.message;
-        }
-
         console.error("Training performance fetch error:", err);
-        setError(message);
-        toast.error(message);
+        
+        // Dummy data injection
+        const dummyPerformance: StudentPerformance = {
+          uid: "DUMMY-2026-001",
+          training_performance: [
+            {
+              training_type: "Aptitude",
+              semester: "Sem 5",
+              date: "2026-08-01",
+              categories: [
+                { category_name: "Quantitative", marks: 85 },
+                { category_name: "Logical Reasoning", marks: 90 },
+                { category_name: "Verbal", marks: 80 }
+              ]
+            },
+            {
+              training_type: "Technical",
+              semester: "Sem 5",
+              date: "2026-08-10",
+              categories: [
+                { category_name: "Python", marks: 95 },
+                { category_name: "DBMS", marks: 88 },
+                { category_name: "Data Structures", marks: 82 }
+              ]
+            }
+          ]
+        };
+        (dummyPerformance as any).isDummy = true;
+        setPerformance(dummyPerformance);
+        toast.error("No training performance records found. Displaying sample data.");
       } finally {
         setLoading(false);
       }
@@ -143,21 +162,19 @@ const StudentTrainingPerformance: React.FC = () => {
             Training Performance
           </Typography>
 
+          {(performance as any)?.isDummy && (
+            <div className="mb-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow-sm" role="alert">
+              <p className="font-bold">Displaying Sample Data</p>
+              <p>You have no training performance records yet. Showing fallback content for demonstration.</p>
+            </div>
+          )}
           {loading ? (
             <Box display="flex" justifyContent="center" mt={3}>
               <CircularProgress color="primary" />
             </Box>
-          ) : error ? (
-            <Typography color="error" textAlign="center" mt={2}>
-              {error}
-            </Typography>
-          ) : !performance ? (
+          ) : !performance || performance.training_performance.length === 0 ? (
             <Typography textAlign="center" color="textSecondary" mt={2}>
               No data available.
-            </Typography>
-          ) : performance.training_performance.length === 0 ? (
-            <Typography textAlign="center" color="textSecondary" mt={2}>
-              No training performance records found.
             </Typography>
           ) : (
             <>

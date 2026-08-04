@@ -93,7 +93,24 @@ const PlacementRegistration = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         console.error("Error fetching company data:", error);
-        toast.error(error.message || "Something went wrong");
+        setData({
+          id: parseInt(id || "1"),
+          name: "Sample Tech Company (Demo)",
+          min_tenth_marks: "60",
+          min_higher_secondary_marks: "60",
+          min_cgpa: "6.0",
+          accepted_kt: false,
+          domain: "core",
+          departments: "all",
+          is_aedp_or_pli: false,
+          is_aedp_or_ojt: false,
+          selected_departments: [],
+          job_offers: [{ role: "Software Developer", salary: "6", skills: "React, Python" }],
+          batch: "2026",
+          notice: { ...NoticeData, subject: "Campus Hiring 2026", intro: "We are hiring...", date: "2026-08-01", about: "Demo Company", company_registration_link: "", note: "", location: "Mumbai", deadline: "2026-08-15" },
+          isDummy: true
+        } as any);
+        toast.error(error.message || "Displaying dummy data for demonstration.");
       }
     };
 
@@ -131,7 +148,14 @@ const PlacementRegistration = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 p-6 bg-gray-50 min-h-screen">
+    <div className="flex flex-col gap-4 p-6 bg-gray-50 min-h-screen">
+      {(data as any).isDummy && (
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow-sm w-full" role="alert">
+          <p className="font-bold">Displaying Sample Data</p>
+          <p>The company you are trying to view could not be loaded. Showing fallback content for demonstration.</p>
+        </div>
+      )}
+      <div className="flex flex-col lg:flex-row gap-8">
       {/* Left Card - Notice Preview */}
       <Card className="w-full md:w-1/2 shadow-lg border border-gray-200">
         <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-t-lg">
@@ -225,6 +249,7 @@ const PlacementRegistration = () => {
           </form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };

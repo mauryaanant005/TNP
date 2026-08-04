@@ -316,6 +316,7 @@ class StudentDetailUpdateView(generics.RetrieveUpdateAPIView):
 
 
 class UpdateStudentCategoryView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         data = request.data
 

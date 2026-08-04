@@ -43,9 +43,7 @@ def create_company_with_offers(request):
         )
     try:
         data = request.data
-        print(data)
         company_data = data.get("company")
-        print(company_data)
         company_serializer = InternshipRegistrationSerializer(data=company_data)
         if company_serializer.is_valid():
             company = company_serializer.save()
@@ -179,7 +177,7 @@ def get_all_applied_students(request, pk):
     try:
         company = InternshipApplication(pk=pk)
         students = InternshipApplicationSerializer(company)
-        print(students.data)
+        pass
         return JsonResponse({"students": students.data})
     except Exception as e:
         print(e)
@@ -245,8 +243,9 @@ def create_job_acceptance(request):
         )
 
 
-# @authentication_classes([SessionAuthentication, BasicAuthentication])
 @api_view(["GET"])
+@authentication_classes([SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def get_job_acceptance_by_id(request, pk):
     try:
         job_acceptance = InternshipAcceptance.objects.get(id=pk)
@@ -260,6 +259,8 @@ def get_job_acceptance_by_id(request, pk):
 
 
 @api_view(["GET"])
+@authentication_classes([SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def get_jobs_by_company_name(request, company_name):
     jobs = InternshipAcceptance.objects.filter(company_name=company_name)
     if not jobs.exists():

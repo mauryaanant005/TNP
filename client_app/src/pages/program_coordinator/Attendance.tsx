@@ -58,7 +58,11 @@ const Attendance = () => {
         // @ts-expect-error: unknow error
         setPrograms(uniquePrograms);
 
-        generateTables(data);
+        if (data.length > 0) {
+            generateTables(data);
+        } else {
+            generateTables(getDummyAttendanceData());
+        }
       } catch (error) {
         console.error("Error fetching attendance data:", error);
       }
@@ -77,6 +81,51 @@ const Attendance = () => {
     present: string;
     late: string;
   }
+
+  const getDummyAttendanceData = (): AttendanceData[] => {
+    return [
+      {
+        session: "2024-03-01 - Session 1",
+        uid: "24-COMP01-01",
+        name: "Alice Smith",
+        program_name: "ACT_TECHNICAL",
+        batch: "2024",
+        year: "be",
+        present: "Present",
+        late: ""
+      },
+      {
+        session: "2024-03-01 - Session 1",
+        uid: "24-COMP01-02",
+        name: "Bob Johnson",
+        program_name: "ACT_TECHNICAL",
+        batch: "2024",
+        year: "be",
+        present: "Absent",
+        late: ""
+      },
+      {
+        session: "2024-03-02 - Session 2",
+        uid: "24-COMP01-01",
+        name: "Alice Smith",
+        program_name: "ACT_TECHNICAL",
+        batch: "2024",
+        year: "be",
+        present: "Present",
+        late: ""
+      },
+      {
+        session: "2024-03-02 - Session 2",
+        uid: "24-COMP01-02",
+        name: "Bob Johnson",
+        program_name: "ACT_TECHNICAL",
+        batch: "2024",
+        year: "be",
+        present: "Present",
+        late: "Late"
+      }
+    ];
+  };
 
   const generateTables = (data: AttendanceData[]) => {
     if (data.length === 0) {
@@ -250,6 +299,12 @@ const Attendance = () => {
       >
         Attendance Table Generator
       </Typography>
+
+      {_rawData.length === 0 && branchConsolidatedData.length > 0 && (
+        <Box sx={{ mb: 3, p: 2, bgcolor: "#fff3cd", color: "#856404", borderRadius: 1, border: "1px solid #ffeeba", width: "90%" }}>
+          <strong>Note:</strong> Showing sample fallback attendance data because no real data exists for this program.
+        </Box>
+      )}
 
       {/* Dropdown for Program Name */}
       <FormControl sx={{ mb: 3, width: 200 }}>
