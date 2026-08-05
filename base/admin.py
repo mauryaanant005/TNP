@@ -56,13 +56,19 @@ class CustomUserAdmin(BaseUserAdmin, ModelAdmin):
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
     change_password_form = AdminPasswordChangeForm
+
     ordering = ["email"]
-    list_display = ["email", "full_name", "role"]
-    list_filter = ["role", "is_superuser"]
-    search_fields = ["email", "full_name"]
+    list_display = ["email", "full_name", "role", "is_staff", "is_superuser"]
+    list_display_links = ["email"]
+    list_filter = ["role", "is_staff", "is_superuser"]
+    search_fields = ["email", "full_name", "role", "id"]
+    readonly_fields = ["id"]
+    list_per_page = 25
+    show_full_result_count = True
+
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Personal Info", {"fields": ("full_name", "role")}),
+        ("Personal Info", {"fields": ("full_name", "role", "id")}),
         (
             "Permissions",
             {
@@ -91,6 +97,10 @@ class CustomUserAdmin(BaseUserAdmin, ModelAdmin):
             },
         ),
     )
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.order_by("email")
 
 
 from django.contrib.admin import register

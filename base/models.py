@@ -49,6 +49,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         ("internship_officer", "internship_officer"),
         ("faculty", "faculty"),
         ("staff", "staff"),
+        ("department_coordinator", "department_coordinator"),
+        ("program_coordinator", "program_coordinator"),
     ]
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
