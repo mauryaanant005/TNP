@@ -16,6 +16,7 @@ from .models import (
 )
 from program_coordinator_api.models import AttendanceData
 from base.models import User
+from base.sanitize import sanitize_html
 from internship_api.models import InternshipAcceptance
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -69,16 +70,25 @@ class ResumeProjectSerializer(serializers.ModelSerializer):
         model = Resume_Project
         fields = ["id", "title", "description"]
 
+    def validate_description(self, value):
+        return sanitize_html(value)
+
 
 class ResumeWorkExperienceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Resume_WorkExperience
         fields = ["id", "company", "position", "start_date", "end_date", "description"]
 
+    def validate_description(self, value):
+        return sanitize_html(value)
+
 class ActivitiesAndAchievementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Resume_ActivitiesAndAchievement
         fields = ["id", "title", "description"]
+
+    def validate_description(self, value):
+        return sanitize_html(value)
 
 class ResumeSerializer(serializers.ModelSerializer):
     contacts = serializers.ListField(

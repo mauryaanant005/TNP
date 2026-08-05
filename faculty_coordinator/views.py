@@ -129,12 +129,21 @@ def get_attendance(request):
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([IsAuthenticated])
 def reset_attendance(request):
-    """Reset the attendance table."""
+    """Reset attendance records for the requesting coordinator's own program(s) only."""
     if request.user.role != "faculty":
         return JsonResponse({"error": "Permission denied"}, status=403)
     try:
-        query = "TRUNCATE TABLE attendance_attendancerecord"
-        execute_query(query, fetch_all=False)
+        programs = list(
+            FacultyResponsibility.objects.filter(user=request.user)
+            .exclude(program__isnull=True)
+            .exclude(program="")
+            .values_list("program", flat=True)
+        )
+        if not programs:
+            return JsonResponse({"message": "No assigned program to reset"}, status=200)
+        placeholders = ", ".join(["%s"] * len(programs))
+        query = f"DELETE FROM attendance_attendancerecord WHERE program_name IN ({placeholders})"
+        execute_query(query, programs, fetch_all=False)
         return JsonResponse(
             {"message": "Attendance table reset successfully"}, status=200
         )

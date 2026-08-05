@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
 
+from django.core.exceptions import ValidationError
 from .serializers import NotificationSerializer
 from .models import Notification, NotificationRead, TARGET_AUDIENCE_CHOICES
 from base.models import User, FacultyResponsibility
@@ -299,6 +300,15 @@ class NotificationListCreate(generics.ListCreateAPIView):
             # Securely override any frontend values to match the coordinator's department exclusively
             departments = [resp.department]
 
+
+        # --- Validate attachment (Notification.objects.create() below bypasses
+        # model-field validators, so the allowlist/size checks are run explicitly) ---
+        uploaded_file = request.FILES.get("files")
+        if uploaded_file:
+            try:
+                Notification._meta.get_field("files").run_validators(uploaded_file)
+            except ValidationError as e:
+                return Response({"error": "; ".join(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
 
         # --- Create notification ---
         try:

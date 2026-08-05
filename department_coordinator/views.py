@@ -339,7 +339,7 @@ class AttendanceViewSet(viewsets.ViewSet):
 
 @api_view(['POST'])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([])
+@permission_classes([IsAuthenticated])
 def upload_inhouse_internship(request):
     department_coordinator = FacultyResponsibility.objects.filter(user=request.user).first()
     if not department_coordinator or not department_coordinator.department:

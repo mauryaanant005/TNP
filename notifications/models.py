@@ -1,5 +1,12 @@
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from base.models import User
+from base.upload_validators import validate_attachment_size
+
+SAFE_ATTACHMENT_EXTENSIONS = [
+    "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
+    "jpg", "jpeg", "png", "gif", "webp", "txt", "csv",
+]
 
 
 CATEGORY_CHOICES = [
@@ -31,7 +38,15 @@ class Notification(models.Model):
         User, on_delete=models.CASCADE, related_name="created_notifications"
     )
     recipients = models.ManyToManyField(User, related_name="received_notifications", blank=True)
-    files = models.FileField(upload_to="notifications/", null=True, blank=True)
+    files = models.FileField(
+        upload_to="notifications/",
+        null=True,
+        blank=True,
+        validators=[
+            FileExtensionValidator(allowed_extensions=SAFE_ATTACHMENT_EXTENSIONS),
+            validate_attachment_size,
+        ],
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

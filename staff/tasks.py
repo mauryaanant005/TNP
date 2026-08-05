@@ -1,4 +1,5 @@
 import io
+import uuid
 import zipfile
 import openpyxl
 from celery import shared_task
@@ -55,10 +56,11 @@ def generate_excel_export_task(company_id):
     buffer = io.BytesIO()
     wb.save(buffer)
     file_content = buffer.getvalue()
-    filename = f"exports/excel/{slugify(company.name)}_students.xlsx"
-
-    if default_storage.exists(filename):
-        default_storage.delete(filename)
+    # Unguessable filename - these exports contain every applicant's personal
+    # email/phone/grades and /media/ is served with no auth check of its own,
+    # so a predictable company-name-based path would let anyone who knows the
+    # company name download it directly, bypassing the API's permission checks.
+    filename = f"exports/excel/{slugify(company.name)}_{uuid.uuid4().hex}_students.xlsx"
 
     actual_filename = default_storage.save(filename, ContentFile(file_content))
 
@@ -97,6 +99,6 @@ def generate_resume_zip_task(company_id):
             # zf.writestr(filename, pdf_file)
 
     zip_buffer.seek(0)
-    filename = f"exports/resumes/{slugify(company.name)}_resumes.zip"
+    filename = f"exports/resumes/{slugify(company.name)}_{uuid.uuid4().hex}_resumes.zip"
     file_path = default_storage.save(filename, ContentFile(zip_buffer.read()))
     return {"file_url": default_storage.url(file_path)}

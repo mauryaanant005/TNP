@@ -9,8 +9,22 @@
         file_server
     }
 
+    # Profile images are meant to render inline (<img src=...>) and are
+    # content-validated server-side (Pillow), so only add nosniff here.
+    handle_path /media/profile_images/* {
+        root * /app/media/profile_images
+        header X-Content-Type-Options "nosniff"
+        file_server
+    }
+
+    # Everything else under /media/ (notification attachments, offer letters)
+    # is user-uploaded with no server-side content-type restriction - force
+    # download instead of inline rendering so an uploaded .html/.svg file
+    # can't execute as same-origin script when opened directly.
     handle_path /media/* {
         root * /app/media
+        header X-Content-Type-Options "nosniff"
+        header Content-Disposition "attachment"
         file_server
     }
 

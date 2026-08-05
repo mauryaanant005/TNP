@@ -25,7 +25,7 @@ from rest_framework.decorators import (
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.utils import timezone
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from base.models import FacultyResponsibility
@@ -108,7 +108,7 @@ def download_training_template(request, training_type: str):
 
 
 class UploadTrainingPerformanceView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, *args, **kwargs):
@@ -288,7 +288,7 @@ class UploadTrainingPerformanceView(APIView):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def get_attendance_data(request, table_name):
     try:
         valid_tables = [
@@ -319,7 +319,7 @@ def get_attendance_data(request, table_name):
 
 @api_view(["POST"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def save_branch_attendance(request, table_name):
     if request.method == "POST":
         try:
@@ -515,7 +515,7 @@ def get_avg_data(request, table_name):
 
 @api_view(["POST"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def update_attendance(request, table_name):
     if request.method == "POST":
         try:

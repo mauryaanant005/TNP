@@ -1,6 +1,8 @@
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from uuid import uuid4
 from student.models import Student
+from base.upload_validators import validate_document_size
 
 # Create your models here.
 
@@ -133,7 +135,13 @@ class InternshipAcceptance(models.Model):
     )
     year = models.CharField(max_length=100, default="FE")
     company_name = models.CharField(max_length=100, null=True, blank=True)
-    offer_letter = models.FileField(upload_to="offer_letters/")
+    offer_letter = models.FileField(
+        upload_to="offer_letters/",
+        validators=[
+            FileExtensionValidator(allowed_extensions=["pdf", "jpg", "jpeg", "png"]),
+            validate_document_size,
+        ],
+    )
     type = models.CharField(
         max_length=100,
     )

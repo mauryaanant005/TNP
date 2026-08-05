@@ -38,7 +38,7 @@ import os
 class CompanyListCreateView(generics.CreateAPIView):
     queryset = CompanyRegistration.objects.all()
     serializer_class = FormDataSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
 
 class CompanyDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -46,9 +46,16 @@ class CompanyDetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = "id"
     permission_classes = [IsAuthenticated]
 
+    def get_permissions(self):
+        # Students need read access to browse company/eligibility details before
+        # applying; only staff may edit or delete a company's placement drive.
+        if self.request.method not in ("GET", "HEAD", "OPTIONS"):
+            return [IsAuthenticated(), IsAdminUser()]
+        return [IsAuthenticated()]
+
     def get_object(self):
         company_id = self.kwargs.get("id")
-        return CompanyRegistration.objects.get(id=company_id)
+        return get_object_or_404(CompanyRegistration, id=company_id)
 
 
 class CompanyByBatchView(generics.ListAPIView):
@@ -71,7 +78,7 @@ class CompanyBatchesView(APIView):
 class SendPlacementNotificationApiView(generics.CreateAPIView):
     serializer_class = NotificationSerializer
     lookup_field = "id"
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def create(self, request, *args, **kwargs):
         try:
@@ -179,7 +186,7 @@ class EligibleButNotRegisteredView(generics.ListAPIView):
 
 
 class BulkUpdateProgressView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def post(self, request, *args, **kwargs):
         application_ids = request.data.get("application_ids", [])
@@ -279,7 +286,7 @@ class BulkUpdateProgressView(APIView):
 
 
 class TriggerExcelExportView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get(self, request, company_id, *args, **kwargs):
         task = generate_excel_export_task.delay(company_id)
@@ -288,7 +295,7 @@ class TriggerExcelExportView(APIView):
 
 
 class TriggerResumeExportView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get(self, request, company_id, *args, **kwargs):
         task = generate_resume_zip_task.delay(company_id)
@@ -297,7 +304,7 @@ class TriggerResumeExportView(APIView):
 
 
 class GetTaskStatusView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get(self, request, task_id, *args, **kwargs):
         result = AsyncResult(task_id)
@@ -319,7 +326,7 @@ class StudentDetailUpdateView(generics.RetrieveUpdateAPIView):
 
 
 class UpdateStudentCategoryView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     def post(self, request):
         data = request.data
 

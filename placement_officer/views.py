@@ -15,7 +15,7 @@ from rest_framework.decorators import (
     permission_classes,
     authentication_classes,
 )
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from staff.models import JobOffer,CompanyRegistration
 from collections import defaultdict
 from student.models import StudentOffer,StudentPlacementAppliedCompany,PlacementCompanyProgress
@@ -42,7 +42,7 @@ def get_current_year():
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def statistic(request, year=None):
     year = year or get_current_year()
     batch_year_suffix = str(year)[-2:]
@@ -67,7 +67,7 @@ def statistic(request, year=None):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def filter_by_department(request, department, year=None):
     year = year or get_current_year()
     batch_year_suffix = str(year)[-2:]
@@ -86,7 +86,7 @@ def filter_by_department(request, department, year=None):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def get_unique_departments(request, year=None):
     year = year or get_current_year()
     batch_year_suffix = str(year)[-2:]
@@ -103,7 +103,7 @@ def get_unique_departments(request, year=None):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def get_category(request, year=None):
     year = year or get_current_year()
     batch_year_suffix = str(year)[-2:]
@@ -122,7 +122,7 @@ def get_category(request, year=None):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def get_category_by_department(request, department, year=None):
     year = year or get_current_year()
     batch_year_suffix = str(year)[-2:]
@@ -140,7 +140,7 @@ def get_category_by_department(request, department, year=None):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def get_data_by_year(request, year):
     try:
         batch_year_suffix = str(year)[-2:]
@@ -155,7 +155,7 @@ def get_data_by_year(request, year):
 
 @api_view(["POST"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def calculateCategory(request):
     try:
         batch = request.data.get(
@@ -202,7 +202,7 @@ def calculate_average(queryset, field_name):
 
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def create_category_rule(request):
     try:
         CategoryRule.objects.create(**request.data)
@@ -214,14 +214,14 @@ def create_category_rule(request):
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def list_category_rules(request):
     rules = CategoryRule.objects.all().values()
     return Response(list(rules))  # Convert to list here as well for consistency
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def students_by_category(request, category, batch):
     try:
         students = Student.objects.filter(current_category=category, batch=batch)
@@ -232,7 +232,7 @@ def students_by_category(request, category, batch):
 
 
 class ConsolidationReportAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     def get(self, request, batch, *args, **kwargs):
         departments = [
             "COMP", "IT", "AI&DS", "AI&ML", "IoT", "CS&E",
@@ -284,7 +284,7 @@ class ConsolidationReportAPIView(APIView):
         return Response(report_list)
 
 class PlacementDashboardAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     def get(self, request, batch, *args, **kwargs):
         offers = StudentOffer.objects.filter(student__batch=batch).annotate(
             salary_float=Cast('salary', FloatField())
@@ -381,7 +381,7 @@ class PlacementDashboardAPIView(APIView):
 
 
 class BranchwiseReportAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     def get(self, request, batch, *args, **kwargs):
 
         companies = CompanyRegistration.objects.filter(batch=batch)
@@ -451,7 +451,7 @@ class BranchwiseReportAPIView(APIView):
 
 
 class StudentDetailReportAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     pagination_class = StandardResultsSetPagination
     def get(self, request, batch, *args, **kwargs):
         department = request.query_params.get('department', None)

@@ -247,6 +247,8 @@ def create_job_acceptance(request):
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([IsAuthenticated])
 def get_job_acceptance_by_id(request, pk):
+    if request.user.role not in ["internship_officer", "staff"]:
+        return JsonResponse({"error": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
     try:
         job_acceptance = InternshipAcceptance.objects.get(id=pk)
     except InternshipAcceptance.DoesNotExist:
@@ -262,6 +264,8 @@ def get_job_acceptance_by_id(request, pk):
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @permission_classes([IsAuthenticated])
 def get_jobs_by_company_name(request, company_name):
+    if request.user.role not in ["internship_officer", "staff"]:
+        return JsonResponse({"error": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
     jobs = InternshipAcceptance.objects.filter(company_name=company_name)
     if not jobs.exists():
         return JsonResponse(
@@ -277,6 +281,8 @@ def get_jobs_by_company_name(request, company_name):
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def get_unverified_internships(request):
+    if request.user.role not in ["internship_officer", "staff"]:
+        return JsonResponse({"error": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
     acceptances = InternshipAcceptance.objects.filter(is_verified=False).select_related('student', 'student__user')
     data = []
     for acc in acceptances:
@@ -296,6 +302,8 @@ def get_unverified_internships(request):
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def verify_selected_internships(request):
+    if request.user.role not in ["internship_officer", "staff"]:
+        return JsonResponse({"error": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
     job_ids = request.data.get("jobIds", [])
     InternshipAcceptance.objects.filter(id__in=job_ids).update(is_verified=True)
     return JsonResponse({"success": "Jobs verified successfully"})
@@ -304,6 +312,8 @@ def verify_selected_internships(request):
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def get_verified_internships(request):
+    if request.user.role not in ["internship_officer", "staff"]:
+        return JsonResponse({"error": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
     acceptances = InternshipAcceptance.objects.filter(is_verified=True).select_related('student', 'student__user')
     data = []
     for acc in acceptances:
@@ -328,6 +338,8 @@ def get_verified_internships(request):
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def download_verified_internships(request):
+    if request.user.role not in ["internship_officer", "staff"]:
+        return JsonResponse({"error": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
     try:
         acceptances = InternshipAcceptance.objects.filter(is_verified=True).select_related('student', 'student__user')
         

@@ -1,5 +1,7 @@
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from base.models import User
+from base.upload_validators import validate_image_size
 from uuid import uuid4
 from staff.models import CompanyRegistration, JobOffer
 # Create your models here.
@@ -105,7 +107,14 @@ class Resume(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
     phone_number = models.CharField(max_length=15)
-    profile_image = models.ImageField(upload_to='profile_images/', null=True)
+    profile_image = models.ImageField(
+        upload_to='profile_images/',
+        null=True,
+        validators=[
+            FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png", "webp"]),
+            validate_image_size,
+        ],
+    )
 
 
 class Resume_Contact(models.Model):

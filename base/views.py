@@ -70,17 +70,22 @@ def login(request):
 def password_reset_request(request):
     if request.method == "POST":
         email = request.POST.get("email")
+        # Always respond identically whether or not the account exists, and always
+        # send the user to the same next step - otherwise the response is a direct
+        # oracle for enumerating registered email addresses.
         try:
             user = User.objects.get(email=email)
             otp_obj = PasswordResetOTP.generate_otp_secret(user)
             totp = pyotp.TOTP(otp_obj.otp_secret, interval=600)
             otp = totp.now()
             send_otp(user.email, otp, subject="Password Reset OTP")
-            request.session["email"] = email
-            messages.success(request, "An OTP has been sent to your email.")
-            return redirect("password_reset_verify_otp")
         except User.DoesNotExist:
-            messages.error(request, "No user found with this email address.")
+            pass
+        request.session["email"] = email
+        messages.success(
+            request, "If an account with that email exists, an OTP has been sent."
+        )
+        return redirect("password_reset_verify_otp")
 
     return render(request, "base/password_reset_request.html")
 
@@ -94,6 +99,8 @@ def password_reset_verify_otp(request):
             user = User.objects.get(email=email)
             otp_obj = PasswordResetOTP.objects.filter(user=user).latest("created_at")
             if otp_obj.verify_otp(otp):
+                # Single-use: invalidate immediately so the same OTP can't be replayed.
+                PasswordResetOTP.objects.filter(user=user).delete()
                 request.session["reset_user_id"] = str(user.id)
                 return redirect("password_reset_confirm")
             else:
