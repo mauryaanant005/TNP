@@ -88,8 +88,6 @@ const StudentTrainingPerformance: React.FC = () => {
         if (!data || !data.training_performance || data.training_performance.length === 0) {
           throw new Error("EmptyData");
         }
-        console.log("Fetched training performance data:", data);
-
         (data as any).isDummy = false;
         setPerformance(data);
       } catch (err: any) {

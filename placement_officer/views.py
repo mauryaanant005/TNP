@@ -2,6 +2,10 @@ from django.db.models import Count, Q, Case, When, Sum,FloatField,Avg, Value, Ch
 from django.db.models.functions import TruncMonth, Cast
 from django.http import JsonResponse
 import json
+import logging
+from base.error_utils import safe_error_payload
+
+logger = logging.getLogger(__name__)
 from placement_officer.models import CategoryRule
 from student.models import Student
 from datetime import datetime
@@ -50,7 +54,7 @@ def statistic(request, year=None):
             Student.objects.all().values("department").annotate(count=Count("consent"))
         )
     except Exception as e:
-        print(f"Error reading data from database: {e}")
+        logger.exception("Error reading data from database")
         consent_graph = []
         consent_counts_by_branch = []
 
@@ -74,7 +78,7 @@ def filter_by_department(request, department, year=None):
             .annotate(count=Count("consent"))
         )
     except Exception as e:
-        print(f"Error filtering data by department: {e}")
+        logger.exception("Error filtering data by department")
         filtered_data = []
 
     return JsonResponse({"filtered_data": json.dumps(filtered_data)})
@@ -91,7 +95,7 @@ def get_unique_departments(request, year=None):
             Student.objects.all().values_list("department", flat=True).distinct()
         )
     except Exception as e:
-        print(f"Error fetching unique departments: {e}")
+        logger.exception("Error fetching unique departments")
         unique_departments = []
 
     return JsonResponse({"unique_departments": unique_departments})
@@ -110,7 +114,7 @@ def get_category(request, year=None):
             .annotate(count=Count("current_category"))
         )
     except Exception as e:
-        print(f"Error fetching category data: {e}")
+        logger.exception("Error fetching category data")
         category = []
 
     return JsonResponse({"category": category})
@@ -129,7 +133,7 @@ def get_category_by_department(request, department, year=None):
             .annotate(count=Count("current_category"))
         )
     except Exception as e:
-        print(f"Error filtering category by department: {e}")
+        logger.exception("Error filtering category by department")
         category = []
     return JsonResponse({"category": category})
 
@@ -144,7 +148,7 @@ def get_data_by_year(request, year):
         student_data = list(students.values("uid", "department", "consent"))
         pass
     except Exception as e:
-        print(f"Error fetching data for year {year}: {e}")
+        logger.exception("Error fetching data for year")
         student_data = []
     return JsonResponse({"data": student_data})
 
@@ -188,8 +192,7 @@ def calculateCategory(request):
 
         return JsonResponse({"success": "Category calculated successfully"}, status=200)
     except Exception as e:
-        print(e)
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse(safe_error_payload(e), status=500)
 
 
 def calculate_average(queryset, field_name):
@@ -207,7 +210,7 @@ def create_category_rule(request):
             {"message": "Category rule created successfully"}, status=201
         )
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=400)
+        return JsonResponse(safe_error_payload(e), status=400)
 
 
 @api_view(["GET"])
@@ -225,7 +228,7 @@ def students_by_category(request, category, batch):
         student_data = students.values("id", "current_category", "academic_year")
         return Response(list(student_data))  # Convert ValuesQuerySet to list
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(safe_error_payload(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ConsolidationReportAPIView(APIView):

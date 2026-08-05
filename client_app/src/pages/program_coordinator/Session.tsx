@@ -292,9 +292,8 @@ function Session() {
         throw new Error(`Server error: ${response.status} - ${errorText}`);
       }
 
-      const data = await response.json();
+      await response.json();
       alert("Data successfully sent to API!");
-      console.log(data);
     } catch (error: any) {
       console.error("Error:", error);
       setErrorMessage(`Failed to send data to API. Error: ${error.message}`);

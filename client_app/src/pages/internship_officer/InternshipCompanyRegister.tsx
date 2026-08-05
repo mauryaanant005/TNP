@@ -153,8 +153,6 @@ const InternshipCompanyRegister = () => {
         throw new Error("Failed to register company");
       }
 
-      const data = await response.json();
-      console.log(data);
       toast.success("Company registered successfully:");
     } catch (error) {
       console.error("Error registering company:", error);

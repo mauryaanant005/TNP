@@ -23,6 +23,8 @@ from django.conf.urls.static import static
 from base.views import user_profile, password_update
 from django.views.generic import TemplateView
 
+handler500 = "base.error_utils.handle_500"
+
 urlpatterns = (
     [
         path("admin/", admin.site.urls),

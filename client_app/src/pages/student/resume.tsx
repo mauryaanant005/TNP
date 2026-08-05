@@ -225,8 +225,7 @@ export default function ResumeBuilderForm() {
     }
   };
 
-  const onInvalid = (errors: any) => {
-    console.log("Validation errors:", errors);
+  const onInvalid = () => {
     toast.error("Please fill out all required fields correctly.");
   };
 

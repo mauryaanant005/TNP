@@ -1,8 +1,11 @@
+import os
 from django.contrib.auth.hashers import make_password
 from django.db import transaction
 from import_export import resources
 from .models import Student, User
 from uuid import uuid4
+
+DEFAULT_STUDENT_IMPORT_PASSWORD = os.getenv("DEFAULT_STUDENT_IMPORT_PASSWORD", "Student@123")
 
 
 class StudentResource(resources.ModelResource):
@@ -112,7 +115,7 @@ class StudentResource(resources.ModelResource):
                 continue
             email = str(email).strip()
             if email not in self.existing_users and email not in self.created_users_cache:
-                raw_password = row.get("password") or "Student@123"
+                raw_password = row.get("password") or DEFAULT_STUDENT_IMPORT_PASSWORD
                 if dry_run or kwargs.get("dry_run", False):
                     hashed_password = "dummy_hash_for_dry_run"
                 else:

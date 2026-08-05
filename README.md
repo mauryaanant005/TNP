@@ -139,6 +139,12 @@ All env vars in `.env`:
 | `CURRENT_HOST` | `localhost` | Allowed host header |
 | `DJANGO_SUPERUSER_EMAIL` | `admin@gmail.com` | Auto-created during `entrypoint.sh` |
 | `DJANGO_SUPERUSER_PASSWORD` | `admin123` | Superuser password |
+| `DEFAULT_SEED_PASSWORD` | — | Password set by `create_coordinators.py`, `import_faculty.py`, `reset_passwords_temp.py`, `seed_dummy_students.py`, and the department-coordinator bulk-create endpoint |
+| `DEFAULT_FACULTY_IMPORT_PASSWORD` | — | Fallback password used by `base/resources.py` when a faculty bulk-import spreadsheet has no `password` column |
+| `DEFAULT_STUDENT_IMPORT_PASSWORD` | — | Fallback password used by `student/resources.py` when a student bulk-import spreadsheet has no `password` column |
+| `REDIS_PASSWORD` | — | Auth password for the Redis container (cache, Celery broker, channel layer) - required in PROD |
+| `DATABASE_HOST` | `mysql` | MySQL host override, if not using the bundled `mysql` service |
+| `DATABASE_SSL_MODE` | `REQUIRED` | MySQL SSL mode in PROD (`REQUIRED`, `VERIFY_CA`, `VERIFY_IDENTITY`) |
 
 ---
 

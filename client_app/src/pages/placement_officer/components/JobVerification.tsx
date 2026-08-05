@@ -42,7 +42,6 @@ const JobVerification = () => {
       .then((response) => setJobs(response.data))
       .catch((error) => console.error("Error fetching data:", error));
   };
-  console.log(jobs);
   const handleVerify = async () => {
     try {
       const csrftoken = getCookie("csrftoken");

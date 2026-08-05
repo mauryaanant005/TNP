@@ -1,7 +1,11 @@
+import logging
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import CompanyRegistration
+from base.error_utils import safe_error_payload
+
+logger = logging.getLogger(__name__)
 from .serializers import (
     FormDataSerializer,
     InterestedStudentApplicationSerializer,
@@ -26,7 +30,7 @@ from django.db.models import Avg
 from student.serializers import StudentSerializer
 from celery.result import AsyncResult
 from .tasks import generate_excel_export_task, generate_resume_zip_task
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 import os
 
@@ -101,7 +105,6 @@ class SendPlacementNotificationApiView(generics.CreateAPIView):
                     f"Dear Student,\n\nThis is a notification regarding your application for placement at {company.name}.\n"
                     f"Please check your dashboard for more details.\n\nBest regards,\nTraining and Placement Team"
                 )
-            print(f"Recipients count: {len(recipients)}")
             notification = Notification.objects.create(
                 title=title,
                 message=message,
@@ -114,9 +117,9 @@ class SendPlacementNotificationApiView(generics.CreateAPIView):
             serializer = self.get_serializer(notification)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
-            print("Error sending placement notification:", str(e))
+            logger.exception("Error sending placement notification")
             return Response(
-                {"error": str(e)},
+                safe_error_payload(e),
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -130,7 +133,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 class PaginatedInterestedStudentsView(generics.ListAPIView):
     serializer_class = InterestedStudentApplicationSerializer
     pagination_class = StandardResultsSetPagination
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get_queryset(self):
         company_id = self.kwargs["company_id"]
@@ -144,7 +147,7 @@ class PaginatedInterestedStudentsView(generics.ListAPIView):
 class PaginatedNotInterestedStudentsView(generics.ListAPIView):
     serializer_class = NotInterestedStudentApplicationSerializer
     pagination_class = StandardResultsSetPagination
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get_queryset(self):
         company_id = self.kwargs["company_id"]
@@ -158,7 +161,7 @@ class PaginatedNotInterestedStudentsView(generics.ListAPIView):
 class EligibleButNotRegisteredView(generics.ListAPIView):
     serializer_class = BasicStudentSerializer
     pagination_class = StandardResultsSetPagination
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get_queryset(self):
         company_id = self.kwargs["company_id"]
@@ -214,7 +217,6 @@ class BulkUpdateProgressView(APIView):
                 if final_result:
                     update_data["final_result"] = final_result
                 if not update_data and not joined:
-                    print(joined)
                     return Response(
                         {
                             "error": "No update data provided (stage/status or final_result)."
@@ -267,11 +269,11 @@ class BulkUpdateProgressView(APIView):
             )
 
         except ValueError as e:
-            print("ValueError:", str(e))
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            logger.exception("Invalid progress update request")
+            return Response(safe_error_payload(e), status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(
-                {"error": f"An error occurred: {str(e)}"},
+                safe_error_payload(e),
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -304,12 +306,13 @@ class GetTaskStatusView(APIView):
         if result.state == "SUCCESS":
             response_data["url"] = result.result.get("file_url")
         elif result.state == "FAILURE":
-            response_data["error"] = str(result.info)
+            logger.exception("Background task %s failed", task_id, exc_info=result.info)
+            response_data.update(safe_error_payload(result.info))
         return Response(response_data, status=status.HTTP_200_OK)
 
 
 class StudentDetailUpdateView(generics.RetrieveUpdateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     lookup_field = "uid"

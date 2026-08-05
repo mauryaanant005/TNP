@@ -7,6 +7,8 @@ django.setup()
 
 from base.models import User, FacultyResponsibility
 
+DEFAULT_SEED_PASSWORD = os.getenv("DEFAULT_SEED_PASSWORD", "tcet@1234")
+
 df = pd.read_excel('TNP FAculty List.xlsx')
 
 count = 0
@@ -46,7 +48,7 @@ for idx, row in df.iterrows():
         user.save()
         
     if not user.has_usable_password():
-        user.set_password('tcet@1234')
+        user.set_password(DEFAULT_SEED_PASSWORD)
         user.save()
 
     FacultyResponsibility.objects.get_or_create(

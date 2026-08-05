@@ -1,4 +1,6 @@
 import json
+import logging
+from base.error_utils import safe_error_payload
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -14,6 +16,8 @@ from .models import (
     PlacementCompanyProgress,
     StudentOffer
 )
+
+logger = logging.getLogger(__name__)
 from .serializers import (
     ResumeSerializer,
     SessionAttendanceSerializer,
@@ -76,9 +80,9 @@ class StudentTrainingPerformanceAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
         except Exception as e:
-            print(f"[ERROR] StudentTrainingPerformanceAPIView: {e}")
+            logger.exception("StudentTrainingPerformanceAPIView error")
             return Response(
-                {"error": str(e)},
+                safe_error_payload(e),
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -96,7 +100,7 @@ class StudentDataView(APIView):
         except Student.DoesNotExist:
             return Response({'error': 'Student not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(safe_error_payload(e), status=status.HTTP_400_BAD_REQUEST)
 
 
 class SessionAttendanceAPIView(APIView):
@@ -171,9 +175,8 @@ class ResumeView(APIView):
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            print(f"[ERROR] ResumeView POST: {e}")
             return Response(
-                {"message": "Internal Server Error"},
+                safe_error_payload(e),
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -290,9 +293,8 @@ class PlacementCompanyAPIView(APIView):
             )
 
         except Exception as e:
-            print(f"[ERROR] PlacementCompanyAPIView: {e}")
             return Response(
-                {"message": "Internal Server Error"},
+                safe_error_payload(e),
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -420,4 +422,4 @@ class DeleteAccountView(APIView):
             user.delete()
             return Response({"message": "Account successfully deleted"}, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(safe_error_payload(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)

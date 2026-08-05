@@ -70,13 +70,11 @@ class BasicStudentSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source='user.email', read_only=True)
     full_name = serializers.CharField(source='user.full_name', read_only=True)
     role = serializers.CharField(source='user.role', read_only=True)
-    is_superuser = serializers.BooleanField(source='user.is_superuser', read_only=True)
-    is_staff = serializers.BooleanField(source='user.is_staff', read_only=True)
 
     class Meta:
         model = Student
         fields = [
-            'email', 'full_name', 'role', 'is_superuser', 'is_staff',
+            'email', 'full_name', 'role',
             'id', 'uid', 'department', 'academic_year', 'current_category',
             'is_dse_student', 'gender', 'dob', 'contact', 'personal_email',
             'tenth_grade', 'higher_secondary_grade', 'card', 'consent',

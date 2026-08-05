@@ -1,8 +1,11 @@
+import os
 from django.db import transaction
 from import_export import resources
 from .models import FacultyResponsibility, User
 from django.contrib.auth.hashers import make_password
 from uuid import uuid4
+
+DEFAULT_FACULTY_IMPORT_PASSWORD = os.getenv("DEFAULT_FACULTY_IMPORT_PASSWORD", "Faculty@123")
 
 
 class FacultyResponsibilityResource(resources.ModelResource):
@@ -33,7 +36,7 @@ class FacultyResponsibilityResource(resources.ModelResource):
         
         if not user:
             # We must create the user
-            raw_password = row.get("password") or "Faculty@123"
+            raw_password = row.get("password") or DEFAULT_FACULTY_IMPORT_PASSWORD
             
             # CPU/Time optimization: If it's a dry run, bypass PBKDF2 hashing!
             if getattr(self, "dry_run", False) or kwargs.get("dry_run", False):

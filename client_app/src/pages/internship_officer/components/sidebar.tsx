@@ -26,10 +26,6 @@ const Sidebar = () => {
           <Building2 />
           <p>Company Registration Form</p>
         </NavLink>
-        {/* <NavLink to="report" className="menu-item gap-3">
-          <ClipboardMinus />
-          <p>One Page report</p>
-        </NavLink> */}
         <NavLink to="verify" className="menu-item gap-3">
           <Verified />
           <p>Verify</p>

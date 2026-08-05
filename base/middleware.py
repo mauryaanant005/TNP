@@ -1,3 +1,32 @@
+class ContentSecurityPolicyMiddleware:
+    """
+    Adds a Content-Security-Policy header restricting script execution to this app's
+    own origin plus the specific third-party hosts the templates actually load
+    (Google Fonts, the jsDelivr Chart.js script, the hotlinked institute logo).
+    """
+    POLICY = "; ".join(
+        [
+            "default-src 'self'",
+            "script-src 'self' https://cdn.jsdelivr.net",
+            "style-src 'self' https://fonts.googleapis.com 'unsafe-inline'",
+            "font-src 'self' https://fonts.gstatic.com",
+            "img-src 'self' data: https://zctindia.org",
+            "connect-src 'self'",
+            "frame-ancestors 'none'",
+            "base-uri 'self'",
+            "form-action 'self'",
+        ]
+    )
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        response["Content-Security-Policy"] = self.POLICY
+        return response
+
+
 class NoCacheMiddleware:
     """
     Middleware to add Cache-Control headers to prevent the browser from caching

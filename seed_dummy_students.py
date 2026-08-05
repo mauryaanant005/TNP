@@ -20,6 +20,8 @@ from internship_api.models import InternshipAcceptance
 from notifications.models import Notification
 import notifications.signals
 
+DEFAULT_SEED_PASSWORD = os.getenv("DEFAULT_SEED_PASSWORD", "tcet@1234")
+
 # Mock the celery task to avoid Redis/Email connection issues during seeding
 notifications.signals.send_notification_email.delay = lambda x: None
 
@@ -45,14 +47,14 @@ def seed_data():
         'full_name': 'Aarav Sharma (IT Placed)',
         'role': 'student'
     })
-    user1.set_password('tcet@1234')
+    user1.set_password(DEFAULT_SEED_PASSWORD)
     user1.save()
 
     user2, _ = User.objects.get_or_create(email=student2_email, defaults={
         'full_name': 'Priya Patel (COMP Active)',
         'role': 'student'
     })
-    user2.set_password('tcet@1234')
+    user2.set_password(DEFAULT_SEED_PASSWORD)
     user2.save()
 
     s1, _ = Student.objects.update_or_create(
@@ -256,8 +258,8 @@ def seed_data():
         n.recipients.add(user2)
     
     print("Dummy students generated successfully!")
-    print(f"Student 1: {user1.email} / tcet@1234 (Placed)")
-    print(f"Student 2: {user2.email} / tcet@1234 (Active)")
+    print("Student 1: [REDACTED] / [REDACTED] (Placed)")
+    print("Student 2: [REDACTED] / [REDACTED] (Active)")
 
 if __name__ == '__main__':
     seed_data()

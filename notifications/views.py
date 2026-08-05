@@ -7,6 +7,7 @@ from django.db.models import Q
 from .serializers import NotificationSerializer
 from .models import Notification, NotificationRead, TARGET_AUDIENCE_CHOICES
 from base.models import User, FacultyResponsibility
+from base.error_utils import safe_error_payload
 from student.models import Student
 
 import logging
@@ -318,9 +319,9 @@ class NotificationListCreate(generics.ListCreateAPIView):
             )
             recipient_list = list(recipient_users)
             logger.info(
-                "Notification %s created by %s — %d recipients resolved for audience '%s'",
+                "Notification %s created by user %s — %d recipients resolved for audience '%s'",
                 notification.id,
-                user.email,
+                user.id,
                 len(recipient_list),
                 target_audience,
             )
@@ -364,8 +365,7 @@ class NotificationListCreate(generics.ListCreateAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except Exception as exc:
-            logger.exception("Error creating notification: %s", exc)
-            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(safe_error_payload(exc), status=status.HTTP_400_BAD_REQUEST)
 
 
 class NotificationDetail(generics.RetrieveAPIView):

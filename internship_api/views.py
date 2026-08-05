@@ -1,5 +1,9 @@
 from django.http import JsonResponse, HttpResponse
 import json
+import logging
+from base.error_utils import safe_error_payload
+
+logger = logging.getLogger(__name__)
 from rest_framework.decorators import (
     api_view,
     permission_classes,
@@ -58,7 +62,7 @@ def create_company_with_offers(request):
             try:
                 Offers.objects.create(**offer_data)
             except Exception as e:
-                print(e)
+                logger.exception("Failed to create offer for company")
         return JsonResponse(
             {
                 "message": "Company and related offers created successfully!",
@@ -66,9 +70,8 @@ def create_company_with_offers(request):
             status=status.HTTP_201_CREATED,
         )
     except Exception as e:
-        print(e)
         return JsonResponse(
-            {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            safe_error_payload(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
 
@@ -114,7 +117,7 @@ def get_company_with_offers(request, pk=None):
         )
     except Exception as e:
         return JsonResponse(
-            {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            safe_error_payload(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
 
@@ -140,7 +143,7 @@ def get_all_companies(request):
         return JsonResponse(company_data, safe=False, status=status.HTTP_200_OK)
     except Exception as e:
         return JsonResponse(
-            {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            safe_error_payload(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
 
@@ -161,7 +164,7 @@ def job_application(request, pk):
         )
     except Exception as e:
         return JsonResponse(
-            {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            safe_error_payload(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
 
@@ -180,9 +183,8 @@ def get_all_applied_students(request, pk):
         pass
         return JsonResponse({"students": students.data})
     except Exception as e:
-        print(e)
         return JsonResponse(
-            {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            safe_error_payload(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
 
@@ -208,7 +210,6 @@ def create_job_acceptance(request):
         start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
         completion_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
         if data.get("selectOption") == "in_house":
-            print("In house")
             InternshipAcceptance.objects.create(
                 student=student,
                 year=data.get("year"),
@@ -237,9 +238,8 @@ def create_job_acceptance(request):
             )
         return JsonResponse({"success": "Job application created"})
     except Exception as e:
-        print(e)
         return JsonResponse(
-            {"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            safe_error_payload(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
 
@@ -359,7 +359,7 @@ def download_verified_internships(request):
                     stat_df = pd.DataFrame(stat_data[1:], columns=stat_data[0])
                     stat_df.to_excel(writer, sheet_name='Stipend Statistics', index=False)
             except Exception as e:
-                print("Error parsing statistics:", e)
+                logger.exception("Error parsing statistics")
                 
         writer.close()
         output.seek(0)
@@ -371,5 +371,4 @@ def download_verified_internships(request):
         response['Content-Disposition'] = 'attachment; filename=internship_report.xlsx'
         return response
     except Exception as e:
-        print(e)
-        return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JsonResponse(safe_error_payload(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -22,10 +22,13 @@ from internship_api.models import InternshipAcceptance
 import pandas as pd
 import statistics
 import re
+import os
 import traceback
 from django.contrib.auth.hashers import make_password
+from base.error_utils import safe_error_payload
 
-DEFAULT_STUDENT_PASSWORD_HASH = make_password("tcet@1234")
+DEFAULT_SEED_PASSWORD = os.getenv("DEFAULT_SEED_PASSWORD", "tcet@1234")
+DEFAULT_STUDENT_PASSWORD_HASH = make_password(DEFAULT_SEED_PASSWORD)
 
 def _extract_department_from_uid(uid):
     """Extract department code from UID like '24-AI&DSA01-28' -> 'AI&DSA'."""
@@ -221,8 +224,7 @@ class AttendanceViewSet(viewsets.ViewSet):
                     )
                 return Response({"message": "Data imported successfully"})
             except Exception as e:
-                traceback.print_exc()
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(safe_error_payload(e), status=status.HTTP_400_BAD_REQUEST)
         # Restrict access for other roles
         return Response(
             {"error": "Access restricted for your role"},
@@ -328,8 +330,7 @@ class AttendanceViewSet(viewsets.ViewSet):
                     )
                 return Response({"message": "Data imported successfully"})
             except Exception as e:
-                traceback.print_exc()
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(safe_error_payload(e), status=status.HTTP_400_BAD_REQUEST)
         # Restrict access for other roles
         return Response(
             {"error": "Access restricted for your role"},

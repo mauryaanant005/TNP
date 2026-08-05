@@ -96,13 +96,10 @@ const UploadInhouseInternship = () => {
       toast.error("Please select a file first");
       return;
     }
-    console.log("File object:", file);
-
     Papa.parse(file, {
       header: true,
       complete: (results) => {
         const data = results.data as PreviewData[];
-        console.log("Parsed data before filtering:", data); // Log parsed data
 
         // Filter out empty rows based on uid
         const filteredData = data.filter(row => row.uid && row.uid.trim() !== '');

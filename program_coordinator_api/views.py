@@ -29,6 +29,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from base.models import FacultyResponsibility
+from base.error_utils import safe_error_payload
 from student.models import (
     Student,
 )
@@ -280,9 +281,8 @@ class UploadTrainingPerformanceView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
-            logger.exception("Error while uploading training performance file")
             return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                safe_error_payload(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
@@ -314,9 +314,7 @@ def get_attendance_data(request, table_name):
         return JsonResponse(result, safe=False)
 
     except Exception as e:
-        return JsonResponse(
-            {"error": f"Failed to fetch attendance data: {str(e)}"}, status=500
-        )
+        return JsonResponse(safe_error_payload(e), status=500)
 
 
 @api_view(["POST"])
@@ -401,27 +399,13 @@ def save_branch_attendance(request, table_name):
                                     total_late,
                                 ),
                             )
-                    except IntegrityError as e:
-                        logger.error(
-                            f"Integrity error while saving data for batch {batch_name}, session {session_name}: {str(e)}"
-                        )
-                        return JsonResponse(
-                            {"error": f"Database Integrity Error: {str(e)}"}, status=500
-                        )
-                    except DatabaseError as e:
-                        logger.error(
-                            f"Database error while saving data for batch {batch_name}, session {session_name}: {str(e)}"
-                        )
-                        return JsonResponse(
-                            {"error": f"Database Error: {str(e)}"}, status=500
-                        )
                     except Exception as e:
-                        logger.error(
-                            f"Error executing query for batch {batch_name}, session {session_name}: {str(e)}"
+                        logger.exception(
+                            "Error saving batch attendance for batch %s, session %s",
+                            batch_name,
+                            session_name,
                         )
-                        return JsonResponse(
-                            {"error": f"Error executing query: {str(e)}"}, status=500
-                        )
+                        return JsonResponse(safe_error_payload(e), status=500)
 
             return JsonResponse(
                 {
@@ -431,12 +415,8 @@ def save_branch_attendance(request, table_name):
             )
 
         except Exception as e:
-            logger.exception(
-                f"Unexpected error occurred while saving batch attendance: {str(e)}"
-            )
-            return JsonResponse(
-                {"error": f"Failed to save batch-wise attendance: {str(e)}"}, status=500
-            )
+            logger.exception("Unexpected error occurred while saving batch attendance")
+            return JsonResponse(safe_error_payload(e), status=500)
 
 
 @api_view(["GET"])
@@ -529,9 +509,8 @@ def get_avg_data(request, table_name):
         return JsonResponse(result, safe=False)
 
     except Exception as e:
-        return JsonResponse(
-            {"error": f"Failed to fetch average data: {str(e)}"}, status=500
-        )
+        logger.exception("Failed to fetch average data")
+        return JsonResponse(safe_error_payload(e), status=500)
 
 
 @api_view(["POST"])
@@ -549,6 +528,11 @@ def update_attendance(request, table_name):
             if not uid or not session or new_status not in ["Present", "Absent"]:
                 return JsonResponse({"error": "Invalid data provided"}, status=400)
 
+            # Validate table_name to prevent SQL injection
+            valid_tables = ["attendance_data"]
+            if table_name not in valid_tables:
+                return JsonResponse({"error": "Invalid table name"}, status=400)
+
             # Raw SQL query to update attendance
             query = f"""
                 UPDATE {table_name}
@@ -562,10 +546,8 @@ def update_attendance(request, table_name):
                 {"message": "Attendance updated successfully"}, status=200
             )
         except Exception as e:
-            logger.exception(str(e))
-            return JsonResponse(
-                {"error": f"Failed to update attendance: {str(e)}"}, status=500
-            )
+            logger.exception("Failed to update attendance")
+            return JsonResponse(safe_error_payload(e), status=500)
     else:
         return JsonResponse({"error": "Invalid HTTP method"}, status=405)
 

@@ -306,7 +306,6 @@ export function StudentStatusReport() {
     }.csv`;
     link.click();
   };
-  console.log("Rendered with data:", apiResponse);
   return (
     <Card className="m-4">
       <CardHeader>

@@ -35,9 +35,6 @@ const Notice = forwardRef<
   HTMLDivElement,
   { formData: NoticeData; isPlacement: boolean }
 >(({ formData, isPlacement = true }, ref) => {
-  console.log(formData.tableData);
-  console.log("Form Data:", formData);
-console.log("Documents to Carry:", formData.Documents_to_Carry);
   return (
     <div className="body">
       <div className="main-notice" ref={ref}>

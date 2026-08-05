@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
@@ -12,10 +13,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ---------------------------------
 # ENVIRONMENT MODE
 # ---------------------------------
-ENV = os.getenv("ENV", "DEV").upper()  # DEV or PROD
+ENV = os.getenv("ENV", "PROD").upper()  # DEV or PROD - defaults to PROD (safe/locked-down) if unset
 IS_DEV = ENV == "DEV"
 
 print("Running Django in:", ENV, "(DEV mode)" if IS_DEV else "(PROD mode)")
+
+
+def require_env(name):
+    """Fetch a required env var, or refuse to start the app if it's missing."""
+    value = os.getenv(name)
+    if not value:
+        raise ImproperlyConfigured(
+            f"Environment variable '{name}' is required when ENV=PROD but was not set."
+        )
+    return value
 
 
 # ---------------------------------
@@ -25,8 +36,8 @@ if IS_DEV:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
 else:
     # In production, require SECRET_KEY to be set in environment variables
-    SECRET_KEY = os.environ["SECRET_KEY"]
-DEBUG = True
+    SECRET_KEY = require_env("SECRET_KEY")
+DEBUG = IS_DEV
 
 
 # ---------------------------------
@@ -85,6 +96,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "base.middleware.NoCacheMiddleware",
+    "base.middleware.ContentSecurityPolicyMiddleware",
 ]
 
 
@@ -126,11 +138,15 @@ TEMPLATES = [
 WSGI_APPLICATION = "t_and_p_automation.wsgi.application"
 ASGI_APPLICATION = "t_and_p_automation.asgi.application"
 
+REDIS_HOST = os.getenv("REDIS_HOST", "redis" if not IS_DEV else "localhost")
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD") if IS_DEV else require_env("REDIS_PASSWORD")
+REDIS_AUTH = f":{REDIS_PASSWORD}@" if REDIS_PASSWORD else ""
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [(os.getenv("REDIS_HOST", "redis" if not IS_DEV else "localhost"), 6379)],
+            "hosts": [f"redis://{REDIS_AUTH}{REDIS_HOST}:6379/2"],
         },
     },
 }
@@ -138,7 +154,7 @@ CHANNEL_LAYERS = {
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": f"redis://{os.getenv('REDIS_HOST', 'redis' if not IS_DEV else 'localhost')}:6379/1",
+        "LOCATION": f"redis://{REDIS_AUTH}{REDIS_HOST}:6379/1",
     }
 }
 
@@ -149,7 +165,7 @@ if IS_DEV:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
+            "NAME": BASE_DIR / "data" / "db.sqlite3",
             "OPTIONS": {
                 "timeout": 20,
             }
@@ -159,11 +175,14 @@ else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
-            "NAME": os.getenv("DATABASE_NAME", "t_and_p_db"),
-            "USER": os.getenv("DATABASE_USER", "root"),
-            "PASSWORD": os.getenv("DATABASE_PASSWORD", ""),
-            "HOST": "mysql",
+            "NAME": require_env("DATABASE_NAME"),
+            "USER": require_env("DATABASE_USER"),
+            "PASSWORD": require_env("DATABASE_PASSWORD"),
+            "HOST": os.getenv("DATABASE_HOST", "mysql"),
             "PORT": "3306",
+            "OPTIONS": {
+                "ssl": {"ssl-mode": os.getenv("DATABASE_SSL_MODE", "REQUIRED")},
+            },
         }
     }
 
@@ -176,8 +195,9 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",
+        "rest_framework.permissions.IsAuthenticated",
     ],
+    "EXCEPTION_HANDLER": "base.error_utils.drf_exception_handler",
 }
 
 
@@ -245,13 +265,13 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = os.getenv("EMAIL_USERNAME")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")
-DEFAULT_FROM_EMAIL = os.getenv("EMAIL_USERNAME")
+EMAIL_HOST_USER = os.getenv("EMAIL_USERNAME") if IS_DEV else require_env("EMAIL_USERNAME")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD") if IS_DEV else require_env("EMAIL_PASSWORD")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
-CELERY_BROKER_URL = f"redis://{os.getenv('REDIS_HOST', 'redis' if not IS_DEV else 'localhost')}:6379/0"
-CELERY_RESULT_BACKEND = f"redis://{os.getenv('REDIS_HOST', 'redis' if not IS_DEV else 'localhost')}:6379/0"
+CELERY_BROKER_URL = f"redis://{REDIS_AUTH}{REDIS_HOST}:6379/0"
+CELERY_RESULT_BACKEND = f"redis://{REDIS_AUTH}{REDIS_HOST}:6379/0"
 
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
@@ -310,7 +330,22 @@ UNFOLD = {
 
 LOGIN_URL = "/auth/login/"
 
+# SECURE_SSL_REDIRECT stays False until the reverse proxy (Caddy) actually terminates
+# TLS - the current Caddyfile serves plain HTTP only (`auto_https off`, `:80`). Flipping
+# this to True before HTTPS is live would break every request with a redirect to a
+# non-existent https:// listener. Flip it once TLS is configured.
 SECURE_SSL_REDIRECT = False
+
+# ---------------------------------
+# SECURITY HEADERS
+# ---------------------------------
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
+# HSTS: safe to set even before TLS is live - browsers ignore the header over plain
+# HTTP, so this has no effect until SECURE_SSL_REDIRECT above is also flipped on.
+SECURE_HSTS_SECONDS = 31536000 if not IS_DEV else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not IS_DEV
+SECURE_HSTS_PRELOAD = not IS_DEV
 
 # ---------------------------------
 # COOKIE SECURITY

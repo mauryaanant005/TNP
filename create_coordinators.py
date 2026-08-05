@@ -8,6 +8,8 @@ django.setup()
 
 from base.models import User, FacultyResponsibility
 
+DEFAULT_SEED_PASSWORD = os.getenv("DEFAULT_SEED_PASSWORD", "tcet@1234")
+
 # Department Coordinator
 dept_user, created = User.objects.get_or_create(
     email="deptcoord@tcet.ac.in",
@@ -16,8 +18,8 @@ dept_user, created = User.objects.get_or_create(
         "role": "faculty",
     }
 )
-if created or not dept_user.check_password("tcet@1234"):
-    dept_user.set_password("tcet@1234")
+if created or not dept_user.check_password(DEFAULT_SEED_PASSWORD):
+    dept_user.set_password(DEFAULT_SEED_PASSWORD)
     dept_user.role = "faculty"
     dept_user.save()
 
@@ -38,8 +40,8 @@ prog_user, created = User.objects.get_or_create(
         "role": "faculty",
     }
 )
-if created or not prog_user.check_password("tcet@1234"):
-    prog_user.set_password("tcet@1234")
+if created or not prog_user.check_password(DEFAULT_SEED_PASSWORD):
+    prog_user.set_password(DEFAULT_SEED_PASSWORD)
     prog_user.role = "faculty"
     prog_user.save()
 
@@ -53,5 +55,5 @@ FacultyResponsibility.objects.update_or_create(
 )
 
 print("Sample coordinator accounts created/updated.")
-print("Department Coordinator: deptcoord@tcet.ac.in / tcet@1234")
-print("Program Coordinator: progcoord@tcet.ac.in / tcet@1234")
+print("Department Coordinator: [REDACTED] / [REDACTED]")
+print("Program Coordinator: [REDACTED] / [REDACTED]")

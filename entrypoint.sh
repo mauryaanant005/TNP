@@ -35,7 +35,23 @@ echo "Running database migrations..."
 python manage.py migrate --noinput
 
 echo "Creating superuser..."
-python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(email='$DJANGO_SUPERUSER_EMAIL').exists() or User.objects.create_superuser('$DJANGO_SUPERUSER_EMAIL', '$DJANGO_SUPERUSER_PASSWORD')"
+python manage.py shell <<'PYEOF'
+import os
+from django.contrib.auth import get_user_model
+
+email = os.environ.get("DJANGO_SUPERUSER_EMAIL")
+password = os.environ.get("DJANGO_SUPERUSER_PASSWORD")
+
+if not email or not password:
+    print("DJANGO_SUPERUSER_EMAIL / DJANGO_SUPERUSER_PASSWORD not set - skipping superuser creation.")
+else:
+    User = get_user_model()
+    if not User.objects.filter(email=email).exists():
+        User.objects.create_superuser(email, password)
+        print("Superuser created.")
+    else:
+        print("Superuser already exists.")
+PYEOF
 
 echo "Starting ASGI application with daphne..."
 exec daphne -b 0.0.0.0 -p 8000 t_and_p_automation.asgi:application

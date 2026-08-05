@@ -29,8 +29,10 @@ COPY --from=frontend /app/build/static /app/static/
 # If your build doesn't generate it, remove this line.
 COPY --from=frontend /app/build/vite.svg /app/static/
 
-# Collect static files
-RUN python manage.py collectstatic --noinput
+# Collect static files (build-time only - no real secrets are available yet,
+# collectstatic never touches the database, so DEV mode is safe here; the
+# actual container still picks up its real ENV from .env at runtime)
+RUN ENV=DEV python manage.py collectstatic --noinput
 
 # Entrypoint
 COPY entrypoint.sh /app/entrypoint.sh

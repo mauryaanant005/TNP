@@ -11,7 +11,8 @@ from rest_framework.decorators import (
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from base.models import User
+from base.models import User, FacultyResponsibility
+from base.error_utils import safe_error_payload
 
 
 def execute_query(query, params=None, fetch_all=True):
@@ -34,11 +35,20 @@ def get_program_data(request):
     if user.role != "faculty":
         return JsonResponse({"error": "Permission denied"}, status=403)
     try:
-        query = "SELECT * FROM attendance_attendancerecord"
-        data = execute_query(query)
+        programs = list(
+            FacultyResponsibility.objects.filter(user=user)
+            .exclude(program__isnull=True)
+            .exclude(program="")
+            .values_list("program", flat=True)
+        )
+        if not programs:
+            return JsonResponse([], safe=False, status=200)
+        placeholders = ", ".join(["%s"] * len(programs))
+        query = f"SELECT * FROM attendance_attendancerecord WHERE program_name IN ({placeholders})"
+        data = execute_query(query, programs)
         return JsonResponse(data, safe=False, status=200)
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse(safe_error_payload(e), status=500)
 
 
 from django.http import JsonResponse
@@ -88,8 +98,7 @@ def save_attendance(request):
             {"message": "Attendance data saved successfully"}, status=200
         )
     except Exception as e:
-        print(e)
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse(safe_error_payload(e), status=500)
 
 
 @api_view(["GET"])
@@ -100,11 +109,20 @@ def get_attendance(request):
     if request.user.role != "faculty":
         return JsonResponse({"error": "Permission denied"}, status=403)
     try:
-        query = "SELECT * FROM attendance_attendancerecord"
-        data = execute_query(query)
+        programs = list(
+            FacultyResponsibility.objects.filter(user=request.user)
+            .exclude(program__isnull=True)
+            .exclude(program="")
+            .values_list("program", flat=True)
+        )
+        if not programs:
+            return JsonResponse([], safe=False, status=200)
+        placeholders = ", ".join(["%s"] * len(programs))
+        query = f"SELECT * FROM attendance_attendancerecord WHERE program_name IN ({placeholders})"
+        data = execute_query(query, programs)
         return JsonResponse(data, safe=False, status=200)
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse(safe_error_payload(e), status=500)
 
 
 @api_view(["POST"])
@@ -121,4 +139,4 @@ def reset_attendance(request):
             {"message": "Attendance table reset successfully"}, status=200
         )
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse(safe_error_payload(e), status=500)

@@ -48,7 +48,6 @@ function FacultyHome() {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-  console.log(data);
   useEffect(() => {
     const fetchData = async () => {
       try {

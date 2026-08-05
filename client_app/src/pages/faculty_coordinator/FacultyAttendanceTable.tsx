@@ -84,14 +84,14 @@ function TablePage() {
   }, [program]);
 
   useEffect(() => {
-    const storedAttendanceData = localStorage.getItem("attendanceData");
+    const storedAttendanceData = sessionStorage.getItem("attendanceData");
     if (storedAttendanceData) {
       setAttendanceData(JSON.parse(storedAttendanceData));
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("attendanceData", JSON.stringify(attendanceData));
+    sessionStorage.setItem("attendanceData", JSON.stringify(attendanceData));
   }, [attendanceData]);
 
   // --- EVENT HANDLERS ---
@@ -196,13 +196,13 @@ function TablePage() {
         }
       )
       .then(() => {
-        localStorage.removeItem("attendanceData");
+        sessionStorage.removeItem("attendanceData");
         setAttendanceData({});
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
       })
       .catch((error) => {
-        console.error("Error saving data:", error.response?.data);
+        console.error("Error saving attendance data:", error.message);
         alert("Error saving data.");
       });
   };

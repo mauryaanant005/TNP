@@ -138,7 +138,6 @@ const TrainingPerformanceUpload: React.FC = () => {
       }
 
       const data = await response.json();
-      console.log(data);
 
       setResult(data);
       setFile(null);

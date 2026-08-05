@@ -61,8 +61,6 @@ const SessionAttendance: React.FC = () => {
           throw new Error("EmptyData");
         }
 
-        console.log("API Response:", data);
-
         // Format data correctly
         const formattedData = data.map((entry: any) => {
           const [date, session] = entry.session.split(" - ");

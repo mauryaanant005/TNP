@@ -156,9 +156,7 @@ const Update = () => {
         }
         return response.json();
       })
-      .then((data) => {
-        console.log(data.message);
-
+      .then(() => {
         // Update the local state
         const updatedData = attendanceData.map((record) =>
           record.uid === uid && record.session === session

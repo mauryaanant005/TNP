@@ -6,6 +6,3 @@ load_dotenv()
 
 # Get the DATABASE_URL from the environment
 DATABASE_URL = os.getenv("DATABASE_URL")
-
-# Parse the DATABASE_URL (using dj-database-url or custom logic)
-print(DATABASE_URL)

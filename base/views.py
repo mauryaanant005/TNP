@@ -10,6 +10,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 import logging
 from dotenv import load_dotenv
+from django_ratelimit.decorators import ratelimit
 
 load_dotenv()
 
@@ -31,10 +32,10 @@ def send_otp(email, otp, subject="OTP Verification"):
             html_message=html_message,
             fail_silently=False,
         )
-        logger.info(f"OTP sent successfully to {email}")
+        logger.info("OTP sent successfully to [REDACTED]")
         return True
     except Exception as e:
-        logger.error(f"Failed to send OTP to {email}: {str(e)}")
+        logger.error(f"Failed to send OTP: {str(e)}")
         return False
 
 
@@ -45,6 +46,7 @@ def redirect_user(request, user):
     return response
 
 
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def login(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -64,6 +66,7 @@ def login(request):
     return render(request, "base/login.html")
 
 
+@ratelimit(key="ip", rate="3/h", method="POST", block=True)
 def password_reset_request(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -82,6 +85,7 @@ def password_reset_request(request):
     return render(request, "base/password_reset_request.html")
 
 
+@ratelimit(key="ip", rate="5/h", method="POST", block=True)
 def password_reset_verify_otp(request):
     if request.method == "POST":
         email = request.session.get("email")
@@ -99,6 +103,7 @@ def password_reset_verify_otp(request):
     return render(request, "base/password_reset_verify_otp.html")
 
 
+@ratelimit(key="ip", rate="5/h", method="POST", block=True)
 def password_reset_confirm(request):
     user_id = request.session.get("reset_user_id")
     if not user_id:

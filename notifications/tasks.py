@@ -71,19 +71,19 @@ def send_notification_email(notification_id):
                             # Open and attach the file
                             with open(file_path, 'rb') as file:
                                 email.attach(filename, file.read(), notification.files.name)
-                            logger.info(f"Attaching file {filename} to email for {recipient.email}")
+                            logger.info(f"Attaching file {filename} to email for recipient {recipient.id}")
                         else:
                             logger.warning(f"File not found: {file_path}")
                     except Exception as e:
-                        logger.error(f"Error attaching file for {recipient.email}: {str(e)}")
-                
+                        logger.error(f"Error attaching file for recipient {recipient.id}: {str(e)}")
+
                 # Send the email
                 email.send(fail_silently=False)
                 sent_count += 1
-                logger.info(f"Notification email sent successfully to {recipient.email}")
+                logger.info(f"Notification email sent successfully to recipient {recipient.id}")
             except Exception as e:
                 failed_count += 1
-                logger.error(f"Failed to send notification email to {recipient.email}: {str(e)}")
+                logger.error(f"Failed to send notification email to recipient {recipient.id}: {str(e)}")
         
         return {
             "status": "completed",
