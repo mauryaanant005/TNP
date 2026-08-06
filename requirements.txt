@@ -73,6 +73,7 @@ wcwidth==0.2.14
 weasyprint==66.0
 webencodings==0.5.1
 whitenoise==6.7.0
+xlrd==2.0.1
 zopfli==0.2.3.post1
 channels==4.1.0
 channels_redis==4.2.0
