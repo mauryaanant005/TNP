@@ -41,6 +41,12 @@ DEBUG = IS_DEV
 
 
 # ---------------------------------
+# CLIENT (frontend origin, e.g. for post-login redirects)
+# ---------------------------------
+CLIENT_URL = os.getenv("CLIENT_URL", "http://localhost:5173")
+
+
+# ---------------------------------
 # HOSTS
 # ---------------------------------
 if IS_DEV:
@@ -257,10 +263,14 @@ if IS_DEV:
     CORS_ALLOWED_ORIGINS = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
     ]
     CSRF_TRUSTED_ORIGINS = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
     ]
     SESSION_COOKIE_DOMAIN = None
     CSRF_COOKIE_DOMAIN = None

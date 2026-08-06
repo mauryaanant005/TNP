@@ -33,7 +33,7 @@ const ResumePreview = () => {
           method: "GET",
           credentials: "include",
           headers: {
-            "X-CSRF-Token": getCookie("csrftoken") || "",
+            "X-CSRFToken": getCookie("csrftoken") || "",
           },
         });
 

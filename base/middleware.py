@@ -1,33 +1,42 @@
+from django.conf import settings
+
+
 class ContentSecurityPolicyMiddleware:
     """
     Adds a Content-Security-Policy header restricting script execution to this app's
-    own origin plus the specific third-party hosts the templates actually load
-    (Google Fonts, the jsDelivr Chart.js script, the hotlinked institute logo).
+    own origin plus the specific third-party hosts the templates load.
     """
-    POLICY = "; ".join(
-        [
-            "default-src 'self'",
-            # Django Unfold / Alpine relies on runtime evaluation for some admin widgets
-            # and filter interactions, so allow this narrowly-scoped capability in the
-            # browser CSP while keeping the rest of the policy locked to self + the
-            # known external CDNs the project actually uses.
-            "script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net",
-            "style-src 'self' https://fonts.googleapis.com 'unsafe-inline'",
-            "font-src 'self' https://fonts.gstatic.com",
-            "img-src 'self' data: https://zctindia.org",
-            "connect-src 'self'",
-            "frame-ancestors 'none'",
-            "base-uri 'self'",
-            "form-action 'self'",
-        ]
-    )
-
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
         response = self.get_response(request)
-        response["Content-Security-Policy"] = self.POLICY
+        if getattr(settings, "IS_DEV", False):
+            policy = "; ".join([
+                "default-src 'self' 'unsafe-inline' 'unsafe-eval' http: https: data: blob: ws: wss:",
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net",
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+                "font-src 'self' data: https://fonts.gstatic.com",
+                "img-src 'self' data: blob: https: http:",
+                "connect-src 'self' http: https: ws: wss:",
+                "frame-ancestors 'none'",
+                "base-uri 'self'",
+                "form-action *",
+            ])
+        else:
+            client_url = getattr(settings, "CLIENT_URL", "")
+            policy = "; ".join([
+                "default-src 'self'",
+                "script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net",
+                "style-src 'self' https://fonts.googleapis.com 'unsafe-inline'",
+                "font-src 'self' https://fonts.gstatic.com",
+                "img-src 'self' data: https://zctindia.org",
+                "connect-src 'self' " + client_url,
+                "frame-ancestors 'none'",
+                "base-uri 'self'",
+                "form-action 'self' " + client_url,
+            ])
+        response["Content-Security-Policy"] = policy
         return response
 
 

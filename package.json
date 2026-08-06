@@ -1,0 +1,24 @@
+{
+  "name": "tnp---copy",
+  "version": "1.0.0",
+  "description": "Role-based placement and training management system for **Thakur College of Engineering and Technology**. Automates student categorization, placement pipeline tracking, training attendance/performance, internship management, and reporting — serving 8+ user roles from a single Django + React application.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mauryaanant005/TNP.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/mauryaanant005/TNP/issues"
+  },
+  "homepage": "https://github.com/mauryaanant005/TNP#readme"
+}

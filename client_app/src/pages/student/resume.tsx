@@ -121,7 +121,7 @@ export default function ResumeBuilderForm() {
         method: "GET",
         credentials: "include",
         headers: {
-          "X-CSRF-Token": getCookie("csrftoken") || "",
+          "X-CSRFToken": getCookie("csrftoken") || "",
         },
       });
       if (res.ok) {

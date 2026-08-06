@@ -15,12 +15,12 @@ dept_user, created = User.objects.get_or_create(
     email="deptcoord@tcet.ac.in",
     defaults={
         "full_name": "Department Coordinator User",
-        "role": "faculty",
+        "role": "department_coordinator",
     }
 )
 if created or not dept_user.check_password(DEFAULT_SEED_PASSWORD):
     dept_user.set_password(DEFAULT_SEED_PASSWORD)
-    dept_user.role = "faculty"
+    dept_user.role = "department_coordinator"
     dept_user.save()
 
 # Ensure faculty responsibility exists for Department

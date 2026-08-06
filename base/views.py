@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as login_user, logout
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from base.models import User, PasswordResetOTP
 import pyotp
@@ -41,11 +43,13 @@ def send_otp(email, otp, subject="OTP Verification"):
 
 def redirect_user(request, user):
     login_user(request, user)
-    response = redirect("/")
+    response = redirect(settings.CLIENT_URL)
     response.set_cookie("is_logged_in", "true", httponly=False, samesite="Lax")
     return response
 
 
+@never_cache
+@csrf_exempt
 @ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def login(request):
     if request.method == "POST":
@@ -66,6 +70,7 @@ def login(request):
     return render(request, "base/login.html")
 
 
+@never_cache
 @ratelimit(key="ip", rate="3/h", method="POST", block=True)
 def password_reset_request(request):
     if request.method == "POST":
@@ -90,6 +95,7 @@ def password_reset_request(request):
     return render(request, "base/password_reset_request.html")
 
 
+@never_cache
 @ratelimit(key="ip", rate="5/h", method="POST", block=True)
 def password_reset_verify_otp(request):
     if request.method == "POST":
@@ -110,6 +116,7 @@ def password_reset_verify_otp(request):
     return render(request, "base/password_reset_verify_otp.html")
 
 
+@never_cache
 @ratelimit(key="ip", rate="5/h", method="POST", block=True)
 def password_reset_confirm(request):
     user_id = request.session.get("reset_user_id")
@@ -144,6 +151,7 @@ def user_profile(request):
     return render(request, "base/user_profile.html", {"user": user})
 
 
+@never_cache
 @login_required
 def password_update(request):
     user = User.objects.get(id=request.user.id)

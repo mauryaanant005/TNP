@@ -71,7 +71,7 @@ def _get_or_create_student(uid, department):
 
 class IsDepartmentCoordinator(BasePermission):
     def has_permission(self, request, view):
-        return request.user.role == "faculty"
+        return request.user.role == "department_coordinator"
 
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.generics import ListAPIView
