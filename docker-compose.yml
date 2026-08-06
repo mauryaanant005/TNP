@@ -23,6 +23,14 @@ services:
       - redis
     volumes:
       - media:/app/media
+    networks:
+      # "default" keeps redis reachable; "dokploy-network" is what makes the
+      # managed MySQL (DATABASE_HOST) resolvable - without it, compose puts
+      # this container on an isolated per-project network, the DB hostname
+      # never resolves, entrypoint.sh's wait loop times out and exits, and
+      # the container crash-loops forever.
+      - default
+      - dokploy-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health/"]
       interval: 30s
@@ -45,6 +53,11 @@ services:
       - redis
     volumes:
       - media:/app/media
+    networks:
+      # Same reasoning as api above - the worker also talks to the managed
+      # MySQL, so it needs dokploy-network too.
+      - default
+      - dokploy-network
     healthcheck:
       # Disables the HTTP healthcheck baked into backend/Dockerfile - this
       # service runs `celery worker`, not Gunicorn, so nothing listens on
@@ -69,6 +82,14 @@ services:
         VITE_SERVER_URL: ${VITE_SERVER_URL}
     restart: unless-stopped
     # No ports: section - Traefik reaches this container internally too.
+
+networks:
+  # Created and owned by Dokploy on the server (it's where the managed
+  # database and Traefik live), so it is joined, not defined, here.
+  # For LOCAL development this network won't exist - create it once with:
+  #   docker network create dokploy-network
+  dokploy-network:
+    external: true
 
 volumes:
   redis_data:

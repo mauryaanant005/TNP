@@ -24,13 +24,26 @@ Role-based placement and training management system for **Thakur College of Engi
 ```bash
 git clone <repo> && cd t_and_p_task_automation
 cp .env.example .env
-docker compose up --build
+
+# One-time: the compose file joins `dokploy-network` (owned by the hosting
+# platform in production, where the managed database lives). It doesn't
+# exist on a dev machine, so create an empty stand-in once:
+docker network create dokploy-network
+
+# `docker-compose.dev.yml` publishes ports 8000/5173 to your host. It is
+# NOT auto-applied - production must not expose ports - so pass it
+# explicitly for local work:
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
 ```
 
 This starts four containers: `api` (Django/DRF/Channels via Gunicorn), `frontend` (the React
 build served by Nginx), `celery` (async task worker), and `redis` (broker/cache). The frontend
 and API are separate origins even locally, matching production - see **Deployment Architecture**
 below. A superuser is auto-created from `.env` (`admin@gmail.com` / `admin123`).
+
+The API is then on `http://localhost:8000` (health check: `/api/health/`) and the frontend on
+`http://localhost:5173`. In production neither publishes a port - Traefik routes to them over
+the internal Docker network.
 
 ---
 
