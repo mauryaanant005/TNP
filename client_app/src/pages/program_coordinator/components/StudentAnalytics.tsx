@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 import { useEffect, useState } from "react";
 import {
   Accordion,
@@ -74,7 +75,7 @@ function StudentAnalytics({
         if (department) params.append("department", department);
         if (semester) params.append("semester", semester);
 
-        const response = await fetch(
+        const response = await apiFetch(
           `/api/program_coordinator/student-analytics/?${params}`
         );
         if (!response.ok) throw new Error("Network response was not ok");

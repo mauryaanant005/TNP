@@ -9,7 +9,7 @@ import {
   Grid,
   Paper,
 } from "@mui/material";
-import axios from "axios";
+import { api } from "@/lib/api";
 import Notice from "../placement_officer/components/notice";
 import { getCookie } from "../../utils";
 import { NoticeData } from "../placement_officer/components/notice";
@@ -56,7 +56,7 @@ const InternshipNotice = () => {
   };
   const csrfToken = getCookie("csrftoken");
   useEffect(() => {
-    axios
+    api
       .get("/api/internship/company/", {
         headers: {
           "X-CSRFToken": csrfToken || "",
@@ -78,7 +78,7 @@ const InternshipNotice = () => {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    axios
+    api
       .post(`/api/internship/notice/create/${formData.company}`, formData, {
         headers: {
           "X-CSRFToken": csrfToken || "",

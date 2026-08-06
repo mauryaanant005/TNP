@@ -18,6 +18,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, MenuItem, Chip } from "@mui/material";
 import { NavLink } from "react-router";
 import { sampleDashboardData } from "./fallbackData";
+import { useBatchOptions, useRealOrSampleData } from "./hooks";
+import { ErrorBanner, NO_DATA_MESSAGE } from "./ErrorBanner";
 
 interface DashboardData {
   placementsOverTime: { month: string; placements: number }[];
@@ -36,74 +38,27 @@ interface DashboardData {
 
 const PIE_COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
+function hasDashboardData(json: DashboardData): boolean {
+  return Boolean(
+    json.placementStatusFunnel?.some(
+      (d) => d.name === "Total Students" && d.value > 0
+    ) ||
+      json.topRecruiters?.length > 0 ||
+      json.departmentPerformance?.length > 0
+  );
+}
+
 export function PlacementDashboard() {
-  const [data, setData] = React.useState<DashboardData | null>(null);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [isSampleData, setIsSampleData] = React.useState(false);
-  const [selectedBatch, setSelectedBatch] = React.useState<string>("");
-  const [batches, setBatches] = React.useState<string[]>([]);
-
-  React.useEffect(() => {
-    fetch("/api/staff/companies/batches/", { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        setBatches(data);
-        if (data.length > 0) {
-          setSelectedBatch(data[0]);
-        }
-      })
-      .catch((err) => console.error("Error fetching batches:", err));
-  }, []);
-
-  React.useEffect(() => {
-    async function fetchData(batchToFetch: string) {
-      if (!batchToFetch) {
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(
-          `/api/placement_officer/dashboard/${batchToFetch}/`
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const jsonData: DashboardData = await response.json();
-        const hasData =
-          jsonData.placementStatusFunnel?.some(
-            (d) => d.name === "Total Students" && d.value > 0
-          ) ||
-          jsonData.topRecruiters?.length > 0 ||
-          jsonData.departmentPerformance?.length > 0;
-
-        if (!hasData) {
-          React.startTransition(() => {
-            setData(sampleDashboardData);
-            setIsSampleData(true);
-          });
-        } else {
-          React.startTransition(() => {
-            setData(jsonData);
-            setIsSampleData(false);
-          });
-        }
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "An unknown error occurred");
-        React.startTransition(() => {
-          setData(sampleDashboardData);
-          setIsSampleData(true);
-        });
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData(selectedBatch);
-  }, [selectedBatch]);
+  const { batches, selectedBatch, setSelectedBatch } = useBatchOptions();
+  const { data, isSampleData, loading, error, retry } =
+    useRealOrSampleData<DashboardData>({
+      url: selectedBatch
+        ? `/api/placement_officer/dashboard/${selectedBatch}/`
+        : null,
+      sampleData: sampleDashboardData,
+      hasData: hasDashboardData,
+      deps: [],
+    });
 
   return (
     <div className="p-4 md:p-8 space-y-6">
@@ -139,15 +94,10 @@ export function PlacementDashboard() {
       </div>
 
       {/* Error */}
-      {error && (
-        <Card className="bg-destructive text-destructive-foreground">
-          <CardHeader>
-            <CardTitle>Error</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>Failed to load dashboard data: {error}</p>
-          </CardContent>
-        </Card>
+      {error && <ErrorBanner message={error} onRetry={retry} />}
+
+      {!loading && !data && (
+        <p className="text-center text-muted-foreground py-8">{NO_DATA_MESSAGE}</p>
       )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

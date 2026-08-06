@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import {
@@ -139,7 +140,7 @@ const InternshipCompanyRegister = () => {
 
     try {
       const csrfToken = getCookie("csrftoken");
-      const response = await fetch("/api/internship/company/register/", {
+      const response = await apiFetch("/api/internship/company/register/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

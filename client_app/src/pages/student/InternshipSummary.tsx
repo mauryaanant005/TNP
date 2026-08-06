@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -19,7 +19,7 @@ export default function StudentInternships() {
     const fetchInternships = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`/api/student/internships/`);
+        const res = await api.get(`/api/student/internships/`);
         if (res.data && res.data.length > 0) {
           setInternships(res.data);
           (res.data as any).isDummy = false;

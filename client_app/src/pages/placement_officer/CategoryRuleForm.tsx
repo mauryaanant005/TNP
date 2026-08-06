@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import { api } from "@/lib/api";
 import { getCookie } from "@/utils";
 
 interface CategoryRuleForm {
@@ -33,7 +33,7 @@ const CategoryRuleForm = () => {
     const csrftoken = getCookie("csrftoken");
 
     try {
-      await axios.post("/api/placement_officer/category-rules/create/", formData, {
+      await api.post("/api/placement_officer/category-rules/create/", formData, {
         headers: { "X-CSRFToken": csrftoken || "" },
         withCredentials: true,
       });

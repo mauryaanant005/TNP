@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 // PlacementCompany.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
@@ -86,7 +87,7 @@ const PlacementCompany = () => {
     e.preventDefault();
     try {
       const csrfToken = getCookie("csrftoken");
-      const response = await fetch("/api/staff/placement/company/", {
+      const response = await apiFetch("/api/staff/placement/company/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -5,7 +5,7 @@ from import_export import resources
 from .models import Student, User
 from uuid import uuid4
 
-DEFAULT_STUDENT_IMPORT_PASSWORD = os.getenv("DEFAULT_STUDENT_IMPORT_PASSWORD", "Student@123")
+DEFAULT_STUDENT_IMPORT_PASSWORD = os.getenv("DEFAULT_STUDENT_IMPORT_PASSWORD", "tcet@1234")
 
 
 class StudentResource(resources.ModelResource):

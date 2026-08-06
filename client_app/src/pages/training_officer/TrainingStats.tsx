@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import {
@@ -62,7 +63,7 @@ const TrainingStats = () => {
   const [uniqueProgramNames, setUniqueProgramNames] = useState<string[]>([]); // Holds unique program names
   const [filterType, setFilterType] = useState(["avg_attendance"]); // Default to average attendance
   useEffect(() => {
-    fetch("/api/training_officer/get-avg-data/program1/")
+    apiFetch("/api/training_officer/get-avg-data/program1/")
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);

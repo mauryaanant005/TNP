@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useForm } from "react-hook-form";
 import { useSearchParams } from "react-router";
@@ -34,7 +35,7 @@ export default function SendPlacementMessage() {
   });
 
   const handleSendNotification = async (data: { title: string; sendTo: string; content: string }) => {
-    const res = await fetch(
+    const res = await apiFetch(
       `/api/staff/placement/company/send_notifications/${companyId}/`,
       {
         method: "POST",

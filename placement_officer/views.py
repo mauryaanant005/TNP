@@ -15,12 +15,12 @@ from rest_framework.decorators import (
     permission_classes,
     authentication_classes,
 )
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated
+from base.permissions import IsPlacementOfficerOrAdmin
 from staff.models import JobOffer,CompanyRegistration
 from collections import defaultdict
 from student.models import StudentOffer,StudentPlacementAppliedCompany,PlacementCompanyProgress
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.response import Response
 from rest_framework import status
@@ -42,7 +42,7 @@ def get_current_year():
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated, IsPlacementOfficerOrAdmin])
 def statistic(request, year=None):
     year = year or get_current_year()
     batch_year_suffix = str(year)[-2:]
@@ -67,7 +67,7 @@ def statistic(request, year=None):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated, IsPlacementOfficerOrAdmin])
 def filter_by_department(request, department, year=None):
     year = year or get_current_year()
     batch_year_suffix = str(year)[-2:]
@@ -86,13 +86,15 @@ def filter_by_department(request, department, year=None):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated, IsPlacementOfficerOrAdmin])
 def get_unique_departments(request, year=None):
     year = year or get_current_year()
     batch_year_suffix = str(year)[-2:]
+    batch = request.query_params.get("batch")
     try:
+        students = Student.objects.filter(batch=batch) if batch else Student.objects.all()
         unique_departments = list(
-            Student.objects.all().values_list("department", flat=True).distinct()
+            students.values_list("department", flat=True).distinct()
         )
     except Exception as e:
         logger.exception("Error fetching unique departments")
@@ -103,7 +105,7 @@ def get_unique_departments(request, year=None):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated, IsPlacementOfficerOrAdmin])
 def get_category(request, year=None):
     year = year or get_current_year()
     batch_year_suffix = str(year)[-2:]
@@ -122,7 +124,7 @@ def get_category(request, year=None):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated, IsPlacementOfficerOrAdmin])
 def get_category_by_department(request, department, year=None):
     year = year or get_current_year()
     batch_year_suffix = str(year)[-2:]
@@ -140,7 +142,7 @@ def get_category_by_department(request, department, year=None):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated, IsPlacementOfficerOrAdmin])
 def get_data_by_year(request, year):
     try:
         batch_year_suffix = str(year)[-2:]
@@ -155,7 +157,7 @@ def get_data_by_year(request, year):
 
 @api_view(["POST"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated, IsPlacementOfficerOrAdmin])
 def calculateCategory(request):
     try:
         batch = request.data.get(
@@ -202,7 +204,7 @@ def calculate_average(queryset, field_name):
 
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated, IsPlacementOfficerOrAdmin])
 def create_category_rule(request):
     try:
         CategoryRule.objects.create(**request.data)
@@ -214,14 +216,14 @@ def create_category_rule(request):
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated, IsPlacementOfficerOrAdmin])
 def list_category_rules(request):
     rules = CategoryRule.objects.all().values()
     return Response(list(rules))  # Convert to list here as well for consistency
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated, IsPlacementOfficerOrAdmin])
 def students_by_category(request, category, batch):
     try:
         students = Student.objects.filter(current_category=category, batch=batch)
@@ -232,12 +234,16 @@ def students_by_category(request, category, batch):
 
 
 class ConsolidationReportAPIView(APIView):
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [IsAuthenticated, IsPlacementOfficerOrAdmin]
     def get(self, request, batch, *args, **kwargs):
-        departments = [
-            "COMP", "IT", "AI&DS", "AI&ML", "IoT", "CS&E",
-            "E&CS", "E&TC", "Mech", "MME", "CIVIL"
-        ]
+        # Dynamic instead of a hardcoded list - a department in the real data
+        # that doesn't exactly match a hardcoded string used to silently get
+        # no columns at all.
+        departments = list(
+            Student.objects.filter(batch=batch)
+            .values_list("department", flat=True)
+            .distinct()
+        )
 
         annotations_to_add = {}
         for dept in departments:
@@ -284,7 +290,7 @@ class ConsolidationReportAPIView(APIView):
         return Response(report_list)
 
 class PlacementDashboardAPIView(APIView):
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [IsAuthenticated, IsPlacementOfficerOrAdmin]
     def get(self, request, batch, *args, **kwargs):
         offers = StudentOffer.objects.filter(student__batch=batch).annotate(
             salary_float=Cast('salary', FloatField())
@@ -381,7 +387,7 @@ class PlacementDashboardAPIView(APIView):
 
 
 class BranchwiseReportAPIView(APIView):
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [IsAuthenticated, IsPlacementOfficerOrAdmin]
     def get(self, request, batch, *args, **kwargs):
 
         companies = CompanyRegistration.objects.filter(batch=batch)
@@ -400,35 +406,34 @@ class BranchwiseReportAPIView(APIView):
             return counts
 
         report_data = defaultdict(lambda: defaultdict(default_counts))
-        applications = StudentPlacementAppliedCompany.objects.filter(
-            student__batch=batch
-        ).select_related(
-            'student', 'company', 'application'
+
+        # Two aggregate queries (one per progress-fields source, one for
+        # final offers) instead of looping every application/offer row in
+        # Python - each returns one row per (department, company) actually
+        # present, not one row per student.
+        progress_rows = (
+            StudentPlacementAppliedCompany.objects
+            .filter(student__batch=batch, company_id__in=company_map.keys())
+            .values('student__department', 'company_id')
+            .annotate(**{
+                field: Count('id', filter=Q(**{f'application__{field}': True}))
+                for field in progress_fields
+            })
         )
-        for app in applications:
-            dept = app.student.department
-            comp_id = app.company_id
+        for row in progress_rows:
+            dept = row['student__department']
+            comp_id = row['company_id']
+            for field in progress_fields:
+                report_data[dept][comp_id][field] = row[field]
 
-            if comp_id not in company_map:
-                continue
-
-            try:
-                progress = app.application
-                for field in progress_fields:
-                    if getattr(progress, field):
-                        report_data[dept][comp_id][field] += 1
-
-            except StudentPlacementAppliedCompany.application.RelatedObjectDoesNotExist:
-                continue
-
-        offers = StudentOffer.objects.filter(student__batch=batch).select_related('student')
-
-        for offer in offers:
-            dept = offer.student.department
-            comp_id = offer.company_id
-
-            if comp_id in company_map:
-                report_data[dept][comp_id]['final'] += 1
+        final_rows = (
+            StudentOffer.objects
+            .filter(student__batch=batch, company_id__in=company_map.keys())
+            .values('student__department', 'company_id')
+            .annotate(final=Count('id'))
+        )
+        for row in final_rows:
+            report_data[row['student__department']][row['company_id']]['final'] = row['final']
 
         final_report = []
         for dept in departments:
@@ -451,7 +456,7 @@ class BranchwiseReportAPIView(APIView):
 
 
 class StudentDetailReportAPIView(APIView):
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [IsAuthenticated, IsPlacementOfficerOrAdmin]
     pagination_class = StandardResultsSetPagination
     def get(self, request, batch, *args, **kwargs):
         department = request.query_params.get('department', None)

@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -24,7 +25,7 @@ const fetchStudents = async (
   page: number,
   pageSize: number
 ): Promise<PaginatedResponse<InterestedStudentApplication>> => {
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/staff/company/${companyId}/interested-students/?page=${page + 1}&page_size=${pageSize}`
   );
   if (!response.ok) {

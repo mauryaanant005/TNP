@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 "use client";
 
 import { useState } from "react";
@@ -84,7 +85,7 @@ export function BulkUpdateDialog({
     }
     try {
       const csrfToken = getCookie("csrftoken");
-      const response = await fetch("/api/staff/company/bulk-update-progress/", {
+      const response = await apiFetch("/api/staff/company/bulk-update-progress/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

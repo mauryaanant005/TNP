@@ -2,16 +2,21 @@
 
 set -e
 
-echo "Waiting for MySQL to be ready..."
+# ENV=DEV uses SQLite (see t_and_p_automation/settings.py) - there's no
+# MySQL to wait for in that mode.
+if [ "${ENV:-PROD}" != "DEV" ]; then
+  echo "Waiting for MySQL to be ready..."
 
-python << END
+  python << END
+import os
 import sys
 import time
 import socket
 
-# Replace 'mysql' with your service name if different, or use os.environ
-db_host = "mysql"
-db_port = 3306
+# TCET IT provisions a managed MySQL instance; the host/port are injected
+# at deploy time rather than being a "mysql" service in docker-compose.
+db_host = os.environ.get("DATABASE_HOST", "mysql")
+db_port = int(os.environ.get("DATABASE_PORT", "3306"))
 
 start_time = time.time()
 while True:
@@ -25,17 +30,19 @@ while True:
         time.sleep(1)
 END
 
-echo "MySQL is up - executing command"
+  echo "MySQL is up - executing command"
+fi
 
-echo "Collecting static files..."
+# Only the api service should run migrations/superuser bootstrap - the
+# celery service shares this same entrypoint/image but sets
+# RUN_RELEASE_TASKS=0 to avoid two containers racing to migrate the same
+# database on a cold start.
+if [ "${RUN_RELEASE_TASKS:-1}" = "1" ]; then
+  echo "Running database migrations..."
+  python manage.py migrate --noinput
 
-python manage.py collectstatic --noinput
-
-echo "Running database migrations..."
-python manage.py migrate --noinput
-
-echo "Creating superuser..."
-python manage.py shell <<'PYEOF'
+  echo "Creating superuser..."
+  python manage.py shell <<'PYEOF'
 import os
 from django.contrib.auth import get_user_model
 
@@ -52,6 +59,7 @@ else:
     else:
         print("Superuser already exists.")
 PYEOF
+fi
 
-echo "Starting ASGI application with daphne..."
-exec daphne -b 0.0.0.0 -p 8000 t_and_p_automation.asgi:application
+echo "Starting: $@"
+exec "$@"

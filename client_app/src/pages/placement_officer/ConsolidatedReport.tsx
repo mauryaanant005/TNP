@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, startTransition } from "react";
+import { useMemo } from "react";
 import {
   ColumnDef,
   flexRender,
@@ -32,6 +32,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Papa from "papaparse";
 import { Chip } from "@mui/material";
 import { sampleConsolidatedData } from "./fallbackData";
+import { useBatchOptions, useDepartmentOptions, useRealOrSampleData } from "./hooks";
+import { ErrorBanner, NO_DATA_MESSAGE } from "./ErrorBanner";
 
 export interface ReportData {
   id: number;
@@ -69,13 +71,23 @@ function TableSkeletonLoader({ columns }: { columns: number }) {
 
 // Columns are now generated inside the component to use dynamic departments
 
+function hasConsolidatedData(json: ReportData[]): boolean {
+  return Array.isArray(json) && json.length > 0;
+}
+
 export function ConsolidationReportPage() {
-  const [data, setData] = useState<ReportData[]>([]);
-  const [selectedBatch, setSelectedBatch] = useState<string>("");
-  const [batches, setBatches] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [isSampleData, setIsSampleData] = useState(false);
-  const [dynamicDepartments, setDynamicDepartments] = useState<string[]>([]);
+  const { batches, selectedBatch, setSelectedBatch } = useBatchOptions();
+  const dynamicDepartments = useDepartmentOptions(selectedBatch);
+  const { data, isSampleData, loading, error, retry } =
+    useRealOrSampleData<ReportData[]>({
+      url: selectedBatch
+        ? `/api/placement_officer/get_data_by_year/${selectedBatch}/`
+        : null,
+      sampleData: sampleConsolidatedData as unknown as ReportData[],
+      hasData: hasConsolidatedData,
+      deps: [],
+    });
+  const rows = data ?? [];
 
   const columns = useMemo<ColumnDef<ReportData>[]>(() => {
     return [
@@ -139,69 +151,14 @@ export function ConsolidationReportPage() {
     ];
   }, [dynamicDepartments]);
 
-  useEffect(() => {
-    fetch("/api/staff/companies/batches/", { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        setBatches(data);
-        if (data.length > 0) {
-          setSelectedBatch(data[0]);
-        }
-      })
-      .catch((err) => console.error("Error fetching batches:", err));
-
-    fetch("/api/placement_officer/unique-departments/", { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.unique_departments) {
-          setDynamicDepartments(data.unique_departments);
-        }
-      })
-      .catch((err) => console.error("Error fetching departments:", err));
-  }, []);
-
-  useEffect(() => {
-    async function fetchData() {
-      if (!selectedBatch) return;
-
-      try {
-        setLoading(true);
-        const response = await fetch(
-          `/api/placement_officer/get_data_by_year/${selectedBatch}/`
-        );
-        const jsonData = await response.json();
-        if (!jsonData || jsonData.length === 0) {
-          startTransition(() => {
-            setData(sampleConsolidatedData as any);
-            setIsSampleData(true);
-          });
-        } else {
-          startTransition(() => {
-            setData(jsonData);
-            setIsSampleData(false);
-          });
-        }
-      } catch (error) {
-        console.error("Failed to fetch report data:", error);
-        startTransition(() => {
-          setData(sampleConsolidatedData as any);
-          setIsSampleData(true);
-        });
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, [selectedBatch]);
-
   const table = useReactTable({
-    data,
+    data: rows,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
 
   const handleExportCSV = () => {
-    if (!data.length) {
+    if (!rows.length) {
       alert("No data to export!");
       return;
     }
@@ -220,7 +177,7 @@ export function ConsolidationReportPage() {
       topHeader.push(dept, ""); // two columns per dept
       subHeader.push("Appeared & Register", "Selected");
     });
-    const dataRows = data.map((item, index) => {
+    const dataRows = rows.map((item, index) => {
       const row = [
         index + 1,
         item.form__notice__date
@@ -283,14 +240,15 @@ export function ConsolidationReportPage() {
               </SelectContent>
             </Select>
 
-            <Button disabled={!data.length} onClick={handleExportCSV}>
+            <Button disabled={!rows.length} onClick={handleExportCSV}>
               Export CSV
             </Button>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="space-y-4">
+        {error && <ErrorBanner message={error} onRetry={retry} />}
         <div className="rounded-md border overflow-x-auto">
           <Table>
             <TableHeader>
@@ -339,7 +297,7 @@ export function ConsolidationReportPage() {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No data found
+                    {NO_DATA_MESSAGE}
                   </TableCell>
                 </TableRow>
               )}

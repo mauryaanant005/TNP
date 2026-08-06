@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
@@ -48,7 +49,7 @@ const EditCompanyInfo = () => {
     }
     const fetchCompanyData = async()=>{
       try{
-        const response = await fetch(`/api/staff/placement/company/${searchParamId}/`,{
+        const response = await apiFetch(`/api/staff/placement/company/${searchParamId}/`,{
           method:"GET",
           headers:{
             "Content-Type":"application/json",
@@ -97,7 +98,7 @@ const EditCompanyInfo = () => {
         return;
       }
       const csrfToken = getCookie("csrftoken");
-      const response = await fetch(`/api/staff/placement/company/${searchParamId}/`, {
+      const response = await apiFetch(`/api/staff/placement/company/${searchParamId}/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

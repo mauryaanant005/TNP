@@ -1,4 +1,5 @@
 import { SERVER_URL } from "./constant";
+import { apiFetch } from "@/lib/api";
 export function getCookie(name: string) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== "") {
@@ -62,7 +63,7 @@ export const Capitalize = (str: string) => {
 };
 
 export const logout = async () => {
-  const res = await fetch(`${SERVER_URL}/api/logout/`, {
+  const res = await apiFetch(`/api/logout/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

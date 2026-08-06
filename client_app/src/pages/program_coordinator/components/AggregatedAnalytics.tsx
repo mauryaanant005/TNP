@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -63,7 +64,7 @@ export default function AcademicDashboard({ groupBy, batch, department, semester
         if (department) params.append('department', department);
         if (semester) params.append('semester', semester);
 
-        const response = await fetch(
+        const response = await apiFetch(
           `/api/program_coordinator/aggregate-analytics/?${params}`
         );
         if (!response.ok) throw new Error('Network response was not ok');

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect, startTransition } from "react";
-import axios from "axios";
+import { useState, useEffect, useRef, startTransition } from "react";
+import { api } from "@/lib/api";
+import { ErrorBanner } from "./ErrorBanner";
 import Select from "react-select";
 import { Bar } from "react-chartjs-2";
 import {
@@ -48,12 +49,14 @@ export const CategoryDataStatistics = () => {
   const [selectedDepartments, setSelectedDepartments] = useState([]);
   const [chartData, setChartData] = useState(null);
   const [isSampleData, setIsSampleData] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const requestIdRef = useRef(0);
 
   // Fetch departments for the dropdown
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
-        const response = await axios.get(
+        const response = await api.get(
           "/api/placement_officer/unique-departments/"
         );
         const formattedDepartments = response.data.unique_departments.map(
@@ -67,30 +70,47 @@ export const CategoryDataStatistics = () => {
     fetchDepartments();
   }, []);
 
-  // Fetch and process data for the selected departments
+  // Fetch and process data for the selected departments. A request-id guard
+  // discards a response that resolves after a newer selection has already
+  // started fetching (e.g. rapidly toggling departments), and
+  // Promise.allSettled means one department's request failing doesn't wipe
+  // out the chart for every other already-successful department.
   const fetchChartData = async (departments: any) => {
+    const requestId = ++requestIdRef.current;
+    setError(null);
     try {
-      const allData = await Promise.all(
+      const results = await Promise.allSettled(
         departments.map((department: any) =>
-          axios.get(
-            `/api/placement_officer/get_category_data_by_department/${department}`
+          api.get(
+            `/api/placement_officer/get_category_data_by_department/${encodeURIComponent(department)}`
           )
         )
       );
+      if (requestId !== requestIdRef.current) return;
 
-      const combinedData = allData.map((response, index) => {
-        let categoryData = response.data.category;
+      let anySampleData = false;
+      let anyFailure = false;
+      const combinedData = results.map((result, index) => {
+        let categoryData;
+        if (result.status === "fulfilled") {
+          categoryData = result.value.data.category;
+        } else {
+          anyFailure = true;
+          categoryData = null;
+        }
         if (!categoryData || categoryData.length === 0) {
           categoryData = sampleCategoryData;
-          setIsSampleData(true);
-        } else {
-          setIsSampleData(false);
+          anySampleData = true;
         }
         return {
           department: departments[index],
           data: categoryData,
         };
       });
+      setIsSampleData(anySampleData);
+      if (anyFailure) {
+        setError("Some departments could not be loaded and are showing sample data.");
+      }
 
       // Transform data for Chart.js
       const labels = [
@@ -119,7 +139,9 @@ export const CategoryDataStatistics = () => {
         });
       });
     } catch (error) {
+      if (requestId !== requestIdRef.current) return;
       console.error("Error fetching chart data:", error);
+      setError(error instanceof Error ? error.message : "An unknown error occurred");
     }
   };
 
@@ -129,9 +151,17 @@ export const CategoryDataStatistics = () => {
     if (selectedOptions.length > 0) {
       fetchChartData(selectedOptions.map((option: any) => option.value));
     } else {
+      requestIdRef.current++; // invalidate any still-in-flight request
+      setError(null);
       startTransition(() => {
         setChartData(null); // Clear chart if no department is selected
       });
+    }
+  };
+
+  const retry = () => {
+    if (selectedDepartments.length > 0) {
+      fetchChartData(selectedDepartments.map((option: any) => (option as any).value));
     }
   };
 
@@ -145,6 +175,11 @@ export const CategoryDataStatistics = () => {
           <Chip label="Viewing Sample Data" color="warning" size="small" variant="outlined" />
         )}
       </div>
+      {error && (
+        <div className="mb-4">
+          <ErrorBanner message={error} onRetry={retry} />
+        </div>
+      )}
       <Select
         isMulti
         options={departments}

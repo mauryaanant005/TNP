@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "@/lib/api";
 import toast from "react-hot-toast";
 
 interface InternshipReport {
@@ -87,7 +87,7 @@ const InternshipReport = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get("/api/internship/jobs/reports/");
+      const response = await api.get("/api/internship/jobs/reports/");
       setReports(response.data);
     } catch (error) {
       console.error("Error fetching reports:", error);
@@ -112,7 +112,7 @@ const InternshipReport = () => {
         ]
       };
 
-      const response = await axios.get("/api/internship/jobs/download-report/", {
+      const response = await api.get("/api/internship/jobs/download-report/", {
         params: {
           statistics: JSON.stringify(statisticsData)  // Sending formatted statistics data
         },

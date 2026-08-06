@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
@@ -274,7 +275,7 @@ function Session() {
     setErrorMessage("");
 
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         "/api/program_coordinator/create-attendance-record/",
         {
           method: "POST",

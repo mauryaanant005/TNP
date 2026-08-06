@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "@/lib/api";
 import { useParams } from "react-router";
 import { getCookie } from "@/utils";
 
@@ -20,7 +20,7 @@ const StudentsByCategory = () => {
     const fetchStudents = async () => {
       const csrftoken = getCookie("csrftoken");
       try {
-        const response = await axios.get(`/api/placement_officer/students/by-category/${category}/${batch}/`, {
+        const response = await api.get(`/api/placement_officer/students/by-category/${category}/${batch}/`, {
           headers: { "X-CSRFToken": csrftoken || "" },
           withCredentials: true,
         });

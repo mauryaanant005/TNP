@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 import { useState } from "react";
 import { getCookie } from "@/utils";
 const BatchCategorizer = () => {
@@ -32,7 +33,7 @@ const BatchCategorizer = () => {
     setMessage("");
 
     try {
-      const response = await fetch("/api/staff/category_update/", {
+      const response = await apiFetch("/api/staff/category_update/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

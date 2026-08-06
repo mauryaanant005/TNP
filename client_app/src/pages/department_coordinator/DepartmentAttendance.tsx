@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 import React, { useState } from "react";
 import { FileUploadCard } from "./components/FileUploadCard";
 import { GraduationCap, UserCheck } from "lucide-react";
@@ -15,7 +16,7 @@ export default function DepartmentAttendance() {
     const formData = new FormData();
     if (attendanceFile) {
       formData.append("file_attendance", attendanceFile);
-      const res = await fetch(
+      const res = await apiFetch(
         "/api/department_coordinator/attendance/upload-attendance/",
         {
           method: "POST",
@@ -39,7 +40,7 @@ export default function DepartmentAttendance() {
     const formData = new FormData();
     if (marksFile) {
       formData.append("file_performance", marksFile);
-      const res = await fetch(
+      const res = await apiFetch(
         "/api/department_coordinator/attendance/upload-performance/",
         {
           method: "POST",

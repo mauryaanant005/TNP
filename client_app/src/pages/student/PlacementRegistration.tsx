@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
@@ -60,7 +61,7 @@ const PlacementRegistration = () => {
   useEffect(() => {
     const fetchCompanyData = async () => {
       try {
-        const response = await fetch(`/api/staff/placement/company/${id}/`, {
+        const response = await apiFetch(`/api/staff/placement/company/${id}/`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -127,7 +128,7 @@ const PlacementRegistration = () => {
         toast.error("Please select an offer to apply for");
         return;
       }
-      const res = await fetch(`/api/student/company/register`, {
+      const res = await apiFetch(`/api/student/company/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

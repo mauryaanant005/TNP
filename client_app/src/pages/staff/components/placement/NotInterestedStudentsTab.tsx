@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 import {
   InterestedStudentApplication,
   PaginatedResponse,
@@ -37,7 +38,7 @@ const fetchStudents = async (
   page: number,
   pageSize: number
 ): Promise<PaginatedResponse<InterestedStudentApplication>> => {
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/staff/company/${companyId}/not-interested-students/?page=${
       page + 1
     }&page_size=${pageSize}`

@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import Papa from "papaparse";
@@ -135,7 +136,7 @@ const Upload = () => {
       })),
     };
     const csrfToken = getCookie("csrftoken");
-    fetch("/api/program_coordinator/upload-data/", {
+    apiFetch("/api/program_coordinator/upload-data/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

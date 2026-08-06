@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import { api } from "@/lib/api";
 import {
   Box,
   Typography,
@@ -46,14 +46,14 @@ const CATEGORY_COLORS: Record<string, "default" | "primary" | "secondary" | "suc
 // -------------------------------------------------------------------------
 
 const fetchNotification = async (id: string): Promise<NotificationDetail> => {
-  const response = await axios.get(`/api/notifications/${id}/`, {
+  const response = await api.get(`/api/notifications/${id}/`, {
     withCredentials: true,
   });
   return response.data;
 };
 
 const markNotificationRead = async (id: string): Promise<void> => {
-  await axios.patch(
+  await api.patch(
     `/api/notifications/${id}/mark-read/`,
     {},
     {

@@ -20,7 +20,7 @@ import {
   TextField, // NEW: Import TextField for the date input
 } from "@mui/material";
 import { saveAs } from "file-saver";
-import axios from "axios";
+import { api, apiFetch } from "@/lib/api";
 import { getCookie } from "@/utils";
 
 const BASE_URL = "/api/program_coordinator/training-performance";
@@ -82,7 +82,7 @@ const TrainingPerformanceUpload: React.FC = () => {
     }
     try {
       setLoading(true);
-      const response = await axios.get(
+      const response = await api.get(
         `${BASE_URL}/template/${trainingType}/`,
         {
           responseType: "blob",
@@ -121,7 +121,7 @@ const TrainingPerformanceUpload: React.FC = () => {
       }
       formData.append("file", file);
 
-      const response = await fetch(
+      const response = await apiFetch(
         `/api/program_coordinator/training-performance/upload/${trainingType}/`,
         {
           method: "POST",

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "@/lib/api";
 import {
   Box,
   Button,
@@ -416,7 +416,7 @@ function DepartmentStudentData() {
         url += `&uid=${encodeURIComponent(searchQuery)}`;
       }
       
-      const response = await axios.get(url, {
+      const response = await api.get(url, {
         headers: {
           "X-CSRFToken": csrfToken || "",
         },

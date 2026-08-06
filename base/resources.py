@@ -5,7 +5,7 @@ from .models import FacultyResponsibility, User
 from django.contrib.auth.hashers import make_password
 from uuid import uuid4
 
-DEFAULT_FACULTY_IMPORT_PASSWORD = os.getenv("DEFAULT_FACULTY_IMPORT_PASSWORD", "Faculty@123")
+DEFAULT_FACULTY_IMPORT_PASSWORD = os.getenv("DEFAULT_FACULTY_IMPORT_PASSWORD", "tcet@1234")
 
 
 class FacultyResponsibilityResource(resources.ModelResource):

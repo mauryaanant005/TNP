@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "@/lib/api";
 import { Box, Grid, Tabs, Tab } from "@mui/material";
 import { getCookie } from "../../utils";
 import { DashboardData } from "./types";
@@ -28,7 +28,7 @@ export default function DepartmentDashboard() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await axios.get(
+        const res = await api.get(
           "/api/department_coordinator/dashboard-summary/",
           {
             headers: { "X-CSRFToken": csrfToken || "" },

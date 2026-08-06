@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 "use client";
 
 import { useState } from "react";
@@ -16,7 +17,7 @@ import {
 } from "lucide-react";
 import { SERVER_URL } from "@/constant";
 // This hook polls the task status
-const taskFetcher = (url: string) => fetch(url).then((res) => res.json());
+const taskFetcher = (url: string) => apiFetch(url).then((res) => res.json());
 
 const useTaskPoller = (taskId: string | null) => {
   const { data, error } = useSWR(
@@ -114,7 +115,7 @@ export function ExportManager({ companyId }: { companyId: string }) {
         : `/api/staff/company/${companyId}/trigger-resume-export/`;
 
     try {
-      const response = await fetch(url);
+      const response = await apiFetch(url);
       if (!response.ok) throw new Error("Failed to start export task.");
 
       const { task_id } = await response.json();

@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -21,7 +22,7 @@ export default function PlacementCard() {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch("/api/student/placement-card/", {
+        const response = await apiFetch("/api/student/placement-card/", {
           headers: {
             "Content-Type": "application/json",
           },

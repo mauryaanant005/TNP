@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
@@ -44,7 +45,7 @@ const InternshipRegistration = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`/api/internship/company/${id}`);
+        const response = await apiFetch(`/api/internship/company/${id}`);
         if (!response.ok) throw new Error("Failed to fetch company");
         const data = await response.json();
         setData(data);
@@ -79,7 +80,7 @@ const InternshipRegistration = () => {
   const navigate = useNavigate();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch(`/api/internship/job_application/create/${id}`, {
+    const res = await apiFetch(`/api/internship/job_application/create/${id}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

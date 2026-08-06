@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { useAtomValue } from "jotai";
 import axios from "axios";
+import { api } from "@/lib/api";
 import toast from "react-hot-toast";
 import {
   Card,
@@ -124,7 +125,7 @@ interface NotificationFormValues {
 
 const createNotification = async (formData: FormData): Promise<unknown> => {
   const csrfToken = getCookie("csrftoken");
-  const response = await axios.post("/api/notifications/", formData, {
+  const response = await api.post("/api/notifications/", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
       "X-CSRFToken": csrfToken || "",

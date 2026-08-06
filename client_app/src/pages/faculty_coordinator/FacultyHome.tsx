@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "@/lib/api";
 import {
   Box,
   Typography,
@@ -51,7 +51,7 @@ function FacultyHome() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("/api/faculty_coordinator/data");
+        const response = await api.get("/api/faculty_coordinator/data");
         setData(response.data);
 
         const uniquePrograms = [

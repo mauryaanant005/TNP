@@ -19,7 +19,7 @@ import {
   Skeleton,
 } from "@mui/material";
 import { BellOff, Plus } from "lucide-react";
-import axios from "axios";
+import { api, buildWebSocketUrl } from "@/lib/api";
 import { useAtomValue } from "jotai";
 import { authAtom } from "@/authAtom";
 
@@ -64,7 +64,7 @@ const CATEGORY_COLORS: Record<string, "default" | "primary" | "secondary" | "suc
 
 const fetchNotifications = async (category?: string): Promise<NotificationItem[]> => {
   const params = category && category !== "all" ? { category } : {};
-  const response = await axios.get("/api/notifications/", {
+  const response = await api.get("/api/notifications/", {
     params,
     withCredentials: true, // use session cookie, not localStorage token
   });
@@ -118,9 +118,7 @@ const NotificationList = () => {
   });
 
   useEffect(() => {
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${window.location.host}/ws/notifications/`;
-    const socket = new WebSocket(wsUrl);
+    const socket = new WebSocket(buildWebSocketUrl("/ws/notifications/"));
 
     socket.onmessage = (event) => {
       try {

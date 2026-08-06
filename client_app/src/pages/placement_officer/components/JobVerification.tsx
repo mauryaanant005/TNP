@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "@/lib/api";
 
 interface Job {
   id: number;
@@ -37,7 +37,7 @@ const JobVerification = () => {
   }, []);
 
   const fetchJobs = () => {
-    axios
+    api
       .get("/api/placement/jobs/verify")
       .then((response) => setJobs(response.data))
       .catch((error) => console.error("Error fetching data:", error));
@@ -45,7 +45,7 @@ const JobVerification = () => {
   const handleVerify = async () => {
     try {
       const csrftoken = getCookie("csrftoken");
-      await axios.post(
+      await api.post(
         `/api/placement/jobs/verify/selected/`,
         { jobIds: selectedIds },
         {

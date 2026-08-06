@@ -34,6 +34,8 @@ import {
 import Papa from "papaparse";
 import { Chip } from "@mui/material";
 import { sampleStudentDetailData } from "./fallbackData";
+import { useBatchOptions, useDepartmentOptions, useRealOrSampleData } from "./hooks";
+import { ErrorBanner, NO_DATA_MESSAGE } from "./ErrorBanner";
 
 interface CompanyHeader {
   id: number;
@@ -82,83 +84,43 @@ function TableSkeletonLoader({ columns }: { columns: number }) {
   );
 }
 
+function hasStudentDetailData(json: ApiResponse): boolean {
+  return Boolean(json.count && json.count > 0);
+}
+
 export function StudentStatusReport() {
-  const [apiResponse, setApiResponse] = React.useState<ApiResponse | null>(
-    null
-  );
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [isSampleData, setIsSampleData] = React.useState(false);
-  const [department, setDepartment] = React.useState("all");
+  const [department, setDepartmentState] = React.useState("all");
   const [page, setPage] = React.useState(1);
-  const [selectedBatch, setSelectedBatch] = React.useState<string>("");
-  const [batches, setBatches] = React.useState<string[]>([]);
-  const [dynamicDepartments, setDynamicDepartments] = React.useState<string[]>([]);
-  React.useEffect(() => {
-    fetch("/api/staff/companies/batches/", { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        setBatches(data);
-        if (data.length > 0) {
-          setSelectedBatch(data[0]);
-        }
-      })
-      .catch((err) => console.error("Error fetching batches:", err));
+  const { batches, selectedBatch, setSelectedBatch: setSelectedBatchState } = useBatchOptions();
+  const dynamicDepartments = useDepartmentOptions(selectedBatch);
 
-    fetch("/api/placement_officer/unique-departments/", { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.unique_departments) {
-          setDynamicDepartments(data.unique_departments);
-        }
-      })
-      .catch((err) => console.error("Error fetching departments:", err));
-  }, []);
-  React.useEffect(() => {
-    async function fetchData() {
-      if (!selectedBatch) {
-        setLoading(false);
-        return;
-      }
+  // Selecting a different batch or department invalidates the current page -
+  // previously `page` was never reset, so switching department while on
+  // page 3 could silently request an out-of-range page for the new filter.
+  const setDepartment = (value: string) => {
+    setDepartmentState(value);
+    setPage(1);
+  };
+  const setSelectedBatch = (value: string) => {
+    setSelectedBatchState(value);
+    setPage(1);
+  };
 
-      setLoading(true);
-      setError(null);
-      const params = new URLSearchParams();
-      params.append("page", String(page));
-      if (department && department !== "all") {
-        params.append("department", department);
-      }
-      const url = `/api/placement_officer/student_detail_report/${selectedBatch}/?${params.toString()}`;
+  const params = new URLSearchParams();
+  params.append("page", String(page));
+  if (department && department !== "all") {
+    params.append("department", department);
+  }
 
-      try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch report: ${response.statusText}`);
-        }
-        const data: ApiResponse = await response.json();
-        if (data.count === 0 && page === 1) {
-          React.startTransition(() => {
-            setApiResponse(sampleStudentDetailData as any);
-            setIsSampleData(true);
-          });
-        } else {
-          React.startTransition(() => {
-            setApiResponse(data);
-            setIsSampleData(false);
-          });
-        }
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "An unknown error occurred");
-        React.startTransition(() => {
-          setApiResponse(sampleStudentDetailData as any);
-          setIsSampleData(true);
-        });
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, [selectedBatch, department, page]);
+  const { data: apiResponse, isSampleData, loading, error, retry } =
+    useRealOrSampleData<ApiResponse>({
+      url: selectedBatch
+        ? `/api/placement_officer/student_detail_report/${selectedBatch}/?${params.toString()}`
+        : null,
+      sampleData: sampleStudentDetailData as unknown as ApiResponse,
+      hasData: hasStudentDetailData,
+      deps: [],
+    });
   const columns = React.useMemo<ColumnDef<StudentData>[]>(() => {
     if (!apiResponse) return [];
 
@@ -362,7 +324,8 @@ export function StudentStatusReport() {
         </div>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="space-y-4">
+        {error && <ErrorBanner message={error} onRetry={retry} />}
         <div className="rounded-md border overflow-x-auto">
           <Table>
             <TableHeader>
@@ -390,15 +353,6 @@ export function StudentStatusReport() {
                 <TableSkeletonLoader
                   columns={table.getAllLeafColumns().length}
                 />
-              ) : error ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center text-destructive"
-                  >
-                    Error: {error}
-                  </TableCell>
-                </TableRow>
               ) : table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow key={row.id}>
@@ -418,7 +372,7 @@ export function StudentStatusReport() {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No data found for these filters.
+                    {NO_DATA_MESSAGE}
                   </TableCell>
                 </TableRow>
               )}

@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useForm, useFieldArray } from "react-hook-form";
 import { useState, useEffect } from "react";
@@ -116,7 +117,7 @@ export default function ResumeBuilderForm() {
 
   useEffect(() => {
     const fetchResume = async () => {
-      const res = await fetch("/api/student/resume/", {
+      const res = await apiFetch("/api/student/resume/", {
         method: "GET",
         credentials: "include",
         headers: {
@@ -201,7 +202,7 @@ export default function ResumeBuilderForm() {
       formData.append("data", JSON.stringify(restOfData));
       let res;
       if (isUpdate) {
-        res = await fetch("/api/student/resume/", {
+        res = await apiFetch("/api/student/resume/", {
           method: "PUT",
           credentials: "include",
           headers: {
@@ -210,7 +211,7 @@ export default function ResumeBuilderForm() {
           body: formData,
         });
       } else {
-        res = await fetch("/api/student/resume/", {
+        res = await apiFetch("/api/student/resume/", {
           method: "POST",
           headers: {
             "X-CSRFToken": getCookie("csrftoken") || "",

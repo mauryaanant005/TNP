@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "@/lib/api";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -34,7 +34,7 @@ export default function StudentDashboard() {
   const [isDummy, setIsDummy] = useState<boolean>(false);
 
   useEffect(() => {
-    axios
+    api
       .get("/api/student/info", { withCredentials: true })
       .then((res) => {
         setStudent(res.data);
@@ -83,7 +83,7 @@ export default function StudentDashboard() {
 
   const handleDeleteAccount = () => {
     if (window.confirm("Are you sure you want to delete your account? This action cannot be undone and will delete all your data permanently.")) {
-      axios.delete("/api/student/delete-account/", {
+      api.delete("/api/student/delete-account/", {
         headers: {
           "X-CSRFToken": getCookie("csrftoken") || "",
         },

@@ -67,10 +67,12 @@ tinyhtml5==2.0.0
 types-python-dateutil==2.9.0.20240821
 tzdata==2025.2
 urllib3==2.2.2
+uvicorn==0.32.1
 vine==5.1.0
 wcwidth==0.2.14
 weasyprint==66.0
 webencodings==0.5.1
+whitenoise==6.7.0
 zopfli==0.2.3.post1
 channels==4.1.0
 channels_redis==4.2.0

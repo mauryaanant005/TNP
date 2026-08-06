@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import {
@@ -64,7 +65,7 @@ const Update = () => {
 
   // Fetch attendance data from the API
   useEffect(() => {
-    fetch("/api/program_coordinator/attendance/attendance_data/")
+    apiFetch("/api/program_coordinator/attendance/attendance_data/")
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -137,7 +138,7 @@ const Update = () => {
     const newStatus = currentStatus === "Present" ? "Absent" : "Present";
 
     // Update data in the backend
-    fetch("/api/program_coordinator/update-attendance/attendance_data/", {
+    apiFetch("/api/program_coordinator/update-attendance/attendance_data/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

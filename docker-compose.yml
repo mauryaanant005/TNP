@@ -1,62 +1,75 @@
+name: t_and_p_automation
 services:
-  mysql:
-    image: mysql
-    restart: always
-    environment:
-      MYSQL_DATABASE: ${DATABASE_NAME}
-      MYSQL_USER: ${DATABASE_USER}
-      MYSQL_PASSWORD: ${DATABASE_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD}
-    # No host port mapping: only the backend/caddy containers need to reach
-    # MySQL, and they do so over the internal Docker network by service name.
-    # Publishing 3306 to the host would expose it to the internet on any
-    # server without a host firewall blocking it.
+  # NOTE: MySQL is a managed service provided by TCET IT (Dokploy injects
+  # DATABASE_HOST/DATABASE_NAME/DATABASE_USER/DATABASE_PASSWORD at deploy
+  # time). Do not add a mysql service here - see TCET hosting standard 6.3.
+  #
+  # NOTE: There is no reverse-proxy/TLS service here either. Traefik
+  # (managed by Dokploy) and Cloudflare Tunnel handle all routing and TLS
+  # termination in front of the api/frontend containers.
 
-  redis:
-    image: redis
-    restart: always
-    # Same reasoning as mysql above: no host port mapping.
-    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}"]
-
-
-  backend:
-    build: .
-    restart: always
-    # Not published to the host either - Caddy (ports 80/443) is the only
-    # intended public entry point; it reaches this container over the
-    # internal Docker network.
-    expose:
-      - "8000"
-    depends_on:
-      - mysql
-      - redis
-    volumes:
-      - staticfiles:/app/staticfiles
-      - media:/app/media
-      - sqlite_data:/app/data
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    # No ports: section - Traefik reaches this container over the internal
+    # Docker network by service name ("api").
     env_file:
       - .env
     environment:
       - REDIS_HOST=redis
-
-  caddy:
-    image: caddy:latest
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - staticfiles:/app/staticfiles:ro
-      - media:/app/media:ro
-      - caddy_data:/data
-      - caddy_config:/config
     depends_on:
-      - backend
+      - redis
+    volumes:
+      - media:/app/media
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  celery:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: celery -A t_and_p_automation worker --loglevel=info
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+      - RUN_RELEASE_TASKS=0
+    depends_on:
+      - redis
+    volumes:
+      - media:/app/media
+    healthcheck:
+      # Disables the HTTP healthcheck baked into backend/Dockerfile - this
+      # service runs `celery worker`, not Gunicorn, so nothing listens on
+      # :8000 here.
+      disable: true
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # Self-hosted: unlike MySQL, Redis is NOT a managed service on this
+    # platform (TCET hosting standard 6.3). No host port mapping - only
+    # api/celery need to reach it, over the internal Docker network.
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}"]
+    volumes:
+      - redis_data:/data
+
+  frontend:
+    build:
+      context: .
+      dockerfile: client_app/Dockerfile
+      args:
+        VITE_SERVER_URL: ${VITE_SERVER_URL}
+    restart: unless-stopped
+    # No ports: section - Traefik reaches this container internally too.
 
 volumes:
-  caddy_data:
-  caddy_config:
-  staticfiles:
+  redis_data:
   media:
-  sqlite_data:

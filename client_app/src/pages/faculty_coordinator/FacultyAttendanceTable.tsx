@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import axios from "axios";
+import { api } from "@/lib/api";
 import {
   Box,
   Container,
@@ -61,7 +61,7 @@ function TablePage() {
   // --- DATA FETCHING & LOCAL STORAGE ---
   useEffect(() => {
     if (!program) return;
-    axios
+    api
       .get("/api/faculty_coordinator/data")
       .then((response) => {
         setData(response.data);
@@ -186,7 +186,7 @@ function TablePage() {
       };
     });
 
-    axios
+    api
       .post(
         "/api/faculty_coordinator/save-attendance",
         { students: attendanceArray },

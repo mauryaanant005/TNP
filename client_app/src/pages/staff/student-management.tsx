@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -49,7 +50,7 @@ export default function StudentManager() {
     }
     setLoading(true);
     try {
-      const res = await fetch(`/api/staff/update/student/${uid}/`);
+      const res = await apiFetch(`/api/staff/update/student/${uid}/`);
       const data = await res.json();
       if (res.ok) {
         setStudent(data);
@@ -70,7 +71,7 @@ export default function StudentManager() {
     if (!student) return;
     setUpdating(true);
     try {
-      const res = await fetch(`/api/staff/update/student/${uid}/`, {
+      const res = await apiFetch(`/api/staff/update/student/${uid}/`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

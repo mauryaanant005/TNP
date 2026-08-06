@@ -27,7 +27,10 @@ cp .env.example .env
 docker compose up --build
 ```
 
-The app is available at `http://localhost`. A superuser is auto-created from `.env` (`admin@gmail.com` / `admin123`).
+This starts four containers: `api` (Django/DRF/Channels via Gunicorn), `frontend` (the React
+build served by Nginx), `celery` (async task worker), and `redis` (broker/cache). The frontend
+and API are separate origins even locally, matching production - see **Deployment Architecture**
+below. A superuser is auto-created from `.env` (`admin@gmail.com` / `admin123`).
 
 ---
 
@@ -131,7 +134,6 @@ All env vars in `.env`:
 | `DATABASE_NAME` | `t_and_p_automation` | MySQL database |
 | `DATABASE_USER` | `t_and_p` | MySQL user |
 | `DATABASE_PASSWORD` | — | MySQL password |
-| `DATABASE_ROOT_PASSWORD` | — | MySQL root password |
 | `EMAIL_USERNAME` | — | Gmail SMTP user (OTP/notifications) |
 | `EMAIL_PASSWORD` | — | Gmail app password |
 | `ENV` | `DEV` | `DEV` or `PROD` — controls debug, CORS, DB host |
@@ -143,16 +145,48 @@ All env vars in `.env`:
 | `DEFAULT_FACULTY_IMPORT_PASSWORD` | — | Fallback password used by `base/resources.py` when a faculty bulk-import spreadsheet has no `password` column |
 | `DEFAULT_STUDENT_IMPORT_PASSWORD` | — | Fallback password used by `student/resources.py` when a student bulk-import spreadsheet has no `password` column |
 | `REDIS_PASSWORD` | — | Auth password for the Redis container (cache, Celery broker, channel layer) - required in PROD |
-| `DATABASE_HOST` | `mysql` | MySQL host override, if not using the bundled `mysql` service |
+| `DATABASE_HOST` | `mysql` | Managed MySQL host, provisioned by the hosting platform's IT team in PROD |
+| `DATABASE_PORT` | `3306` | Managed MySQL port |
 | `DATABASE_SSL_MODE` | `REQUIRED` | MySQL SSL mode in PROD (`REQUIRED`, `VERIFY_CA`, `VERIFY_IDENTITY`) |
+| `DJANGO_ALLOWED_HOSTS` | — | Comma-separated API hostname(s) in PROD, e.g. `api.yourproject.example.com` |
+| `COOKIE_DOMAIN` | — | Shared parent domain for session/CSRF cookies in PROD, e.g. `.yourproject.example.com` (leading dot) - lets frontend JS on the apex domain read the CSRF cookie set by the api subdomain |
+| `VITE_SERVER_URL` | `""` (same-origin) | Build-time only: the API's origin, e.g. `https://api.yourproject.example.com`. Baked into the frontend bundle via `docker-compose.yml`'s `frontend` build args - not read at container runtime |
 
 ---
 
 ## Tech Stack
 
-**Backend:** Django 5.1, DRF 3.15, Celery, MySQL 8, Redis  
+**Backend:** Django 5.1, DRF 3.15, Django Channels, Celery, MySQL 8, Redis  
 **Frontend:** React 18, TypeScript, Vite, MUI 6, Tailwind CSS, Radix UI, TanStack Query, Recharts  
-**Infrastructure:** Docker, Gunicorn, Caddy (reverse proxy), django-unfold (admin)
+**Infrastructure:** Docker, Gunicorn (Uvicorn worker), Nginx (frontend static build only), django-unfold (admin)
+
+---
+
+## Deployment Architecture
+
+The frontend and API are two separate containers on two separate origins - this mirrors production,
+where they're served from different subdomains behind a reverse proxy/CDN neither container runs
+itself:
+
+```
+Browser
+ ├─ frontend origin  → frontend container (Nginx serving the Vite build; SPA routing only)
+ └─ api origin       → api container (Gunicorn + Uvicorn worker, Django/DRF/Channels)
+     wss://<api origin>/ws/notifications/ → same api container
+
+celery  → same image as api, runs `celery worker`, talks to redis + MySQL
+redis   → self-hosted broker/cache (not a managed service)
+MySQL   → managed externally (DATABASE_HOST/NAME/USER/PASSWORD), never run as a container here
+```
+
+Because the frontend and API are different origins, every frontend API call goes through
+`client_app/src/lib/api.ts` (`api` - an `axios` instance, or `apiFetch` - a `fetch` wrapper), which
+prefixes `VITE_SERVER_URL` and sends credentials, instead of relying on same-origin relative paths.
+
+Gunicorn runs with a Uvicorn worker (`-k uvicorn.workers.UvicornWorker`, serving
+`t_and_p_automation.asgi:application`) rather than plain WSGI, since the notifications feature needs
+an ASGI server for its WebSocket (Django Channels). This lets a single `api` container serve both
+regular HTTP and the `/ws/notifications/` WebSocket route.
 
 ---
 
@@ -170,14 +204,15 @@ t_and_p_task_automation/
 ├── faculty_coordinator/      # Faculty-managed program coordination
 ├── staff/                    # Companies, notices, student progress, async exports
 ├── department_coordinator/   # Department-level coordination
-├── notifications/            # Notification model + CRUD
+├── notifications/            # Notification model + CRUD (incl. WebSocket consumer)
+├── backend/Dockerfile        # Multi-stage: pip install → collectstatic → gunicorn+uvicorn
 ├── client_app/               # React SPA (Vite + MUI + Tailwind)
-├── templates/                # Django templates (base.html + React build index)
-├── static/                   # Static assets
-├── Dockerfile                # Multi-stage: npm build → pip → collectstatic
-├── docker-compose.yml        # MySQL + Redis + Backend + Caddy
-├── Caddyfile                 # Reverse proxy for /static/ /media/ → backend
-└── entrypoint.sh             # Waits for MySQL → migrate → seed superuser → gunicorn
+│   ├── Dockerfile            # Multi-stage: npm build → nginx serving the static build
+│   ├── nginx.conf            # SPA fallback routing (try_files → index.html)
+│   └── src/lib/api.ts        # Centralized API client (base URL + credentials)
+├── static/                   # Static assets (served via WhiteNoise inside the api container)
+├── docker-compose.yml        # api + frontend + celery + redis only (no MySQL/reverse proxy)
+└── entrypoint.sh             # Waits for MySQL → migrate → seed superuser → exec "$@"
 ```
 
 ---

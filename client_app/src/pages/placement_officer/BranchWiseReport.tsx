@@ -34,6 +34,8 @@ import {
 import Papa from "papaparse";
 import { Chip } from "@mui/material";
 import { sampleBranchWiseData } from "./fallbackData";
+import { useBatchOptions, useRealOrSampleData } from "./hooks";
+import { ErrorBanner, NO_DATA_MESSAGE } from "./ErrorBanner";
 
 export interface BranchReportData {
   company_headers: CompanyHeader[];
@@ -73,67 +75,21 @@ function TableSkeletonLoader({ columns }: { columns: number }) {
   );
 }
 
+function hasBranchWiseData(json: BranchReportData): boolean {
+  return Boolean(json.report_data && json.report_data.length > 0);
+}
+
 export function BranchWiseReport() {
-  const [apiData, setApiData] = React.useState<BranchReportData | null>(null);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [isSampleData, setIsSampleData] = React.useState(false);
-  const [selectedBatch, setSelectedBatch] = React.useState<string>("");
-  const [batches, setBatches] = React.useState<string[]>([]);
-
-  React.useEffect(() => {
-    fetch("/api/staff/companies/batches/", { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        setBatches(data);
-        if (data.length > 0) {
-          setSelectedBatch(data[0]);
-        }
-      })
-      .catch((err) => console.error("Error fetching batches:", err));
-  }, []);
-
-  React.useEffect(() => {
-    async function fetchData(fetchBatch: string) {
-      if (!fetchBatch) {
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      setError(null);
-      setApiData(null);
-
-      try {
-        const response = await fetch(
-          `/api/placement_officer/branch_wise_report/${selectedBatch}/`
-        );
-        if (!response.ok) {
-          throw new Error(`Failed to fetch report: ${response.statusText}`);
-        }
-        const data: BranchReportData = await response.json();
-        if (!data.report_data || data.report_data.length === 0) {
-          React.startTransition(() => {
-            setApiData(sampleBranchWiseData as any);
-            setIsSampleData(true);
-          });
-        } else {
-          React.startTransition(() => {
-            setApiData(data);
-            setIsSampleData(false);
-          });
-        }
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "An unknown error occurred");
-        React.startTransition(() => {
-          setApiData(sampleBranchWiseData as any);
-          setIsSampleData(true);
-        });
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData(selectedBatch);
-  }, [selectedBatch]);
+  const { batches, selectedBatch, setSelectedBatch } = useBatchOptions();
+  const { data: apiData, isSampleData, loading, error, retry } =
+    useRealOrSampleData<BranchReportData>({
+      url: selectedBatch
+        ? `/api/placement_officer/branch_wise_report/${selectedBatch}/`
+        : null,
+      sampleData: sampleBranchWiseData as unknown as BranchReportData,
+      hasData: hasBranchWiseData,
+      deps: [],
+    });
 
   const columns = React.useMemo<ColumnDef<Record<string, any>>[]>(() => {
     if (!apiData) return [];
@@ -257,7 +213,8 @@ export function BranchWiseReport() {
         </div>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="space-y-4">
+        {error && <ErrorBanner message={error} onRetry={retry} />}
         <div className="rounded-md border overflow-x-auto">
           <Table>
             <TableHeader>
@@ -285,15 +242,6 @@ export function BranchWiseReport() {
                 <TableSkeletonLoader
                   columns={table.getAllLeafColumns().length}
                 />
-              ) : error ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center text-destructive"
-                  >
-                    Error: {error}
-                  </TableCell>
-                </TableRow>
               ) : table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow key={row.id}>
@@ -313,7 +261,7 @@ export function BranchWiseReport() {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No data found for this batch
+                    {NO_DATA_MESSAGE}
                   </TableCell>
                 </TableRow>
               )}

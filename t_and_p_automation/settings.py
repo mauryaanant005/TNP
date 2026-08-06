@@ -46,7 +46,9 @@ DEBUG = IS_DEV
 if IS_DEV:
     ALLOWED_HOSTS = ["localhost", "127.0.0.1", os.getenv("CURRENT_HOST", "172.30.10.5")]
 else:
-    ALLOWED_HOSTS = ["*", "backend"]  # for Docker + Caddy
+    # e.g. "api.yourproject.example.com" - Traefik forwards the original
+    # Host header, so this must match the public api hostname(s).
+    ALLOWED_HOSTS = require_env("DJANGO_ALLOWED_HOSTS").split(",")
 
 
 # ---------------------------------
@@ -89,6 +91,10 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",  # For frontend dev mode
     "django.middleware.security.SecurityMiddleware",
+    # Serves collected static files (admin CSS/JS, DRF browsable API, unfold
+    # theme) directly from Gunicorn - there's no Caddy/Nginx in front of the
+    # api container anymore to read them off a shared volume.
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -229,6 +235,20 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    # Not the "Manifest" variant: that rewrites every CSS url() reference and
+    # requires the referenced file to exist, which a pre-existing static
+    # asset (static/css/style.css references a since-removed group.png)
+    # fails. Compression without manifest/hashing matches how the old Caddy
+    # setup served these files anyway (no cache-busting either way).
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
+
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -242,9 +262,25 @@ if IS_DEV:
         "http://localhost:5173",
         "http://127.0.0.1:5173",
     ]
+    SESSION_COOKIE_DOMAIN = None
+    CSRF_COOKIE_DOMAIN = None
 else:
-    CORS_ALLOWED_ORIGINS = []
-    CSRF_TRUSTED_ORIGINS = []
+    # The frontend (e.g. https://yourproject.example.com) and this API
+    # (api.yourproject.example.com) are separate origins in production, so
+    # both must be explicitly allowed - CORS_ALLOW_CREDENTIALS above only
+    # takes effect for origins listed here.
+    _frontend_url = require_env("CLIENT_URL")
+    CORS_ALLOWED_ORIGINS = [_frontend_url]
+    CSRF_TRUSTED_ORIGINS = [_frontend_url]
+    # Cookies set by api.yourproject.example.com default to being scoped to
+    # that host only, so frontend JS on yourproject.example.com couldn't read
+    # the (non-HttpOnly) CSRF cookie to attach it as a header. Scoping both
+    # cookies to the shared parent domain (e.g. ".yourproject.example.com")
+    # makes them visible across both subdomains - they remain same-site for
+    # SameSite purposes since "site" = registrable domain, not full origin.
+    COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN") or None
+    SESSION_COOKIE_DOMAIN = COOKIE_DOMAIN
+    CSRF_COOKIE_DOMAIN = COOKIE_DOMAIN
 
 CORS_ALLOW_HEADERS = [
     "accept",
@@ -330,11 +366,14 @@ UNFOLD = {
 
 LOGIN_URL = "/auth/login/"
 
-# SECURE_SSL_REDIRECT stays False until the reverse proxy (Caddy) actually terminates
-# TLS - the current Caddyfile serves plain HTTP only (`auto_https off`, `:80`). Flipping
-# this to True before HTTPS is live would break every request with a redirect to a
-# non-existent https:// listener. Flip it once TLS is configured.
-SECURE_SSL_REDIRECT = False
+# Gunicorn only ever sees plain HTTP inside the Docker network - TLS is
+# terminated at Cloudflare/Traefik in front of it (TCET hosting standard
+# 11.3). SECURE_PROXY_SSL_HEADER tells Django to trust Traefik's
+# X-Forwarded-Proto header when deciding whether the original request was
+# HTTPS; without it, SECURE_SSL_REDIRECT below would redirect every request
+# in an infinite loop (Django would think each request was insecure).
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = not IS_DEV
 
 # ---------------------------------
 # SECURITY HEADERS

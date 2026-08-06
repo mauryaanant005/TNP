@@ -7,7 +7,11 @@ class ContentSecurityPolicyMiddleware:
     POLICY = "; ".join(
         [
             "default-src 'self'",
-            "script-src 'self' https://cdn.jsdelivr.net",
+            # Django Unfold / Alpine relies on runtime evaluation for some admin widgets
+            # and filter interactions, so allow this narrowly-scoped capability in the
+            # browser CSP while keeping the rest of the policy locked to self + the
+            # known external CDNs the project actually uses.
+            "script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net",
             "style-src 'self' https://fonts.googleapis.com 'unsafe-inline'",
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' data: https://zctindia.org",

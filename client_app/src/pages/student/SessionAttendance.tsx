@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import {
@@ -43,7 +44,7 @@ const SessionAttendance: React.FC = () => {
       setLoading(true);
 
       try {
-        const res = await fetch(`/api/student/attendance-data/`, {
+        const res = await apiFetch(`/api/student/attendance-data/`, {
           method: "GET",
           credentials: "include",
           headers: {

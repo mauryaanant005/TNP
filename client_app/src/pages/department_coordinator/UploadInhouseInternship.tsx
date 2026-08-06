@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -139,7 +140,7 @@ const UploadInhouseInternship = () => {
     formData.append("file", file);
 
     try {
-      const response = await fetch("/api/department_coordinator/upload-inhouse-internship/", {
+      const response = await apiFetch("/api/department_coordinator/upload-inhouse-internship/", {
         method: "POST",
         body: formData,
         credentials: 'include',

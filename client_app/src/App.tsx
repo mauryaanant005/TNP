@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 import { BrowserRouter, Route, Routes } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -19,6 +20,12 @@ import InternshipRoutes from "./routes/InternshipRoutes";
 import PrincipalRoutes from "./routes/PrincipalRoutes";
 import StaffRoutes from "./routes/StaffRoutes";
 
+// Module-level singleton: there is exactly one App instance in this app, and
+// creating the client inside the component body would tear down and
+// recreate React Query's entire cache/subscriptions on every re-render of
+// App (e.g. once the auth-check effect below calls setUser).
+const queryClient = new QueryClient();
+
 const App = () => {
   const setUser = useSetAtom(authAtom);
   useEffect(() => {
@@ -27,7 +34,7 @@ const App = () => {
         window.location.href = `${SERVER_URL}/auth/login/`;
         return;
       }
-      const res = await fetch("/api/", {
+      const res = await apiFetch("/api/", {
         method: "GET",
         credentials: "include",
         headers: {
@@ -44,7 +51,6 @@ const App = () => {
     };
     onAuthenticate();
   }, []);
-  const queryClient = new QueryClient();
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>

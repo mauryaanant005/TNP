@@ -2,7 +2,12 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from staff.models import CompanyRegistration
 class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 100
+    # Kept small deliberately: each row renders company_headers × 8 progress-
+    # field columns in the frontend table (StudentPerformance.tsx), so a large
+    # page_size combined with many real companies can force a very wide,
+    # synchronously-rendered grid. page_size_query_param still lets callers
+    # opt into a bigger page explicitly.
+    page_size = 25
     page_size_query_param = 'page_size'
     max_page_size = 1000
 

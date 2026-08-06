@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router";
@@ -28,7 +29,7 @@ const ResumePreview = () => {
     // Fetch resume data from API
     const fetchResume = async () => {
       try {
-        const res = await fetch("/api/student/resume/", {
+        const res = await apiFetch("/api/student/resume/", {
           method: "GET",
           credentials: "include",
           headers: {

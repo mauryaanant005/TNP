@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api";
 // types.ts
 interface FormData {
   srNo: string;
@@ -55,7 +56,7 @@ const DutyChart = () => {
   ]);
 
   useEffect(() => {
-    fetch("/api/get-duty-chart")
+    apiFetch("/api/get-duty-chart")
       .then((response) => response.json())
       .then((data) => setTableData(data.tableData || tableData))
       .catch((error) => console.error("Error fetching data:", error));
