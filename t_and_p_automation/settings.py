@@ -191,7 +191,7 @@ else:
             "USER": require_env("DATABASE_USER"),
             "PASSWORD": require_env("DATABASE_PASSWORD"),
             "HOST": os.getenv("DATABASE_HOST", "mysql"),
-            "PORT": "3306",
+            "PORT": os.getenv("DATABASE_PORT", "3306"),
             "OPTIONS": {
                 "ssl": {"ssl-mode": os.getenv("DATABASE_SSL_MODE", "REQUIRED")},
             },
