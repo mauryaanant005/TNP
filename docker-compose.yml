@@ -32,7 +32,12 @@ services:
       - default
       - dokploy-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health/"]
+      # X-Forwarded-Proto mimics what Traefik sends, so SECURE_SSL_REDIRECT
+      # doesn't answer with a 301 instead of actually exercising the health
+      # endpoint. Note DJANGO_ALLOWED_HOSTS must include localhost or Django
+      # rejects this request with 400 DisallowedHost and the check can never
+      # pass.
+      test: ["CMD", "curl", "-f", "-H", "X-Forwarded-Proto: https", "http://localhost:8000/api/health/"]
       interval: 30s
       timeout: 5s
       retries: 3
