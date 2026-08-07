@@ -99,7 +99,8 @@ def my_protected_view(request):
 def logout_api(request):
     logout(request)
     response = JSONResponse({"message": "Logged out successfully."})
-    response.delete_cookie("is_logged_in")
+    domain = getattr(settings, "SESSION_COOKIE_DOMAIN", None)
+    response.delete_cookie("is_logged_in", domain=domain)
     return response
 
 @login_required

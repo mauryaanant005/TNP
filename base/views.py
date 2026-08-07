@@ -56,7 +56,8 @@ def send_otp(email, otp, subject="OTP Verification"):
 def redirect_user(request, user):
     login_user(request, user)
     response = redirect(settings.CLIENT_URL)
-    response.set_cookie("is_logged_in", "true", httponly=False, samesite="Lax")
+    domain = getattr(settings, "SESSION_COOKIE_DOMAIN", None)
+    response.set_cookie("is_logged_in", "true", httponly=False, samesite="Lax", domain=domain)
     return response
 
 
@@ -161,7 +162,8 @@ def password_reset_confirm(request):
 def logout_view(request):
     logout(request)
     response = redirect('login')
-    response.delete_cookie("is_logged_in")
+    domain = getattr(settings, "SESSION_COOKIE_DOMAIN", None)
+    response.delete_cookie("is_logged_in", domain=domain)
     return response
 
 

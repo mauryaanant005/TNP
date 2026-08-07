@@ -335,11 +335,21 @@ else:
                 CSRF_TRUSTED_ORIGINS.append(_origin)
     # Cookies set by api.yourproject.example.com default to being scoped to
     # that host only, so frontend JS on yourproject.example.com couldn't read
-    # the (non-HttpOnly) CSRF cookie to attach it as a header. Scoping both
-    # cookies to the shared parent domain (e.g. ".yourproject.example.com")
-    # makes them visible across both subdomains - they remain same-site for
-    # SameSite purposes since "site" = registrable domain, not full origin.
-    COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN") or None
+    # the (non-HttpOnly) CSRF cookie or is_logged_in cookie. Scoping cookies
+    # to the shared parent domain (e.g. ".yourproject.example.com") makes them
+    # visible across both subdomains.
+    def _extract_parent_domain(url_or_host):
+        try:
+            from urllib.parse import urlparse
+            host = urlparse(url_or_host).netloc.split(":")[0] if "://" in url_or_host else url_or_host.split(":")[0]
+            parts = host.split(".")
+            if len(parts) >= 2 and not parts[-1].isdigit():
+                return "." + ".".join(parts[-2:])
+        except Exception:
+            pass
+        return None
+
+    COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN") or _extract_parent_domain(_frontend_url)
     SESSION_COOKIE_DOMAIN = COOKIE_DOMAIN
     CSRF_COOKIE_DOMAIN = COOKIE_DOMAIN
 
