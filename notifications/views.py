@@ -79,19 +79,51 @@ ROLE_AUDIENCE_PERMISSIONS = {
 NOTIFICATION_AUTHORS = tuple(ROLE_AUDIENCE_PERMISSIONS)
 
 
+DEPT_ALIASES = {
+    "COMP": ["COMP", "CMPN", "COMPUTER"],
+    "CMPN": ["COMP", "CMPN", "COMPUTER"],
+    "MECH": ["MECH", "MECHANICAL"],
+    "Mech": ["MECH", "MECHANICAL"],
+    "IT": ["IT", "INFT", "INFORMATION TECHNOLOGY"],
+    "INFT": ["IT", "INFT", "INFORMATION TECHNOLOGY"],
+    "E&TC": ["E&TC", "EXTC", "ELECTRONICS"],
+    "EXTC": ["E&TC", "EXTC", "ELECTRONICS"],
+    "AI&DS": ["AI&DS", "AIDS", "AI-DS"],
+    "AIDS": ["AI&DS", "AIDS", "AI-DS"],
+    "AI&ML": ["AI&ML", "AIML", "AI-ML"],
+    "AIML": ["AI&ML", "AIML", "AI-ML"],
+    "CS&E": ["CS&E", "CSE"],
+    "CSE": ["CS&E", "CSE"],
+    "E&CS": ["E&CS", "ECS"],
+    "ECS": ["E&CS", "ECS"],
+}
+
+
+def _expand_dept_variants(departments):
+    variants = set()
+    for dept in departments:
+        d_clean = str(dept).strip()
+        if not d_clean:
+            continue
+        variants.add(d_clean)
+        key_upper = d_clean.upper()
+        if key_upper in DEPT_ALIASES:
+            variants.update(DEPT_ALIASES[key_upper])
+        if d_clean in DEPT_ALIASES:
+            variants.update(DEPT_ALIASES[d_clean])
+    return list(variants)
+
+
 def _build_department_q(departments):
     """
-    Build a Q filter for Student.department that handles both formats:
-    - Exact match: 'CIVIL', 'IOT', 'MECH' (single-division departments)
-    - Prefix match: 'IT' matches 'IT-A', 'IT-B', 'IT-C'
-                    'COMP' matches 'COMP-A', 'COMP-B', 'COMP-C'
-    This is necessary because FacultyResponsibility stores the base dept name
-    (e.g. 'IT') while Student.department stores dept+division (e.g. 'IT-A').
+    Build a Q filter for Student.department that handles aliases and division prefixes:
+    - Matches exact 'IT', 'MECH', 'COMP', etc.
+    - Matches prefixes like 'IT-A', 'MECH-B', 'COMP-C'
     """
     from django.db.models import Q
     q = Q()
-    for dept in departments:
-        # Exact match OR starts-with "<dept>-"
+    all_variants = _expand_dept_variants(departments)
+    for dept in all_variants:
         q |= Q(department__iexact=dept) | Q(department__istartswith=f"{dept}-")
     return q
 
@@ -99,11 +131,12 @@ def _build_department_q(departments):
 def _build_faculty_dept_q(departments):
     """
     Build a Q filter for FacultyResponsibility.department using the same
-    prefix logic — handles both 'IT' and 'IT-A' style entries.
+    alias and division prefix logic.
     """
     from django.db.models import Q
     q = Q()
-    for dept in departments:
+    all_variants = _expand_dept_variants(departments)
+    for dept in all_variants:
         q |= Q(department__iexact=dept) | Q(department__istartswith=f"{dept}-")
     return q
 
@@ -121,49 +154,32 @@ def _resolve_recipients(target_audience, departments, academic_years, creator):
     if role in dept_scoped_roles and not departments:
         try:
             resp = FacultyResponsibility.objects.filter(user=creator).first()
-            if resp:
+            if resp and resp.department:
                 departments = [resp.department]
         except Exception:
             pass
 
-    if target_audience == "all_students":
-        if not departments and not academic_years:
-            return User.objects.filter(role="student")
-
+    # All student-targeted audiences apply combined department + year filters
+    if target_audience in ("all_students", "department_students", "year_students"):
         qs = Student.objects.all()
         if departments:
             qs = qs.filter(_build_department_q(departments))
         if academic_years:
-            qs = qs.filter(academic_year__in=academic_years)
-        return User.objects.filter(students__in=qs)
+            year_q = Q()
+            for yr in academic_years:
+                yr_clean = str(yr).strip()
+                if yr_clean:
+                    year_q |= Q(academic_year__iexact=yr_clean)
+            qs = qs.filter(year_q)
+        return User.objects.filter(students__in=qs, role="student")
 
-    if target_audience == "department_students":
-        qs = Student.objects.all()
-        if departments:
-            qs = qs.filter(_build_department_q(departments))
-        return User.objects.filter(students__in=qs)
-
-    if target_audience == "year_students":
-        if not academic_years and not departments:
-            return User.objects.filter(role="student")
-
-        qs = Student.objects.all()
-        if academic_years:
-            qs = qs.filter(academic_year__in=academic_years)
-        if departments:
-            qs = qs.filter(_build_department_q(departments))
-        return User.objects.filter(students__in=qs)
-
-    if target_audience == "all_faculty":
-        return User.objects.filter(role="faculty")
-
-    if target_audience == "department_faculty":
+    if target_audience in ("all_faculty", "department_faculty"):
         if departments:
             faculty_ids = (
                 FacultyResponsibility.objects.filter(_build_faculty_dept_q(departments))
                 .values_list("user_id", flat=True)
             )
-            return User.objects.filter(id__in=faculty_ids)
+            return User.objects.filter(id__in=faculty_ids, role="faculty")
         return User.objects.filter(role="faculty")
 
     if target_audience == "all_staff":

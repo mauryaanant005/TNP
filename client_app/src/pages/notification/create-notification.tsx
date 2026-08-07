@@ -96,14 +96,20 @@ const AUDIENCE_OPTIONS_BY_ROLE: Record<string, { value: string; label: string }[
   ],
 };
 
-// Audiences that require a department selection
+// Audiences that support department selection
 const NEEDS_DEPARTMENT = new Set([
+  "all_students",
   "department_students",
+  "year_students",
   "department_faculty",
 ]);
 
-// Audiences that require a year selection
-const NEEDS_YEAR = new Set(["year_students"]);
+// Audiences that support year selection
+const NEEDS_YEAR = new Set([
+  "all_students",
+  "department_students",
+  "year_students",
+]);
 
 // -------------------------------------------------------------------------
 // Form types
@@ -168,10 +174,7 @@ const CreateNotification = () => {
 
   const selectedAudience = watch("target_audience");
   const showDepartments = NEEDS_DEPARTMENT.has(selectedAudience);
-  const showYears =
-    NEEDS_YEAR.has(selectedAudience) ||
-    selectedAudience === "all_students" ||
-    selectedAudience === "department_students";
+  const showYears = NEEDS_YEAR.has(selectedAudience);
 
   const mutation = useMutation({
     mutationFn: createNotification,

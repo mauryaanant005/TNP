@@ -131,6 +131,32 @@ class NotificationRecipientTests(TestCase):
         self.assertIn(self.it_student_user.id, recipient_ids)
         self.assertNotIn(self.comp_student_user.id, recipient_ids)
 
+    def test_multi_department_and_year_targeting(self):
+        mech_be_user = make_user("mech_be@test.com", "student", full_name="Mech BE")
+        make_student(mech_be_user, department="MECH", academic_year="BE")
+
+        comp_fe_user = make_user("comp_fe@test.com", "student", full_name="COMP FE")
+        make_student(comp_fe_user, department="COMP", academic_year="FE")
+
+        self.client.force_authenticate(user=self.staff_user)
+        res = self.client.post(
+            "/api/notifications/",
+            {
+                "title": "IT & MECH TE/BE Drive",
+                "message": "Placement drive notice",
+                "category": "placement",
+                "target_audience": "all_students",
+                "target_departments": ["IT", "Mech"],
+                "target_academic_years": ["TE", "BE"],
+            },
+        )
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        notification = Notification.objects.get(id=res.data["id"])
+        recipient_ids = set(notification.recipients.values_list("id", flat=True))
+        self.assertIn(self.it_student_user.id, recipient_ids) # IT TE
+        self.assertIn(mech_be_user.id, recipient_ids)         # MECH BE
+        self.assertNotIn(comp_fe_user.id, recipient_ids)       # COMP FE (wrong dept & year)
+
 
 class NotificationListVisibilityTests(TestCase):
     """Verify GET /api/notifications/ only returns the user's own notifications."""
