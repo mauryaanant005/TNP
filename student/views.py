@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from base.permissions import ROLES, HasRole
 from django.http import Http404
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.generics import ListAPIView
@@ -34,7 +35,7 @@ from internship_api.models import InternshipAcceptance
 from program_coordinator_api.models import TrainingPerformance, TrainingPerformanceCategory
 
 class StudentTrainingPerformanceAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasRole.of(*ROLES.STUDENT)]
 
     def get(self, request):
         try:
@@ -89,7 +90,7 @@ class StudentTrainingPerformanceAPIView(APIView):
 
 
 class StudentDataView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasRole.of(*ROLES.STUDENT)]
 
     def get(self, request):
         try:
@@ -104,7 +105,7 @@ class StudentDataView(APIView):
 
 
 class SessionAttendanceAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasRole.of(*ROLES.STUDENT)]
 
     def get(self, request):
         try:
@@ -124,7 +125,7 @@ class SessionAttendanceAPIView(APIView):
 class StudentProfileView(RetrieveAPIView):
     serializer_class = StudentSerializer
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasRole.of(*ROLES.STUDENT)]
 
     def get_object(self):
         user = self.request.user
@@ -143,7 +144,7 @@ class StudentProfileView(RetrieveAPIView):
             raise Http404("No Student profile found for this user.")
 
 class ResumeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasRole.of(*ROLES.STUDENT)]
 
     def get(self, request):
         try:
@@ -210,7 +211,7 @@ class ResumeView(APIView):
             )
 
 class PlacementCompanyAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasRole.of(*ROLES.STUDENT)]
 
     def post(self, request):
         try:
@@ -300,7 +301,7 @@ class PlacementCompanyAPIView(APIView):
 
 
 class PlacementCard(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasRole.of(*ROLES.STUDENT)]
     def get(self, request, *args, **kwargs):
         try:
             student = get_object_or_404(Student, user=request.user)
@@ -401,7 +402,7 @@ class PlacementCard(APIView):
 
 
 class StudentInternshipListView(ListAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasRole.of(*ROLES.STUDENT)]
     serializer_class = InternshipAcceptanceSerializer
 
     def get_queryset(self):
@@ -413,7 +414,7 @@ class StudentInternshipListView(ListAPIView):
 
 
 class DeleteAccountView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasRole.of(*ROLES.STUDENT)]
 
     def delete(self, request, *args, **kwargs):
         user = request.user

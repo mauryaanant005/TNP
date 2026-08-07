@@ -5,6 +5,7 @@ from rest_framework.decorators import (
     authentication_classes,
 )
 from rest_framework.permissions import IsAuthenticated
+from base.permissions import ROLES, HasRole
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from student.models import Student
 from program_coordinator_api.models import AttendanceData, TrainingPerformance
@@ -12,7 +13,7 @@ from django.db.models import Avg, Count, Q
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.TRAINING_OVERSIGHT)])
 def get_avg_data(request, table_name):
     try:
         # 1. Fetch Students to map uid -> (Branch_Div, Year)

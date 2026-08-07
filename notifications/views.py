@@ -2,6 +2,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+from base.permissions import HasRole
 from django.db.models import Q
 
 from django.core.exceptions import ValidationError
@@ -60,8 +61,22 @@ ROLE_AUDIENCE_PERMISSIONS = {
         "department_students",
         "department_faculty",
     },
-    # student is intentionally absent — they are blocked in perform_create
+    # Added T-11: the role existed on the User model but had no entry here, so
+    # a program coordinator could not create any notification at all. Scoped to
+    # match training_officer, which is the closest equivalent responsibility.
+    "program_coordinator": {
+        "all_students",
+        "department_students",
+        "year_students",
+        "all_faculty",
+        "department_faculty",
+    },
+    # student is intentionally absent — they cannot author notifications at all
 }
+
+# Derived from the table above rather than repeated, so a role added there is
+# automatically allowed to POST and cannot drift out of sync (T-11).
+NOTIFICATION_AUTHORS = tuple(ROLE_AUDIENCE_PERMISSIONS)
 
 
 def _build_department_q(departments):
@@ -175,7 +190,10 @@ def _resolve_recipients(target_audience, departments, academic_years, creator):
 
 class NotificationListCreate(generics.ListCreateAPIView):
     serializer_class = NotificationSerializer
-    permission_classes = [IsAuthenticated]
+    # Everyone authenticated reads their own notifications; everyone except a
+    # student may create one. Which *audiences* each role may target is the
+    # finer rule below, in ROLE_AUDIENCE_PERMISSIONS.
+    permission_classes = [HasRole.of(*NOTIFICATION_AUTHORS, read_any=True)]
 
     def get_queryset(self):
         """
@@ -229,13 +247,6 @@ class NotificationListCreate(generics.ListCreateAPIView):
         targeting rule, not a list of user IDs.
         """
         user = request.user
-
-        # --- Permission gate ---
-        if user.role == "student":
-            return Response(
-                {"error": "Students are not permitted to create notifications."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
 
         # --- Extract and validate inputs ---
         title = request.data.get("title", "").strip()

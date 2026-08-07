@@ -10,6 +10,7 @@ from rest_framework.decorators import (
     authentication_classes,
 )
 from rest_framework.permissions import IsAuthenticated
+from base.permissions import ROLES, HasRole
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from base.models import User, FacultyResponsibility
 from base.error_utils import safe_error_payload
@@ -29,11 +30,9 @@ def execute_query(query, params=None, fetch_all=True):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.TRAINING_DELIVERY)])
 def get_program_data(request):
-    user = User.objects.get(email=request.user)
-    if user.role != "faculty":
-        return JsonResponse({"error": "Permission denied"}, status=403)
+    user = request.user
     try:
         programs = list(
             FacultyResponsibility.objects.filter(user=user)
@@ -59,11 +58,8 @@ import json
 
 @api_view(["POST"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.TRAINING_DELIVERY)])
 def save_attendance(request):
-    user = User.objects.get(email=request.user)
-    if user.role != "faculty":
-        return JsonResponse({"error": "Permission denied"}, status=403)
     try:
         attendance_records = request.data.get("students", [])
         if not attendance_records:
@@ -103,11 +99,9 @@ def save_attendance(request):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.TRAINING_DELIVERY)])
 def get_attendance(request):
     """Fetch saved attendance records."""
-    if request.user.role != "faculty":
-        return JsonResponse({"error": "Permission denied"}, status=403)
     try:
         programs = list(
             FacultyResponsibility.objects.filter(user=request.user)
@@ -127,11 +121,9 @@ def get_attendance(request):
 
 @api_view(["POST"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.TRAINING_DELIVERY)])
 def reset_attendance(request):
     """Reset attendance records for the requesting coordinator's own program(s) only."""
-    if request.user.role != "faculty":
-        return JsonResponse({"error": "Permission denied"}, status=403)
     try:
         programs = list(
             FacultyResponsibility.objects.filter(user=request.user)

@@ -20,6 +20,18 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 
+def _reset_session_email(group, request):
+    """Rate-limit key for the OTP steps (T-14).
+
+    These two views take the email from the session rather than the POST body,
+    so there is no field to key on. Keying on the session's email throttles the
+    account under attack; a shared proxy IP would throttle the whole college.
+    Falls back to the session key so a request with no email still gets *some*
+    per-caller bucket rather than sharing one global one.
+    """
+    return request.session.get("email") or request.session.session_key or ""
+
+
 def send_otp(email, otp, subject="OTP Verification"):
     html_message = render_to_string("emails/otp.html", {"otp": otp})
     plain_message = strip_tags(html_message)
@@ -48,9 +60,14 @@ def redirect_user(request, user):
     return response
 
 
+# T-14. Rate-limit the account being attacked, not the shared egress IP.
+# `key="post:email"` throttles per credential, which is what stops credential
+# stuffing; the IP limit stays only as a coarse abuse backstop, set high enough
+# that a whole campus behind one NAT/proxy address never trips it.
 @never_cache
 @csrf_exempt
-@ratelimit(key="ip", rate="5/m", method="POST", block=True)
+@ratelimit(key="post:email", rate="5/m", method="POST", block=True)
+@ratelimit(key="ip", rate="100/m", method="POST", block=True)
 def login(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -71,7 +88,8 @@ def login(request):
 
 
 @never_cache
-@ratelimit(key="ip", rate="3/h", method="POST", block=True)
+@ratelimit(key="post:email", rate="3/h", method="POST", block=True)
+@ratelimit(key="ip", rate="60/h", method="POST", block=True)
 def password_reset_request(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -96,7 +114,8 @@ def password_reset_request(request):
 
 
 @never_cache
-@ratelimit(key="ip", rate="5/h", method="POST", block=True)
+@ratelimit(key=_reset_session_email, rate="5/h", method="POST", block=True)
+@ratelimit(key="ip", rate="100/h", method="POST", block=True)
 def password_reset_verify_otp(request):
     if request.method == "POST":
         email = request.session.get("email")
@@ -117,7 +136,8 @@ def password_reset_verify_otp(request):
 
 
 @never_cache
-@ratelimit(key="ip", rate="5/h", method="POST", block=True)
+@ratelimit(key=_reset_session_email, rate="5/h", method="POST", block=True)
+@ratelimit(key="ip", rate="100/h", method="POST", block=True)
 def password_reset_confirm(request):
     user_id = request.session.get("reset_user_id")
     if not user_id:

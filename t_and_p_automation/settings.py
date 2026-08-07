@@ -248,7 +248,13 @@ REST_FRAMEWORK = {
 # Only safe because Traefik is the sole ingress: docker-compose.yml publishes
 # no ports, so nothing can reach the container directly and forge this header.
 # Re-check this if that ever changes.
-RATELIMIT_IP_META_KEY = "HTTP_X_FORWARDED_FOR"
+#
+# Resolved through a callable rather than naming the META key directly:
+# django-ratelimit raises on a request with no X-Forwarded-For (a 500 on the
+# login form for anything not behind the proxy, which is every local
+# `docker-compose.dev.yml` run) and cannot parse the multi-entry value a
+# Cloudflare + Traefik chain produces. See base/ratelimit.py.
+RATELIMIT_IP_META_KEY = "base.ratelimit.client_ip"
 
 
 # ---------------------------------

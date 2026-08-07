@@ -6,19 +6,78 @@
 # Traefik reaches containers over the internal network).
 #
 # Use explicitly:
-#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+#
+# T-05 - dev/prod database parity. Production runs MySQL; this file runs MySQL
+# locally too. SQLite and MySQL disagree about constraint enforcement, string
+# collation and casing, so a migration can pass on SQLite and fail in
+# production - which means an agent gets a false green on its own acceptance
+# check. Set DATABASE_ENGINE=sqlite in .env to fall back to the old
+# zero-dependency SQLite setup (tests still run either way).
+#
+# The api/celery containers also bind-mount the repo over /app so edits are
+# picked up without a rebuild. Production does not - the image COPYs the code.
 services:
   api:
     ports:
       - "8000:8000"
+    environment:
+      - DATABASE_ENGINE=${DATABASE_ENGINE:-mysql}
+      - DATABASE_HOST=mysql
+      - DATABASE_PORT=3306
+      - DATABASE_SSL_MODE=DISABLED
     volumes:
       - sqlite_data:/app/data
+      - .:/app
+      - /app/staticfiles
+    depends_on:
+      mysql:
+        condition: service_healthy
   celery:
+    environment:
+      - DATABASE_ENGINE=${DATABASE_ENGINE:-mysql}
+      - DATABASE_HOST=mysql
+      - DATABASE_PORT=3306
+      - DATABASE_SSL_MODE=DISABLED
     volumes:
       - sqlite_data:/app/data
+      - .:/app
+      - /app/staticfiles
+    depends_on:
+      mysql:
+        condition: service_healthy
   frontend:
     ports:
       - "5173:80"
 
+  # Dev only. On the server MySQL is a managed service injected by Dokploy
+  # (TCET hosting standard 6.3) - that is why docker-compose.yml has no mysql
+  # service and this one must never be merged into it.
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_DATABASE: ${DATABASE_NAME}
+      MYSQL_USER: ${DATABASE_USER}
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD}
+    ports:
+      # Exposed so you can point a local client at it. Dev only.
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      # api/celery wait on this: entrypoint.sh's migrate step fails outright if
+      # the server is still initialising when the container starts.
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${DATABASE_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
 volumes:
   sqlite_data:
+  mysql_data:

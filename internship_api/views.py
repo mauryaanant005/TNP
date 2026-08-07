@@ -26,6 +26,7 @@ from .serializers import (
     InternshipApplicationSerializer,
 )
 from rest_framework.permissions import IsAuthenticated
+from base.permissions import ROLES, HasRole
 from .models import InternshipApplication
 from uuid import uuid4
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -38,13 +39,8 @@ import io
 
 @api_view(["POST"])
 @authentication_classes([SessionAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.INTERNSHIP)])
 def create_company_with_offers(request):
-    user = User.objects.get(email=request.user.email)
-    if not user or user.role not in ["internship_officer", "staff"]:
-        return JsonResponse(
-            {"error": "Failed to find user"}, status=status.HTTP_404_NOT_FOUND
-        )
     try:
         data = request.data
         company_data = data.get("company")
@@ -123,13 +119,8 @@ def get_company_with_offers(request, pk=None):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.INTERNSHIP)])
 def get_all_companies(request):
-    user = User.objects.get(email=request.user.email)
-    if not user or user.role not in ["internship_officer", "staff"]:
-        return JsonResponse(
-            {"error": "Failed to find user"}, status=status.HTTP_404_NOT_FOUND
-        )
     try:
         companies = InternshipRegistration.objects.all()
         company_data = []
@@ -149,7 +140,7 @@ def get_all_companies(request):
 
 @api_view(["POST"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.STUDENT)])
 def job_application(request, pk):
     try:
         user = User.objects.get(email=request.user.email)
@@ -170,13 +161,8 @@ def job_application(request, pk):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.INTERNSHIP)])
 def get_all_applied_students(request, pk):
-    user = User.objects.get(email=request.user.email)
-    if not user or user.role not in ["internship_officer", "staff"]:
-        return JsonResponse(
-            {"error": "Failed to find user"}, status=status.HTTP_404_NOT_FOUND
-        )
     try:
         company = InternshipApplication(pk=pk)
         students = InternshipApplicationSerializer(company)
@@ -190,7 +176,7 @@ def get_all_applied_students(request, pk):
 
 @api_view(["POST"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.STUDENT)])
 @parser_classes([MultiPartParser, FormParser])
 def create_job_acceptance(request):
     try:
@@ -245,10 +231,8 @@ def create_job_acceptance(request):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.INTERNSHIP)])
 def get_job_acceptance_by_id(request, pk):
-    if request.user.role not in ["internship_officer", "staff"]:
-        return JsonResponse({"error": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
     try:
         job_acceptance = InternshipAcceptance.objects.get(id=pk)
     except InternshipAcceptance.DoesNotExist:
@@ -262,10 +246,8 @@ def get_job_acceptance_by_id(request, pk):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.INTERNSHIP)])
 def get_jobs_by_company_name(request, company_name):
-    if request.user.role not in ["internship_officer", "staff"]:
-        return JsonResponse({"error": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
     jobs = InternshipAcceptance.objects.filter(company_name=company_name)
     if not jobs.exists():
         return JsonResponse(
@@ -279,10 +261,8 @@ def get_jobs_by_company_name(request, company_name):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.INTERNSHIP)])
 def get_unverified_internships(request):
-    if request.user.role not in ["internship_officer", "staff"]:
-        return JsonResponse({"error": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
     acceptances = InternshipAcceptance.objects.filter(is_verified=False).select_related('student', 'student__user')
     data = []
     for acc in acceptances:
@@ -300,20 +280,16 @@ def get_unverified_internships(request):
 
 @api_view(["POST"])
 @authentication_classes([SessionAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.INTERNSHIP)])
 def verify_selected_internships(request):
-    if request.user.role not in ["internship_officer", "staff"]:
-        return JsonResponse({"error": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
     job_ids = request.data.get("jobIds", [])
     InternshipAcceptance.objects.filter(id__in=job_ids).update(is_verified=True)
     return JsonResponse({"success": "Jobs verified successfully"})
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.INTERNSHIP)])
 def get_verified_internships(request):
-    if request.user.role not in ["internship_officer", "staff"]:
-        return JsonResponse({"error": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
     acceptances = InternshipAcceptance.objects.filter(is_verified=True).select_related('student', 'student__user')
     data = []
     for acc in acceptances:
@@ -336,10 +312,8 @@ def get_verified_internships(request):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.INTERNSHIP)])
 def download_verified_internships(request):
-    if request.user.role not in ["internship_officer", "staff"]:
-        return JsonResponse({"error": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
     try:
         acceptances = InternshipAcceptance.objects.filter(is_verified=True).select_related('student', 'student__user')
         

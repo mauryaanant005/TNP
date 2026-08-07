@@ -25,7 +25,8 @@ from rest_framework.decorators import (
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.utils import timezone
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated
+from base.permissions import ROLES, DepartmentScopedMixin, HasRole
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from base.models import FacultyResponsibility
@@ -63,7 +64,7 @@ def _normalize_header(h):
 
 @csrf_exempt
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.TRAINING_ALL)])
 def download_training_template(request, training_type: str):
     training_type = str(training_type).strip()
     if training_type not in TRAINING_CONFIG:
@@ -108,7 +109,7 @@ def download_training_template(request, training_type: str):
 
 
 class UploadTrainingPerformanceView(APIView):
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [HasRole.of(*ROLES.TRAINING_ADMIN)]
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, *args, **kwargs):
@@ -288,7 +289,7 @@ class UploadTrainingPerformanceView(APIView):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([HasRole.of(*ROLES.TRAINING_ADMIN)])
 def get_attendance_data(request, table_name):
     try:
         valid_tables = [
@@ -319,7 +320,7 @@ def get_attendance_data(request, table_name):
 
 @api_view(["POST"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([HasRole.of(*ROLES.TRAINING_ADMIN)])
 def save_branch_attendance(request, table_name):
     if request.method == "POST":
         try:
@@ -421,7 +422,7 @@ def save_branch_attendance(request, table_name):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.ANALYTICS)])
 def get_avg_data(request, table_name):
     try:
         from student.models import Student
@@ -515,7 +516,7 @@ def get_avg_data(request, table_name):
 
 @api_view(["POST"])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([HasRole.of(*ROLES.TRAINING_ADMIN)])
 def update_attendance(request, table_name):
     if request.method == "POST":
         try:
@@ -553,7 +554,7 @@ def update_attendance(request, table_name):
 
 
 class CreateAttendanceRecord(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasRole.of(*ROLES.TRAINING_DELIVERY)]
 
     def post(self, request, *args, **kwargs):
         data = request.data
@@ -689,21 +690,16 @@ class CreateAttendanceRecord(APIView):
         )
 
 
-class StudentAnalyticsViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = [IsAuthenticated]
+class StudentAnalyticsViewSet(DepartmentScopedMixin, viewsets.ReadOnlyModelViewSet):
+    permission_classes = [HasRole.of(*ROLES.ANALYTICS)]
     serializer_class = StudentAnalyticsSerializer
 
     def get_queryset(self):
         queryset = Student.objects.select_related("user").order_by("user__full_name")
-        
-        # Role-based Access Control
-        faculty = FacultyResponsibility.objects.filter(user=self.request.user).first()
-        if not faculty:
-            # If no responsibility is found, return empty queryset to prevent data leak
-            return Student.objects.none()
-        
-        if faculty.department:
-            queryset = queryset.filter(department__iexact=faculty.department.strip())
+
+        # Department scoping lives in one place now (T-10). It fails closed:
+        # a caller with no FacultyResponsibility sees nothing.
+        queryset = self.scope_to_department(queryset)
 
         batch = self.request.query_params.get("batch")
         department = self.request.query_params.get("department")
@@ -753,8 +749,8 @@ class StudentAnalyticsViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(queryset, many=True, context=context)
         return Response(serializer.data)
 
-class AggregateAnalyticsView(views.APIView):
-    permission_classes = [IsAuthenticated]
+class AggregateAnalyticsView(DepartmentScopedMixin, views.APIView):
+    permission_classes = [HasRole.of(*ROLES.ANALYTICS)]
 
     def get(self, request, *args, **kwargs):
         batch_filter = request.query_params.get("batch")
@@ -763,14 +759,15 @@ class AggregateAnalyticsView(views.APIView):
         performance_qs = TrainingPerformance.objects.all()
         attendance_qs = AttendanceData.objects.all()
 
-        # Role-based Access Control
-        faculty = FacultyResponsibility.objects.filter(user=request.user).first()
-        if not faculty:
-            return Response([])
-            
-        if faculty.department:
-            performance_qs = performance_qs.filter(student__department__iexact=faculty.department.strip())
-            attendance_qs = attendance_qs.filter(program_name__iexact=faculty.department.strip())
+        # Department scoping (T-10). Fails closed for a caller with no
+        # FacultyResponsibility.
+        # NOTE: AttendanceData has no department column - this filters its
+        # `program_name` against the department name, which only matches when a
+        # program happens to be named after a department. Pre-existing
+        # behaviour, preserved deliberately; T-18 gives attendance a real
+        # student FK and this filter goes away.
+        performance_qs = self.scope_to_department(performance_qs, field="student__department")
+        attendance_qs = self.scope_to_department(attendance_qs, field="program_name")
 
         if batch_filter:
             performance_qs = performance_qs.filter(student__batch__icontains=batch_filter.strip())

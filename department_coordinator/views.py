@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from base.models import FacultyResponsibility, User
-from rest_framework.permissions import BasePermission
+from base.permissions import ROLES, DepartmentScopedMixin, HasRole
 from student.models import (
     Student,
     AcademicAttendanceSemester,
@@ -69,10 +69,6 @@ def _get_or_create_student(uid, department):
         return student
 
 
-class IsDepartmentCoordinator(BasePermission):
-    def has_permission(self, request, view):
-        return request.user.role == "department_coordinator"
-
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.generics import ListAPIView
 
@@ -81,21 +77,15 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
-class DepartmentStudentDataView(ListAPIView):
-    permission_classes = [IsAuthenticated, IsDepartmentCoordinator]
+class DepartmentStudentDataView(DepartmentScopedMixin, ListAPIView):
+    permission_classes = [HasRole.of(*ROLES.DEPARTMENT)]
     serializer_class = DepartmentStudentSerializer
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        user = self.request.user
-        faculty_info = FacultyResponsibility.objects.filter(user=user).first()
-        department = faculty_info.department if faculty_info else None
-        
-        if not department:
-            return Student.objects.none()
-
-        # Securely fetch students for this department
-        queryset = Student.objects.filter(department__istartswith=department).select_related(
+        # Scoping is the permission layer's job now (T-10); it fails closed
+        # when the coordinator has no department assigned.
+        queryset = self.scope_to_department(Student.objects.all()).select_related(
             'user'
         ).prefetch_related(
             'academic_performance',
@@ -116,19 +106,20 @@ class DepartmentStudentDataView(ListAPIView):
             queryset = queryset.filter(uid__icontains=student_uid)
             
         return queryset
-class AttendanceViewSet(viewsets.ViewSet):
-    permission_classes = [IsAuthenticated, IsDepartmentCoordinator]
+class AttendanceViewSet(DepartmentScopedMixin, viewsets.ViewSet):
+    permission_classes = [HasRole.of(*ROLES.DEPARTMENT)]
 
-    def get_department_coordinator(self):
-        user = self.request.user
-        if user.role == "faculty":  # Restrict only for faculty users
-            return FacultyResponsibility.objects.filter(user=user).first()
-        return None  # Allow other roles to access data without restrictions
+    # FIXED (T-11): the previous `get_department_coordinator()` returned a
+    # responsibility only when `role == "faculty"`, while the permission class
+    # required `role == "department_coordinator"` - so the two conditions could
+    # never both hold and BOTH upload endpoints answered 403 unconditionally.
+    # Department scoping now comes from DepartmentScopedMixin, which keys off
+    # the FacultyResponsibility row rather than the role string.
 
     @action(detail=False, methods=["post"])
     def upload_attendance(self, request):
-        department_coordinator = self.get_department_coordinator()
-        if department_coordinator and department_coordinator.department:
+        department = self.get_scoped_department()
+        if department:
             if not validate_file(request.FILES.get("file_attendance")):
                 return Response(
                     {"error": "Invalid file type. Please upload a CSV file."}, status=status.HTTP_400_BAD_REQUEST
@@ -150,7 +141,7 @@ class AttendanceViewSet(viewsets.ViewSet):
                         if not uid: continue
                         uid = str(uid).strip()
                         if uid not in students_map:
-                            students_map[uid] = _get_or_create_student(uid, department_coordinator.department)
+                            students_map[uid] = _get_or_create_student(uid, department)
 
                     # 2. Pre-fetch existing attendance records to determine create vs update
                     existing_records = AcademicAttendanceSemester.objects.filter(
@@ -225,16 +216,15 @@ class AttendanceViewSet(viewsets.ViewSet):
                 return Response({"message": "Data imported successfully"})
             except Exception as e:
                 return Response(safe_error_payload(e), status=status.HTTP_400_BAD_REQUEST)
-        # Restrict access for other roles
         return Response(
-            {"error": "Access restricted for your role"},
-            status=status.HTTP_403_FORBIDDEN,
+            {"error": "No department is assigned to your account."},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     @action(detail=False, methods=["post"])
     def upload_performance(self, request):
-        department_coordinator = self.get_department_coordinator()
-        if department_coordinator and department_coordinator.department:
+        department = self.get_scoped_department()
+        if department:
             if not validate_file(request.FILES.get("file_performance")):
                 return Response(
                     {"error": "Invalid file type. Please upload a CSV file."}, status=status.HTTP_400_BAD_REQUEST
@@ -256,7 +246,7 @@ class AttendanceViewSet(viewsets.ViewSet):
                         if not uid: continue
                         uid = str(uid).strip()
                         if uid not in students_map:
-                            students_map[uid] = _get_or_create_student(uid, department_coordinator.department)
+                            students_map[uid] = _get_or_create_student(uid, department)
 
                     # 2. Pre-fetch existing performance records to determine create vs update
                     existing_records = AcademicPerformanceSemester.objects.filter(
@@ -331,21 +321,24 @@ class AttendanceViewSet(viewsets.ViewSet):
                 return Response({"message": "Data imported successfully"})
             except Exception as e:
                 return Response(safe_error_payload(e), status=status.HTTP_400_BAD_REQUEST)
-        # Restrict access for other roles
         return Response(
-            {"error": "Access restricted for your role"},
-            status=status.HTTP_403_FORBIDDEN,
+            {"error": "No department is assigned to your account."},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
 @api_view(['POST'])
 @authentication_classes([SessionAuthentication, BasicAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasRole.of(*ROLES.DEPARTMENT)])
 def upload_inhouse_internship(request):
-    department_coordinator = FacultyResponsibility.objects.filter(user=request.user).first()
-    if not department_coordinator or not department_coordinator.department:
+    # Was gated on merely *having* a FacultyResponsibility with a department,
+    # so any faculty member could bulk-create internship acceptance records.
+    # The role check is now declarative; this only resolves the scope.
+    responsibility = FacultyResponsibility.objects.filter(user=request.user).first()
+    department = responsibility.department if responsibility else None
+    if not department and not request.user.is_superuser:
         return Response(
-            {"error": "Access restricted for your role"},
-            status=status.HTTP_403_FORBIDDEN
+            {"error": "No department is assigned to your account."},
+            status=status.HTTP_400_BAD_REQUEST
         )
 
     if 'file' not in request.FILES:
@@ -391,7 +384,7 @@ def upload_inhouse_internship(request):
             for index, row in df.iterrows():
                 try:
                     student = Student.objects.get(uid=row['uid'])
-                    if not student.department.startswith(department_coordinator.department):
+                    if department and not student.department.startswith(department):
                         error_rows.append({
                             'row': index + 2,
                             'error': f'Student {row["uid"]} does not belong to your department'
@@ -432,14 +425,13 @@ def upload_inhouse_internship(request):
             'error': f'Error processing file: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class DepartmentDashboardSummaryView(APIView):
-    permission_classes = [IsAuthenticated, IsDepartmentCoordinator]
+class DepartmentDashboardSummaryView(DepartmentScopedMixin, APIView):
+    permission_classes = [HasRole.of(*ROLES.DEPARTMENT)]
 
     def get(self, request):
         try:
-            faculty_info = FacultyResponsibility.objects.get(user=request.user)
-            department = faculty_info.department
-            students_qs = Student.objects.filter(department__istartswith=department)
+            department = self.get_scoped_department()
+            students_qs = self.scope_to_department(Student.objects.all())
             batches = students_qs.values_list('batch', flat=True).distinct().order_by('-batch')
 
             summary_by_batch = {}
@@ -517,14 +509,15 @@ class DepartmentDashboardSummaryView(APIView):
                 }
             overall_consent = students_qs.values('consent').annotate(count=Count('id')).order_by()
             consent_chart_data = [{"name": item['consent'], "value": item['count']} for item in overall_consent]
-            top_companies = StudentOffer.objects.filter(
-                student__department__istartswith=department,
-                status__in=['accepted', 'joined']
+            top_companies = self.scope_to_department(
+                StudentOffer.objects.filter(status__in=['accepted', 'joined']),
+                field="student__department",
             ).values('company__name').annotate(hires_count=Count('id')).order_by('-hires_count')[:10]
 
             company_chart_data = [{"company_name": item['company__name'], "hires": item['hires_count']} for item in top_companies]
-            overall_training_stats = TrainingPerformanceCategory.objects.filter(
-                performance__student__department__istartswith=department
+            overall_training_stats = self.scope_to_department(
+                TrainingPerformanceCategory.objects.all(),
+                field="performance__student__department",
             ).values('category_name').annotate(
                 average_marks=Avg('marks')
             ).order_by('category_name')
@@ -543,10 +536,5 @@ class DepartmentDashboardSummaryView(APIView):
 
             return Response(response_data, status=status.HTTP_200_OK)
 
-        except FacultyResponsibility.DoesNotExist:
-            return Response(
-                {'error': 'No faculty responsibility found for this user.'},
-                status=status.HTTP_403_FORBIDDEN
-            )
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(safe_error_payload(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)

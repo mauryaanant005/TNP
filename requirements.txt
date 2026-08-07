@@ -79,3 +79,9 @@ channels==4.1.0
 channels_redis==4.2.0
 daphne==4.1.2
 django-ratelimit==4.1.0
+
+# --- Test infrastructure (T-06) ---
+pytest==8.3.4
+pytest-django==4.9.0
+factory_boy==3.3.1
+Faker==33.1.0

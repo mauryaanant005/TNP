@@ -113,3 +113,9 @@ staticfiles/*
 
 docs/*
 docs/
+
+# Source data spreadsheets. These hold real student PII - names, UIDs,
+# employers and salaries - and must never be committed. Keep them locally
+# (import_placements.py reads them from the repo root) but out of git.
+*.xls
+*.xlsx
