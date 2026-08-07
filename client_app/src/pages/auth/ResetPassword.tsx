@@ -11,7 +11,7 @@ import {
   Alert,
   LinearProgress,
 } from "@mui/material";
-import { Key, Lock, CheckCircle2, AlertCircle } from "lucide-react";
+import { Key, Lock, CheckCircle2 } from "lucide-react";
 import { api } from "@/lib/api";
 import toast from "react-hot-toast";
 import Logo from "@/assets/tcet_logo_2.png";
