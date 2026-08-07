@@ -27,11 +27,11 @@ class ContentSecurityPolicyMiddleware:
             client_url = getattr(settings, "CLIENT_URL", "")
             policy = "; ".join([
                 "default-src 'self'",
-                "script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net",
+                "script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net https://static.cloudflareinsights.com",
                 "style-src 'self' https://fonts.googleapis.com 'unsafe-inline'",
                 "font-src 'self' https://fonts.gstatic.com",
                 "img-src 'self' data: https://zctindia.org",
-                "connect-src 'self' " + client_url,
+                "connect-src 'self' " + client_url + " https://cloudflareinsights.com",
                 "frame-ancestors 'none'",
                 "base-uri 'self'",
                 "form-action 'self' " + client_url,

@@ -324,8 +324,15 @@ else:
     # both must be explicitly allowed - CORS_ALLOW_CREDENTIALS above only
     # takes effect for origins listed here.
     _frontend_url = require_env("CLIENT_URL")
+    _allowed_hosts = require_env("DJANGO_ALLOWED_HOSTS").split(",")
     CORS_ALLOWED_ORIGINS = [_frontend_url]
     CSRF_TRUSTED_ORIGINS = [_frontend_url]
+    for _host in _allowed_hosts:
+        _h = _host.strip()
+        if _h:
+            _origin = _h if _h.startswith("http://") or _h.startswith("https://") else f"https://{_h}"
+            if _origin not in CSRF_TRUSTED_ORIGINS:
+                CSRF_TRUSTED_ORIGINS.append(_origin)
     # Cookies set by api.yourproject.example.com default to being scoped to
     # that host only, so frontend JS on yourproject.example.com couldn't read
     # the (non-HttpOnly) CSRF cookie to attach it as a header. Scoping both
