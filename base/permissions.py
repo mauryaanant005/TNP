@@ -58,7 +58,7 @@ class ROLES:
     )
 
     #: Owns one department's students.
-    DEPARTMENT = ("department_coordinator",)
+    DEPARTMENT = ("department_coordinator", "faculty")
 
     #: Verifies and reports on internships.
     INTERNSHIP = ("internship_officer", "staff")

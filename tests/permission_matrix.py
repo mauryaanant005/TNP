@@ -121,11 +121,11 @@ PERMISSION_MATRIX = [
     ("GET", "/api/training_officer/get-avg-data/attendance_data/", ("training_officer", "principal")),
 
     # --- department -------------------------------------------------------
-    ("GET", "/api/department_coordinator/student-data/", ("department_coordinator",)),
-    ("GET", "/api/department_coordinator/dashboard-summary/", ("department_coordinator",)),
-    ("POST", "/api/department_coordinator/attendance/upload-attendance/", ("department_coordinator",)),
-    ("POST", "/api/department_coordinator/attendance/upload-performance/", ("department_coordinator",)),
-    ("POST", "/api/department_coordinator/upload-inhouse-internship/", ("department_coordinator",)),
+    ("GET", "/api/department_coordinator/student-data/", ("department_coordinator", "faculty")),
+    ("GET", "/api/department_coordinator/dashboard-summary/", ("department_coordinator", "faculty")),
+    ("POST", "/api/department_coordinator/attendance/upload-attendance/", ("department_coordinator", "faculty")),
+    ("POST", "/api/department_coordinator/attendance/upload-performance/", ("department_coordinator", "faculty")),
+    ("POST", "/api/department_coordinator/upload-inhouse-internship/", ("department_coordinator", "faculty")),
 
     # --- internships ------------------------------------------------------
     ("GET", f"/api/internship/company/{TASK_ID}", AUTHENTICATED_ROLES),

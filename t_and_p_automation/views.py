@@ -49,12 +49,12 @@ def my_protected_view(request):
     
     try:
         current_user = User.objects.get(email=request.user.email)
-        if current_user.role == "faculty":
+        if current_user.role in ["faculty", "department_coordinator", "program_coordinator"]:
             faculty = FacultyResponsibility.objects.filter(user=current_user).first()
             if faculty:
                 return JSONResponse(
                     {
-                        "role": "faculty",
+                        "role": current_user.role,
                         "email": current_user.email,
                         "department": faculty.department,
                         "program": faculty.program,
@@ -63,7 +63,7 @@ def my_protected_view(request):
             else:
                 return JSONResponse(
                     {
-                        "role": "faculty",
+                        "role": current_user.role,
                         "email": current_user.email,
                         "department": None,
                         "program": None,
