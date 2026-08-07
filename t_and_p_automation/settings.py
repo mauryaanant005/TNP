@@ -173,28 +173,46 @@ CACHES = {
 # ---------------------------------
 # DATABASE
 # ---------------------------------
-if IS_DEV:
+# Production is always MySQL. Dev defaults to SQLite for a zero-dependency
+# checkout, but DATABASE_ENGINE=mysql switches dev onto the same engine as
+# production - see docker-compose.dev.yml (T-05). SQLite and MySQL differ in
+# constraint enforcement, collation and string casing, so any migration or
+# schema change must be verified on MySQL: a green run on SQLite is not
+# evidence that production will accept it.
+DATABASE_ENGINE = os.getenv("DATABASE_ENGINE", "sqlite" if IS_DEV else "mysql").lower()
+
+if DATABASE_ENGINE == "sqlite":
+    if not IS_DEV:
+        raise ImproperlyConfigured("DATABASE_ENGINE=sqlite is not permitted when ENV=PROD.")
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "data" / "db.sqlite3",
             "OPTIONS": {
                 "timeout": 20,
-            }
+            },
         }
     }
 else:
+    _db_options = {}
+    # Dev MySQL runs on the internal Docker network with no TLS; production
+    # talks to the TCET-managed instance and must require it.
+    _ssl_mode = os.getenv("DATABASE_SSL_MODE", "DISABLED" if IS_DEV else "REQUIRED")
+    if _ssl_mode.upper() != "DISABLED":
+        _db_options["ssl"] = {"ssl-mode": _ssl_mode}
+
+    def _db_env(name, dev_default):
+        return os.getenv(name, dev_default) if IS_DEV else require_env(name)
+
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
-            "NAME": require_env("DATABASE_NAME"),
-            "USER": require_env("DATABASE_USER"),
-            "PASSWORD": require_env("DATABASE_PASSWORD"),
+            "NAME": _db_env("DATABASE_NAME", "tnp"),
+            "USER": _db_env("DATABASE_USER", "tnp"),
+            "PASSWORD": _db_env("DATABASE_PASSWORD", "tnp"),
             "HOST": os.getenv("DATABASE_HOST", "mysql"),
             "PORT": os.getenv("DATABASE_PORT", "3306"),
-            "OPTIONS": {
-                "ssl": {"ssl-mode": os.getenv("DATABASE_SSL_MODE", "REQUIRED")},
-            },
+            "OPTIONS": _db_options,
         }
     }
 
@@ -210,7 +228,27 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "EXCEPTION_HANDLER": "base.error_utils.drf_exception_handler",
+    # T-15. Only two apps paginated, so every other list endpoint returned the
+    # entire table - 1,400 students today, 10,000 at target. Applying it
+    # globally means a new list view is paginated by default rather than by
+    # remembering to add it.
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 50,
 }
+
+
+# ---------------------------------
+# RATE LIMITING
+# ---------------------------------
+# django-ratelimit's key="ip" reads REMOTE_ADDR. Behind Traefik + Cloudflare
+# Tunnel every request arrives with the proxy's address, so an IP limit is a
+# limit on the entire college at once - 5 logins per minute for ~1,400
+# students. This was reproduced during the audit with ordinary curl testing.
+#
+# Only safe because Traefik is the sole ingress: docker-compose.yml publishes
+# no ports, so nothing can reach the container directly and forge this header.
+# Re-check this if that ever changes.
+RATELIMIT_IP_META_KEY = "HTTP_X_FORWARDED_FOR"
 
 
 # ---------------------------------
@@ -377,21 +415,41 @@ UNFOLD = {
 LOGIN_URL = "/auth/login/"
 
 # Gunicorn only ever sees plain HTTP inside the Docker network - TLS is
-# terminated at Cloudflare/Traefik in front of it (TCET hosting standard
-# 11.3). SECURE_PROXY_SSL_HEADER tells Django to trust Traefik's
+# terminated at the edge in front of it (TCET hosting standard 11.3).
+# SECURE_PROXY_SSL_HEADER tells Django to trust the proxy's
 # X-Forwarded-Proto header when deciding whether the original request was
-# HTTPS; without it, SECURE_SSL_REDIRECT below would redirect every request
-# in an infinite loop (Django would think each request was insecure).
+# HTTPS.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_SSL_REDIRECT = not IS_DEV
+
+# Whether Django itself issues the HTTP->HTTPS redirect. Env-controlled
+# because the correct value depends on the edge topology, not on the code:
+#
+#   * Cloudflare "Flexible" (edge terminates TLS and talks plain HTTP to the
+#     origin): must be false. Traefik rewrites X-Forwarded-Proto to "http"
+#     for the origin hop, so Django would judge every request insecure and
+#     301 it to https:// - which the browser re-requests over HTTPS, arrives
+#     as http again, and loops (ERR_TOO_MANY_REDIRECTS). The redirect is
+#     redundant anyway: the edge already serves the browser over HTTPS, and
+#     Cloudflare's "Always Use HTTPS" enforces it there.
+#   * Cloudflare "Full"/"Full (strict)", or any origin that genuinely
+#     receives HTTPS: true is correct and preferred.
+#
+# Defaults preserve the previous behaviour (off in dev, on in production) so
+# an unset variable never silently downgrades a Full/strict deployment.
+SECURE_SSL_REDIRECT = (
+    os.getenv("SECURE_SSL_REDIRECT", "false" if IS_DEV else "true").lower() == "true"
+)
 
 # ---------------------------------
 # SECURITY HEADERS
 # ---------------------------------
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
-# HSTS: safe to set even before TLS is live - browsers ignore the header over plain
-# HTTP, so this has no effect until SECURE_SSL_REDIRECT above is also flipped on.
+# HSTS. Note Django's SecurityMiddleware only emits this header when it
+# considers the request secure, so under a Flexible-style edge (where the
+# origin hop arrives as plain HTTP) it will not be sent. Enforce HSTS at the
+# Cloudflare edge instead in that topology - the browser leg is the one that
+# matters for HSTS.
 SECURE_HSTS_SECONDS = 31536000 if not IS_DEV else 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = not IS_DEV
 SECURE_HSTS_PRELOAD = not IS_DEV
