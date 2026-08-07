@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router";
+import { useNavigate } from "react-router";
 import {
   Card,
   CardContent,
@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { KeyRound, ArrowLeft, Mail } from "lucide-react";
 import { api } from "@/lib/api";
+import { SERVER_URL } from "@/constant";
 import toast from "react-hot-toast";
 import Logo from "@/assets/tcet_logo_2.png";
 
@@ -142,8 +143,8 @@ const ForgotPassword = () => {
           </form>
 
           <Box mt={3} textAlign="center">
-            <Link
-              to="/login"
+            <a
+              href={`${SERVER_URL}/auth/login/`}
               style={{
                 textDecoration: "none",
                 color: "#4169e1",
@@ -155,7 +156,7 @@ const ForgotPassword = () => {
               }}
             >
               <ArrowLeft size={16} /> Back to Login
-            </Link>
+            </a>
           </Box>
         </CardContent>
       </Card>

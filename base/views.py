@@ -98,10 +98,14 @@ def send_otp_email(user, raw_otp):
         )
         msg.attach_alternative(html_content, "text/html")
         msg.send(fail_silently=False)
+        print(f"--> [SMTP SUCCESS] OTP email sent successfully to {user.email}!")
         logger.info(f"OTP email sent successfully to {user.email}")
         return True, ""
     except Exception as e:
         logger.error(f"Failed to send OTP email to {user.email}: {str(e)}")
+        if getattr(settings, "IS_DEV", False):
+            logger.warning(f"[DEV MODE] OTP for {user.email} is: {raw_otp}")
+            return True, ""
         return False, str(e)
 
 
@@ -216,9 +220,10 @@ def api_password_reset_request(request):
         otp_obj, raw_otp = UserOTP.create_otp_for_user(user, ttl_seconds=120)
         sent, err = send_otp_email(user, raw_otp)
         if not sent:
+            logger.error(f"SMTP delivery failed for {user.email}: {err}")
             return Response(
-                {"error": f"Failed to deliver OTP email: {err}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                {"error": f"Failed to send email via SMTP ({err}). Please configure a valid Gmail App Password in .env."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
     except User.DoesNotExist:
         # Uniform timing response to prevent email enumeration

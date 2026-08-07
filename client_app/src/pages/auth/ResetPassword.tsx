@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate, Link } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import {
   Card,
   CardContent,
@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { Key, Lock, CheckCircle2 } from "lucide-react";
 import { api } from "@/lib/api";
+import { SERVER_URL } from "@/constant";
 import toast from "react-hot-toast";
 import Logo from "@/assets/tcet_logo_2.png";
 
@@ -80,7 +81,7 @@ const ResetPassword = () => {
       toast.success("Password reset successfully! Redirecting to login...");
 
       setTimeout(() => {
-        window.location.href = "/login";
+        window.location.href = `${SERVER_URL}/auth/login/`;
       }, 2000);
     } catch (err: any) {
       const msg = err.response?.data?.error || "Failed to reset password. Please try again.";
@@ -112,8 +113,7 @@ const ResetPassword = () => {
             Your password has been updated. You can now log in using your new credentials.
           </Typography>
           <Button
-            component={Link}
-            to="/login"
+            onClick={() => { window.location.href = `${SERVER_URL}/auth/login/`; }}
             variant="contained"
             fullWidth
             sx={{ py: 1.4, backgroundColor: "#4169e1", fontWeight: "bold" }}

@@ -20,11 +20,21 @@ export default ({ mode }: any) => {
           changeOrigin: true,
           secure: false,
         },
+        "/auth": {
+          target: API_URL,
+          changeOrigin: true,
+          secure: false,
+        },
+        "/static": {
+          target: API_URL,
+          changeOrigin: true,
+          secure: false,
+        },
       },
     },
     build: {
       outDir: "build",
-      assetsDir: "static",
+      assetsDir: "assets",
     },
   });
 };

@@ -184,10 +184,16 @@ DATABASE_ENGINE = os.getenv("DATABASE_ENGINE", "sqlite" if IS_DEV else "mysql").
 if DATABASE_ENGINE == "sqlite":
     if not IS_DEV:
         raise ImproperlyConfigured("DATABASE_ENGINE=sqlite is not permitted when ENV=PROD.")
+    db_dir = BASE_DIR / "data"
+    try:
+        os.makedirs(db_dir, exist_ok=True)
+    except Exception:
+        import tempfile
+        db_dir = Path(tempfile.gettempdir())
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "data" / "db.sqlite3",
+            "NAME": db_dir / "db.sqlite3",
             "OPTIONS": {
                 "timeout": 20,
             },
