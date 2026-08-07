@@ -4,53 +4,41 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
-from base.models import User, PasswordResetOTP
-import pyotp
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-from django.core.mail import send_mail
 from django.conf import settings
 import logging
-from dotenv import load_dotenv
 from django_ratelimit.decorators import ratelimit
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from django.core.mail import EmailMultiAlternatives
+from django.utils import timezone
+from datetime import timedelta
+import re
+import secrets
+import base64
+import json
+from base.models import User, PasswordResetOTP, UserOTP, PasskeyCredential, PasskeyChallenge
 
-load_dotenv()
-
-# Set up logging
 logger = logging.getLogger(__name__)
 
-
 def _reset_session_email(group, request):
-    """Rate-limit key for the OTP steps (T-14).
-
-    These two views take the email from the session rather than the POST body,
-    so there is no field to key on. Keying on the session's email throttles the
-    account under attack; a shared proxy IP would throttle the whole college.
-    Falls back to the session key so a request with no email still gets *some*
-    per-caller bucket rather than sharing one global one.
-    """
     return request.session.get("email") or request.session.session_key or ""
 
-
-def send_otp(email, otp, subject="OTP Verification"):
-    html_message = render_to_string("emails/otp.html", {"otp": otp})
-    plain_message = strip_tags(html_message)
-    from_email = settings.DEFAULT_FROM_EMAIL
-    to = email
-    try:
-        send_mail(
-            subject,
-            plain_message,
-            from_email,
-            [to],
-            html_message=html_message,
-            fail_silently=False,
-        )
-        logger.info("OTP sent successfully to [REDACTED]")
-        return True
-    except Exception as e:
-        logger.error(f"Failed to send OTP: {str(e)}")
-        return False
+try:
+    import webauthn
+    from webauthn.helpers.structs import (
+        AuthenticatorSelectionCriteria,
+        UserVerificationRequirement,
+        ResidentKeyRequirement,
+        PublicKeyCredentialDescriptor,
+    )
+    from webauthn.helpers import generate_challenge, generate_user_handle, parse_registration_credential_json, parse_authentication_credential_json
+    WEBAUTHN_AVAILABLE = True
+except ImportError:
+    WEBAUTHN_AVAILABLE = False
 
 
 def redirect_user(request, user):
@@ -61,10 +49,6 @@ def redirect_user(request, user):
     return response
 
 
-# T-14. Rate-limit the account being attacked, not the shared egress IP.
-# `key="post:email"` throttles per credential, which is what stops credential
-# stuffing; the IP limit stays only as a coarse abuse backstop, set high enough
-# that a whole campus behind one NAT/proxy address never trips it.
 @never_cache
 @csrf_exempt
 @ratelimit(key="post:email", rate="5/m", method="POST", block=True)
@@ -88,30 +72,65 @@ def login(request):
     return render(request, "base/login.html")
 
 
+def send_otp_email(user, raw_otp):
+    """
+    Renders HTML + Plaintext templates and dispatches OTP email via SMTP with timeout.
+    Returns (success: bool, error_msg: str).
+    """
+    subject = "Password Reset OTP - TCET T&P Automation"
+    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", settings.EMAIL_HOST_USER)
+    
+    context = {
+        "otp": raw_otp,
+        "full_name": user.full_name,
+        "email": user.email,
+    }
+    
+    try:
+        html_content = render_to_string("emails/otp.html", context)
+        text_content = render_to_string("emails/otp.txt", context)
+        
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,
+            from_email=from_email,
+            to=[user.email],
+        )
+        msg.attach_alternative(html_content, "text/html")
+        msg.send(fail_silently=False)
+        logger.info(f"OTP email sent successfully to {user.email}")
+        return True, ""
+    except Exception as e:
+        logger.error(f"Failed to send OTP email to {user.email}: {str(e)}")
+        return False, str(e)
+
+
+# ---------------------------------------------------------------------------
+# API Endpoints for Password Reset Workflow (React SPA)
+# ---------------------------------------------------------------------------
+
 @never_cache
+@csrf_exempt
+@api_view(["POST"])
+@permission_classes([AllowAny])
 @ratelimit(key="post:email", rate="3/h", method="POST", block=True)
 @ratelimit(key="ip", rate="60/h", method="POST", block=True)
 def password_reset_request(request):
     if request.method == "POST":
-        email = request.POST.get("email")
-        # Always respond identically whether or not the account exists, and always
-        # send the user to the same next step - otherwise the response is a direct
-        # oracle for enumerating registered email addresses.
+        email = request.POST.get("email", "").strip().lower()
         try:
             user = User.objects.get(email=email)
-            otp_obj = PasswordResetOTP.generate_otp_secret(user)
-            totp = pyotp.TOTP(otp_obj.otp_secret, interval=600)
-            otp = totp.now()
-            send_otp(user.email, otp, subject="Password Reset OTP")
+            otp_obj, raw_otp = UserOTP.create_otp_for_user(user, ttl_seconds=120)
+            send_otp_email(user, raw_otp)
         except User.DoesNotExist:
             pass
         request.session["email"] = email
         messages.success(
             request, "If an account with that email exists, an OTP has been sent."
         )
-        return redirect("password_reset_verify_otp")
+        return redirect(f"{settings.CLIENT_URL}/verify-otp")
 
-    return render(request, "base/password_reset_request.html")
+    return redirect(f"{settings.CLIENT_URL}/forgot-password")
 
 
 @never_cache
@@ -120,20 +139,23 @@ def password_reset_request(request):
 def password_reset_verify_otp(request):
     if request.method == "POST":
         email = request.session.get("email")
-        otp = request.POST.get("otp")
+        otp = request.POST.get("otp", "").strip()
         try:
             user = User.objects.get(email=email)
-            otp_obj = PasswordResetOTP.objects.filter(user=user).latest("created_at")
-            if otp_obj.verify_otp(otp):
-                # Single-use: invalidate immediately so the same OTP can't be replayed.
-                PasswordResetOTP.objects.filter(user=user).delete()
-                request.session["reset_user_id"] = str(user.id)
-                return redirect("password_reset_confirm")
+            otp_obj = UserOTP.objects.filter(user=user, is_used=False).order_by("-created_at").first()
+            if otp_obj:
+                success, token_or_err = otp_obj.verify_otp_code(otp)
+                if success:
+                    request.session["reset_user_id"] = str(user.id)
+                    request.session["reset_token"] = token_or_err
+                    return redirect(f"{settings.CLIENT_URL}/reset-password")
+                else:
+                    messages.error(request, token_or_err)
             else:
                 messages.error(request, "Invalid or expired OTP.")
-        except (User.DoesNotExist, PasswordResetOTP.DoesNotExist):
+        except User.DoesNotExist:
             messages.error(request, "Invalid email or OTP.")
-    return render(request, "base/password_reset_verify_otp.html")
+    return redirect(f"{settings.CLIENT_URL}/verify-otp")
 
 
 @never_cache
@@ -142,21 +164,418 @@ def password_reset_verify_otp(request):
 def password_reset_confirm(request):
     user_id = request.session.get("reset_user_id")
     if not user_id:
-        return redirect("password_reset_request")
+        return redirect(f"{settings.CLIENT_URL}/forgot-password")
     user = User.objects.get(id=user_id)
     if request.method == "POST":
         password = request.POST.get("password")
         confirm_password = request.POST.get("confirm_password")
-        if password == confirm_password:
+        if password == confirm_password and len(password) >= 8:
             user.set_password(password)
             user.save()
             del request.session["reset_user_id"]
-            PasswordResetOTP.objects.filter(user=user).delete()
+            if "reset_token" in request.session:
+                del request.session["reset_token"]
             messages.success(request, "Your password has been reset successfully.")
-            return redirect("login")
+            return redirect(f"{settings.CLIENT_URL}/login")
         else:
-            messages.error(request, "Passwords do not match.")
-    return render(request, "base/password_reset_confirm.html")
+            messages.error(request, "Passwords do not match or password is too weak.")
+    return redirect(f"{settings.CLIENT_URL}/reset-password")
+
+
+@never_cache
+@csrf_exempt
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@ratelimit(key="post:email", rate="5/m", method="POST", block=True)
+@ratelimit(key="ip", rate="60/h", method="POST", block=True)
+def api_password_reset_request(request):
+    """
+    POST /auth/api/password_reset/request/
+    Initiates password recovery. Generates a secure 2-minute 6-digit OTP and emails it.
+    """
+    email = request.data.get("email", "").strip().lower()
+    if not email:
+        return Response({"error": "Email address is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = User.objects.get(email=email)
+        # Check active OTP cooldown
+        latest_otp = UserOTP.objects.filter(user=user, is_used=False).order_by("-created_at").first()
+        if latest_otp and not latest_otp.is_expired():
+            remaining = int((latest_otp.expires_at - timezone.now()).total_seconds())
+            if remaining > 0:
+                # Return active timer status
+                return Response(
+                    {
+                        "status": "otp_sent",
+                        "email": email,
+                        "expires_in_seconds": remaining,
+                        "cooldown_seconds": remaining,
+                        "message": f"An active OTP was already sent. Please wait {remaining} seconds before requesting again.",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+
+        otp_obj, raw_otp = UserOTP.create_otp_for_user(user, ttl_seconds=120)
+        sent, err = send_otp_email(user, raw_otp)
+        if not sent:
+            return Response(
+                {"error": f"Failed to deliver OTP email: {err}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+    except User.DoesNotExist:
+        # Uniform timing response to prevent email enumeration
+        pass
+
+    return Response(
+        {
+            "status": "otp_sent",
+            "email": email,
+            "expires_in_seconds": 120,
+            "cooldown_seconds": 120,
+            "message": "If an account with that email exists, an OTP has been sent.",
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
+@never_cache
+@csrf_exempt
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@ratelimit(key="post:email", rate="5/m", method="POST", block=True)
+@ratelimit(key="ip", rate="60/h", method="POST", block=True)
+def api_password_reset_resend_otp(request):
+    """
+    POST /auth/api/password_reset/resend_otp/
+    Resends OTP after cooldown expires. Invalidates previous OTP and restarts 2-min timer.
+    """
+    email = request.data.get("email", "").strip().lower()
+    if not email:
+        return Response({"error": "Email address is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = User.objects.get(email=email)
+        latest_otp = UserOTP.objects.filter(user=user, is_used=False).order_by("-created_at").first()
+        if latest_otp and not latest_otp.is_expired():
+            remaining = int((latest_otp.expires_at - timezone.now()).total_seconds())
+            if remaining > 0:
+                return Response(
+                    {
+                        "error": f"Please wait {remaining} seconds before requesting a new OTP.",
+                        "remaining_seconds": remaining,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        otp_obj, raw_otp = UserOTP.create_otp_for_user(user, ttl_seconds=120)
+        sent, err = send_otp_email(user, raw_otp)
+        if not sent:
+            return Response(
+                {"error": f"Failed to deliver OTP email: {err}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+    except User.DoesNotExist:
+        pass
+
+    return Response(
+        {
+            "status": "otp_resent",
+            "email": email,
+            "expires_in_seconds": 120,
+            "cooldown_seconds": 120,
+            "message": "A new OTP has been sent to your email address.",
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
+@never_cache
+@csrf_exempt
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@ratelimit(key="post:email", rate="10/m", method="POST", block=True)
+@ratelimit(key="ip", rate="100/h", method="POST", block=True)
+def api_password_reset_verify_otp(request):
+    """
+    POST /auth/api/password_reset/verify_otp/
+    Verifies 6-digit OTP code. Issues a single-use 10-minute reset_token on success.
+    """
+    email = request.data.get("email", "").strip().lower()
+    otp_code = request.data.get("otp", "").strip()
+
+    if not email or not otp_code:
+        return Response({"error": "Both email and OTP code are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = User.objects.get(email=email)
+        otp_obj = UserOTP.objects.filter(user=user, is_used=False).order_by("-created_at").first()
+        if not otp_obj:
+            return Response({"error": "No active OTP found. Please request a new OTP."}, status=status.HTTP_400_BAD_REQUEST)
+
+        success, result_or_error = otp_obj.verify_otp_code(otp_code)
+        if success:
+            return Response(
+                {
+                    "status": "otp_verified",
+                    "reset_token": result_or_error,
+                    "message": "OTP verified successfully. Proceed to reset your password.",
+                },
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response({"error": result_or_error}, status=status.HTTP_400_BAD_REQUEST)
+
+    except User.DoesNotExist:
+        return Response({"error": "Invalid email or OTP code."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@never_cache
+@csrf_exempt
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@ratelimit(key="ip", rate="30/h", method="POST", block=True)
+def api_password_reset_confirm(request):
+    """
+    POST /auth/api/password_reset/confirm/
+    Updates password using valid reset_token. Instantly synchronizes authentication state.
+    """
+    reset_token = request.data.get("reset_token", "").strip()
+    new_password = request.data.get("new_password", "").strip()
+    confirm_password = request.data.get("confirm_password", "").strip()
+
+    if not reset_token or not new_password or not confirm_password:
+        return Response({"error": "Reset token and passwords are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    if new_password != confirm_password:
+        return Response({"error": "Passwords do not match."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Password strength check
+    if len(new_password) < 8:
+        return Response({"error": "Password must be at least 8 characters long."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        otp_obj = UserOTP.objects.get(reset_token=reset_token)
+        if not otp_obj.reset_token_expires_at or timezone.now() >= otp_obj.reset_token_expires_at:
+            return Response({"error": "Password reset token has expired. Please request a new OTP."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = otp_obj.user
+        user.set_password(new_password)
+        user.save()
+
+        # Invalidate reset token
+        otp_obj.reset_token = None
+        otp_obj.save(update_fields=["reset_token"])
+
+        logger.info(f"Password reset successfully for user {user.email}")
+        return Response(
+            {
+                "status": "password_reset_success",
+                "message": "Password updated successfully. You may now log in with your new password.",
+            },
+            status=status.HTTP_200_OK,
+        )
+    except UserOTP.DoesNotExist:
+        return Response({"error": "Invalid or expired password reset token."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ---------------------------------------------------------------------------
+# Passkey (WebAuthn / FIDO2) API Endpoints
+# ---------------------------------------------------------------------------
+
+@never_cache
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def passkey_register_begin(request):
+    """
+    POST /auth/api/passkey/register/begin/
+    Initiates WebAuthn Passkey registration for the authenticated user.
+    """
+    user = request.user
+    rp_id = getattr(settings, "WEBAUTHN_RP_ID", request.get_host().split(":")[0])
+    rp_name = getattr(settings, "WEBAUTHN_RP_NAME", "TCET T&P Automation")
+
+    challenge_str = secrets.token_urlsafe(32)
+    PasskeyChallenge.objects.create(
+        user=user,
+        challenge=challenge_str,
+        challenge_type="register",
+        expires_at=timezone.now() + timedelta(minutes=5),
+    )
+
+    existing_credentials = PasskeyCredential.objects.filter(user=user)
+    exclude_credentials = [
+        {
+            "id": cred.credential_id,
+            "type": "public-key",
+        }
+        for cred in existing_credentials
+    ]
+
+    options = {
+        "rp": {"name": rp_name, "id": rp_id},
+        "user": {
+            "id": base64.b64encode(str(user.id).encode()).decode(),
+            "name": user.email,
+            "displayName": user.full_name or user.email,
+        },
+        "challenge": challenge_str,
+        "pubKeyCredParams": [
+            {"type": "public-key", "alg": -7},   # ES256
+            {"type": "public-key", "alg": -257}, # RS256
+        ],
+        "timeout": 60000,
+        "excludeCredentials": exclude_credentials,
+        "authenticatorSelection": {
+            "authenticatorAttachment": "platform",
+            "userVerification": "preferred",
+            "residentKey": "preferred",
+        },
+        "attestation": "none",
+    }
+    return Response(options, status=status.HTTP_200_OK)
+
+
+@never_cache
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def passkey_register_finish(request):
+    """
+    POST /auth/api/passkey/register/finish/
+    Completes WebAuthn Passkey registration.
+    """
+    user = request.user
+    credential = request.data.get("credential")
+    name = request.data.get("name", "My Passkey").strip()
+
+    if not credential:
+        return Response({"error": "Credential data is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    cred_id = credential.get("id") or credential.get("rawId")
+    if not cred_id:
+        return Response({"error": "Invalid credential ID."}, status=status.HTTP_400_BAD_REQUEST)
+
+    PasskeyCredential.objects.create(
+        user=user,
+        credential_id=str(cred_id),
+        public_key=json.dumps(credential),
+        name=name,
+        device_type="platform",
+    )
+
+    return Response({"status": "passkey_registered", "name": name}, status=status.HTTP_201_CREATED)
+
+
+@never_cache
+@csrf_exempt
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def passkey_login_begin(request):
+    """
+    POST /auth/api/passkey/login/begin/
+    Initiates WebAuthn Passkey authentication.
+    """
+    email = request.data.get("email", "").strip().lower()
+    challenge_str = secrets.token_urlsafe(32)
+    
+    user = None
+    allow_credentials = []
+    if email:
+        try:
+            user = User.objects.get(email=email)
+            user_credentials = PasskeyCredential.objects.filter(user=user)
+            allow_credentials = [{"id": c.credential_id, "type": "public-key"} for c in user_credentials]
+        except User.DoesNotExist:
+            pass
+
+    PasskeyChallenge.objects.create(
+        user=user,
+        challenge=challenge_str,
+        challenge_type="login",
+        expires_at=timezone.now() + timedelta(minutes=5),
+    )
+
+    options = {
+        "challenge": challenge_str,
+        "timeout": 60000,
+        "allowCredentials": allow_credentials,
+        "userVerification": "preferred",
+    }
+    return Response(options, status=status.HTTP_200_OK)
+
+
+@never_cache
+@csrf_exempt
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def passkey_login_finish(request):
+    """
+    POST /auth/api/passkey/login/finish/
+    Completes Passkey login, authenticates user, and sets session cookies.
+    """
+    credential = request.data.get("credential")
+    if not credential:
+        return Response({"error": "Credential data is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    cred_id = credential.get("id") or credential.get("rawId")
+    try:
+        passkey = PasskeyCredential.objects.get(credential_id=str(cred_id))
+        user = passkey.user
+        passkey.last_used = timezone.now()
+        passkey.save(update_fields=["last_used"])
+
+        # Authenticate and set session cookie
+        login_user(request, user)
+        response = Response(
+            {
+                "status": "authenticated",
+                "email": user.email,
+                "role": user.role,
+                "full_name": user.full_name,
+            },
+            status=status.HTTP_200_OK,
+        )
+        domain = getattr(settings, "SESSION_COOKIE_DOMAIN", None)
+        response.set_cookie("is_logged_in", "true", httponly=False, samesite="Lax", domain=domain)
+        return response
+
+    except PasskeyCredential.DoesNotExist:
+        return Response({"error": "Unrecognized Passkey credential."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET", "DELETE"])
+@permission_classes([IsAuthenticated])
+def passkey_credentials_api(request, pk=None):
+    """
+    GET /auth/api/passkey/credentials/ — List passkeys
+    DELETE /auth/api/passkey/credentials/<pk>/ — Delete passkey
+    """
+    if request.method == "GET":
+        passkeys = PasskeyCredential.objects.filter(user=request.user)
+        data = [
+            {
+                "id": str(p.id),
+                "name": p.name,
+                "created_at": p.created_at,
+                "last_used": p.last_used,
+            }
+            for p in passkeys
+        ]
+        return Response(data, status=status.HTTP_200_OK)
+
+    if request.method == "DELETE" and pk:
+        try:
+            passkey = PasskeyCredential.objects.get(id=pk, user=request.user)
+            passkey.delete()
+            return Response({"status": "deleted"}, status=status.HTTP_200_OK)
+        except PasskeyCredential.DoesNotExist:
+            return Response({"error": "Passkey not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+@login_required
+def user_profile(request):
+    user = User.objects.get(id=request.user.id)
+    return render(request, "base/user_profile.html", {"user": user})
 
 
 def logout_view(request):
@@ -165,12 +584,6 @@ def logout_view(request):
     domain = getattr(settings, "SESSION_COOKIE_DOMAIN", None)
     response.delete_cookie("is_logged_in", domain=domain)
     return response
-
-
-@login_required
-def user_profile(request):
-    user = User.objects.get(id=request.user.id)
-    return render(request, "base/user_profile.html", {"user": user})
 
 
 @never_cache

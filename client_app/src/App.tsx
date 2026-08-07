@@ -7,6 +7,9 @@ import { authAtom } from "./authAtom";
 import { getCookie } from "./utils";
 import { SERVER_URL } from "./constant";
 import Home from "./pages/home";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import VerifyOTP from "./pages/auth/VerifyOTP";
+import ResetPassword from "./pages/auth/ResetPassword";
 
 // Route Components
 import NotificationRoutes from "./routes/NotificationRoutes";
@@ -20,20 +23,25 @@ import InternshipRoutes from "./routes/InternshipRoutes";
 import PrincipalRoutes from "./routes/PrincipalRoutes";
 import StaffRoutes from "./routes/StaffRoutes";
 
-// Module-level singleton: there is exactly one App instance in this app, and
-// creating the client inside the component body would tear down and
-// recreate React Query's entire cache/subscriptions on every re-render of
-// App (e.g. once the auth-check effect below calls setUser).
 const queryClient = new QueryClient();
+
+const PUBLIC_AUTH_PATHS = ["/forgot-password", "/verify-otp", "/reset-password"];
 
 const App = () => {
   const setUser = useSetAtom(authAtom);
   useEffect(() => {
     const onAuthenticate = async () => {
+      const isPublicPath = PUBLIC_AUTH_PATHS.some((path) =>
+        window.location.pathname.startsWith(path)
+      );
+
       if (getCookie("is_logged_in") !== "true") {
-        window.location.href = `${SERVER_URL}/auth/login/`;
+        if (!isPublicPath) {
+          window.location.href = `${SERVER_URL}/auth/login/`;
+        }
         return;
       }
+
       const res = await apiFetch("/api/", {
         method: "GET",
         credentials: "include",
@@ -43,9 +51,8 @@ const App = () => {
       });
       if (res.ok) {
         const data = await res.json();
-
         setUser(data);
-      } else {
+      } else if (!isPublicPath) {
         window.open(`${SERVER_URL}/auth/login/`, "_self");
       }
     };
@@ -56,6 +63,9 @@ const App = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/verify-otp" element={<VerifyOTP />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           {NotificationRoutes()}
           {ProgramCoordinatorRoutes()}
           {StudentRoutes()}

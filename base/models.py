@@ -6,6 +6,7 @@ from django.conf import settings
 from datetime import timedelta
 from django.utils import timezone
 import pyotp
+from django.contrib.auth.hashers import make_password, check_password
 
 
 class CustomUserManager(UserManager):
@@ -100,6 +101,111 @@ class PasswordResetOTP(models.Model):
         return totp.verify(otp) and self.created_at >= timezone.now() - timedelta(
             minutes=10
         )
+
+
+class UserOTP(models.Model):
+    """
+    Production-grade, cryptographically secure 6-digit OTP model.
+    Stores hashed OTP (never plain text), explicit 2-minute expiration,
+    attempt tracking, resend cooldowns, and single-use password reset tokens.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="otps")
+    otp_hash = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    attempts_count = models.IntegerField(default=0)
+    resend_count = models.IntegerField(default=0)
+    is_used = models.BooleanField(default=False)
+    reset_token = models.CharField(max_length=100, null=True, blank=True, unique=True, db_index=True)
+    reset_token_expires_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "User OTP"
+        verbose_name_plural = "User OTPs"
+
+    @classmethod
+    def create_otp_for_user(cls, user, ttl_seconds=120):
+        import secrets
+        # Invalidate all prior unused OTPs for this user
+        cls.objects.filter(user=user, is_used=False).update(is_used=True)
+
+        # Generate cryptographically secure 6-digit number
+        raw_otp = f"{secrets.randbelow(1000000):06d}"
+        otp_hash = make_password(raw_otp)
+        expires_at = timezone.now() + timedelta(seconds=ttl_seconds)
+
+        otp_instance = cls.objects.create(
+            user=user,
+            otp_hash=otp_hash,
+            expires_at=expires_at,
+        )
+        return otp_instance, raw_otp
+
+    def is_expired(self):
+        return timezone.now() >= self.expires_at
+
+    def verify_otp_code(self, raw_otp):
+        import secrets
+        if self.is_used or self.is_expired():
+            return False, "OTP has expired or already been used."
+
+        if self.attempts_count >= 5:
+            self.is_used = True
+            self.save(update_fields=["is_used"])
+            return False, "Too many failed attempts. Please request a new OTP."
+
+        self.attempts_count += 1
+
+        if check_password(raw_otp, self.otp_hash):
+            self.is_used = True
+            self.reset_token = secrets.token_urlsafe(32)
+            self.reset_token_expires_at = timezone.now() + timedelta(minutes=10)
+            self.save(update_fields=["attempts_count", "is_used", "reset_token", "reset_token_expires_at"])
+            return True, self.reset_token
+        else:
+            self.save(update_fields=["attempts_count"])
+            remaining = 5 - self.attempts_count
+            return False, f"Invalid OTP. {remaining} attempt(s) remaining."
+
+
+class PasskeyCredential(models.Model):
+    """
+    WebAuthn / FIDO2 Passkey credential model for biometrics and hardware keys.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="passkeys")
+    credential_id = models.CharField(max_length=255, unique=True, db_index=True)
+    public_key = models.TextField()
+    sign_count = models.BigIntegerField(default=0)
+    device_type = models.CharField(max_length=50, default="single_device")
+    backed_up = models.BooleanField(default=False)
+    transports = models.JSONField(default=list, blank=True)
+    name = models.CharField(max_length=100, default="Passkey")
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Passkey Credential"
+        verbose_name_plural = "Passkey Credentials"
+
+    def __str__(self):
+        return f"{self.user.email} - {self.name} ({self.device_type})"
+
+
+class PasskeyChallenge(models.Model):
+    """
+    Challenge storage for WebAuthn registration and authentication flows.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="passkey_challenges")
+    challenge = models.CharField(max_length=255, unique=True, db_index=True)
+    challenge_type = models.CharField(max_length=20, choices=[("register", "Register"), ("login", "Login")])
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    def is_expired(self):
+        return timezone.now() >= self.expires_at
 
 
 PROGRAM_OPTIONS = [
