@@ -36,13 +36,11 @@ class FacultyResponsibilityResource(resources.ModelResource):
         
         if not user:
             # We must create the user
-            raw_password = row.get("password") or DEFAULT_FACULTY_IMPORT_PASSWORD
-            
-            # CPU/Time optimization: If it's a dry run, bypass PBKDF2 hashing!
-            if getattr(self, "dry_run", False) or kwargs.get("dry_run", False):
-                hashed_password = "dummy_hash_for_dry_run"
+            raw_password = row.get("password")
+            if raw_password and str(raw_password).strip():
+                hashed_password = make_password(str(raw_password).strip())
             else:
-                hashed_password = make_password(raw_password)
+                hashed_password = make_password(DEFAULT_FACULTY_IMPORT_PASSWORD)
                 
             user = User.objects.create(
                 id=uuid4(),

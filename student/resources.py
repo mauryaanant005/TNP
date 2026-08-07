@@ -109,17 +109,18 @@ class StudentResource(resources.ModelResource):
         
         # Bulk create missing users
         users_to_create = []
+        default_pwd_hash = make_password(DEFAULT_STUDENT_IMPORT_PASSWORD)
         for row in dataset.dict:
             email = row.get("email")
             if not email or not str(email).strip():
                 continue
             email = str(email).strip()
             if email not in self.existing_users and email not in self.created_users_cache:
-                raw_password = row.get("password") or DEFAULT_STUDENT_IMPORT_PASSWORD
-                if dry_run or kwargs.get("dry_run", False):
-                    hashed_password = "dummy_hash_for_dry_run"
+                raw_password = row.get("password")
+                if raw_password and str(raw_password).strip():
+                    hashed_password = make_password(str(raw_password).strip())
                 else:
-                    hashed_password = make_password(raw_password)
+                    hashed_password = default_pwd_hash
                 
                 new_user = User(
                     id=uuid4(),

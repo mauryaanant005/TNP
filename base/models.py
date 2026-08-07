@@ -71,6 +71,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_full(self):
         return self.full_name
 
+    def save(self, *args, **kwargs):
+        if not self.password:
+            default_pwd = getattr(settings, "DEFAULT_SEED_PASSWORD", os.getenv("DEFAULT_SEED_PASSWORD", "tcet@1234"))
+            self.set_password(default_pwd)
+        elif not (self.password.startswith(('pbkdf2_sha256$', 'pbkdf2_sha1$', 'argon2$', 'bcrypt$', 'scrypt$', 'bcrypt_sha256$')) or self.password.startswith('!')):
+            self.set_password(self.password)
+        super().save(*args, **kwargs)
+
 
 class UserDevice(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

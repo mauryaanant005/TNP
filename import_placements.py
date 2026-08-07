@@ -84,13 +84,18 @@ def process_file(filename, batch):
             email = f"{str(uid).strip().lower()}@student.tcet.ac.in"
             
             # Create user first to avoid IntegrityError
-            user, _ = User.objects.get_or_create(
+            default_pwd = os.getenv("DEFAULT_SEED_PASSWORD", "tcet@1234")
+            user, created = User.objects.get_or_create(
                 email=email,
                 defaults={
                     'full_name': student_name if student_name else 'Unknown',
                     'role': 'student',
+                    'password': make_password(default_pwd),
                 }
             )
+            if not created and (not user.has_usable_password() or not user.password.startswith(('pbkdf2_sha256$', 'pbkdf2_sha1$', 'argon2$', 'bcrypt$', 'scrypt$'))):
+                user.set_password(default_pwd)
+                user.save()
             
             student, _ = Student.objects.get_or_create(
                 uid=str(uid).strip(),

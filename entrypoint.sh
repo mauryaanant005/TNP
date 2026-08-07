@@ -41,23 +41,38 @@ if [ "${RUN_RELEASE_TASKS:-1}" = "1" ]; then
   echo "Running database migrations..."
   python manage.py migrate --noinput
 
-  echo "Creating superuser..."
+  echo "Creating superuser and repairing unhashed user passwords..."
   python manage.py shell <<'PYEOF'
 import os
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 
+User = get_user_model()
 email = os.environ.get("DJANGO_SUPERUSER_EMAIL")
 password = os.environ.get("DJANGO_SUPERUSER_PASSWORD")
 
 if not email or not password:
     print("DJANGO_SUPERUSER_EMAIL / DJANGO_SUPERUSER_PASSWORD not set - skipping superuser creation.")
 else:
-    User = get_user_model()
     if not User.objects.filter(email=email).exists():
         User.objects.create_superuser(email, password)
         print("Superuser created.")
     else:
         print("Superuser already exists.")
+
+# Repair any existing users in DB that have invalid/unhashed/empty passwords
+default_pwd = os.environ.get("DEFAULT_SEED_PASSWORD", "tcet@1234")
+default_pwd_hash = make_password(default_pwd)
+users_to_fix = []
+
+for u in User.objects.all():
+    if not u.password or not (u.password.startswith(('pbkdf2_sha256$', 'pbkdf2_sha1$', 'argon2$', 'bcrypt$', 'scrypt$', 'bcrypt_sha256$')) or u.password.startswith('!')):
+        u.password = default_pwd_hash
+        users_to_fix.append(u)
+
+if users_to_fix:
+    User.objects.bulk_update(users_to_fix, ['password'])
+    print(f"Repaired passwords for {len(users_to_fix)} user accounts.")
 PYEOF
 fi
 
