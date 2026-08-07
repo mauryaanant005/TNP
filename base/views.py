@@ -110,9 +110,6 @@ def send_otp_email(user, raw_otp):
 # ---------------------------------------------------------------------------
 
 @never_cache
-@csrf_exempt
-@api_view(["POST"])
-@permission_classes([AllowAny])
 @ratelimit(key="post:email", rate="3/h", method="POST", block=True)
 @ratelimit(key="ip", rate="60/h", method="POST", block=True)
 def password_reset_request(request):
