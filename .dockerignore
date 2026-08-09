@@ -28,6 +28,31 @@ client_app/.vite/
 .gitignore
 Dockerfile*
 docker-compose*
+
+# ---------------------------------------------------------------------------
+# Student PII. The audit (§1) recorded these as excluded here; they were not.
+# Verified before adding them: the built image contained seven spreadsheets,
+# ~5.5 MB of named students tied to employers and salaries, readable by anyone
+# with a shell in the container or access to the image layers.
+#
+# import_placements.py reads these from the repo root at development time. They
+# have no business in a runtime image.
+# ---------------------------------------------------------------------------
+*.xls
+*.xlsx
+*.csv
+local_data/
+
+# Destructive one-off ops scripts. Nothing routine runs these, and shipping
+# them means a compromised container has a ready-made "delete every student"
+# and "reset every password" to hand.
+delete_students.py
+reset_passwords_temp.py
+
+# Test suite and fixtures - not needed at runtime.
+tests/
+pytest.ini
+.github/
 .idea/
 .vscode/
 .DS_Store
