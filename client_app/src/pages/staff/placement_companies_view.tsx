@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api";
+import { apiFetch, toList } from "@/lib/api";
 import  { useState, useEffect } from "react";
 import {
   Container,
@@ -29,7 +29,7 @@ const CompanyPage = () => {
   useEffect(() => {
     apiFetch("/api/staff/companies/batches/") // Django endpoint for unique batches
       .then((res) => res.json())
-      .then((data) => setBatches(data))
+      .then((data) => setBatches(toList<string>(data)))
       .catch((err) => console.error("Error fetching batches:", err));
   }, []);
 
@@ -38,7 +38,7 @@ const CompanyPage = () => {
     if (selectedBatch) {
       apiFetch(`/api/staff/placement/companies/batch/${selectedBatch}/`)
         .then((res) => res.json())
-        .then((data) => setCompanies(data))
+        .then((data) => setCompanies(toList<Company>(data)))
         .catch((err) => console.error("Error fetching companies:", err));
     }
   }, [selectedBatch]);

@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useSetAtom } from "jotai";
-import { authAtom } from "./authAtom";
+import { authAtom, authStatusAtom } from "./authAtom";
 import { getCookie } from "./utils";
 import { SERVER_URL } from "./constant";
 import Home from "./pages/home";
@@ -29,6 +29,7 @@ const PUBLIC_AUTH_PATHS = ["/forgot-password", "/verify-otp", "/reset-password"]
 
 const App = () => {
   const setUser = useSetAtom(authAtom);
+  const setAuthStatus = useSetAtom(authStatusAtom);
   useEffect(() => {
     const onAuthenticate = async () => {
       const isPublicPath = PUBLIC_AUTH_PATHS.some((path) =>
@@ -36,6 +37,7 @@ const App = () => {
       );
 
       if (getCookie("is_logged_in") !== "true") {
+        setAuthStatus("anonymous");
         if (!isPublicPath) {
           window.location.href = `${SERVER_URL}/auth/login/`;
         }
@@ -52,8 +54,15 @@ const App = () => {
       if (res.ok) {
         const data = await res.json();
         setUser(data);
-      } else if (!isPublicPath) {
-        window.open(`${SERVER_URL}/auth/login/`, "_self");
+        // Set last: RequireRole reads both atoms, and flipping the status
+        // before the user is in place would let one render see
+        // "authenticated" with a null user.
+        setAuthStatus("authenticated");
+      } else {
+        setAuthStatus("anonymous");
+        if (!isPublicPath) {
+          window.open(`${SERVER_URL}/auth/login/`, "_self");
+        }
       }
     };
     onAuthenticate();

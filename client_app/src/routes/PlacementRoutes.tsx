@@ -1,4 +1,6 @@
 import { Route } from "react-router";
+import RequireRole from "../components/RequireRole";
+import { ROLE_GROUPS } from "../lib/roles";
 import PlacementLayout from "../pages/placement_officer/PlacementLayout";
 import { CategoryDataStatistics } from "../pages/placement_officer/CategoryData";
 import { PlacementDashboard } from "../pages/placement_officer";
@@ -12,7 +14,7 @@ import StudentByCategory from "../pages/placement_officer/StudentByCategory";
 
 const PlacementRoutes = () => {
   return (
-    <>
+    <Route element={<RequireRole allowed={ROLE_GROUPS.PLACEMENT_REPORTS} />}>
       <Route path="/placement_officer" element={<PlacementLayout />}>
         <Route index element={<PlacementDashboard />} />
         <Route path="branch-wise-report" element={<BranchWiseReport />} />
@@ -31,13 +33,15 @@ const PlacementRoutes = () => {
         />
         <Route path="placement_old" element={<Old />} />
       </Route>
+      {/* Top-level paths outside the layout. The category rules decide which
+          students a company may see, so they belong behind the same guard. */}
       <Route path="/category-rule-form" element={<CategoryRuleForm />} />
       <Route path="/category-rules/list" element={<CategoryRuleList />} />
       <Route
         path="/category-rules/students/:category/:batch"
         element={<StudentByCategory />}
       />
-    </>
+    </Route>
   );
 };
 

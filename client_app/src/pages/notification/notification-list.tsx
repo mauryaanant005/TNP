@@ -19,7 +19,7 @@ import {
   Skeleton,
 } from "@mui/material";
 import { BellOff, Plus } from "lucide-react";
-import { api, buildWebSocketUrl } from "@/lib/api";
+import { api, buildWebSocketUrl, toList } from "@/lib/api";
 import { useAtomValue } from "jotai";
 import { authAtom } from "@/authAtom";
 
@@ -68,7 +68,8 @@ const fetchNotifications = async (category?: string): Promise<NotificationItem[]
     params,
     withCredentials: true, // use session cookie, not localStorage token
   });
-  return response.data;
+  // Paginated since T-15; older builds returned a bare array.
+  return toList<NotificationItem>(response.data);
 };
 
 // -------------------------------------------------------------------------

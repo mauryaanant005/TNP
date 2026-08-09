@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { api, toList } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -20,9 +20,9 @@ export default function StudentInternships() {
       setLoading(true);
       try {
         const res = await api.get(`/api/student/internships/`);
-        if (res.data && res.data.length > 0) {
-          setInternships(res.data);
-          (res.data as any).isDummy = false;
+        const rows = toList(res.data);
+        if (rows.length > 0) {
+          setInternships(rows as never[]);
         } else {
           // Empty, inject dummy
           throw new Error("EmptyData");

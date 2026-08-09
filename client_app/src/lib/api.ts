@@ -17,6 +17,22 @@ export function apiFetch(path: string, init: RequestInit = {}): Promise<Response
   return fetch(`${SERVER_URL}${path}`, { ...init, credentials: "include" });
 }
 
+// DRF now paginates every list endpoint by default (T-15), so a list response
+// is `{count, next, previous, results}` rather than a bare array. Endpoints
+// that are plain APIViews still return an array, and older callers were
+// written against that shape, so this accepts both.
+//
+// It only reads the first page. That is correct for the small, filtered lists
+// it is used on; anything that can exceed PAGE_SIZE (50) needs real pagination
+// UI, not this helper.
+export function toList<T = unknown>(data: unknown): T[] {
+  if (Array.isArray(data)) return data as T[];
+  if (data && typeof data === "object" && Array.isArray((data as { results?: unknown }).results)) {
+    return (data as { results: T[] }).results;
+  }
+  return [];
+}
+
 // Builds a ws(s):// URL pointing at the API host for a given path (e.g.
 // "/ws/notifications/"). In production SERVER_URL is an absolute
 // "https://api.<domain>" origin - the API's own WebSocket route lives on

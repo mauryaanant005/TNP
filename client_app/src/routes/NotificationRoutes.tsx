@@ -6,7 +6,7 @@ import NotificationParent from "../pages/notification/notification-parent";
 
 const NotificationRoutes = () => {
   return (
-    <Route path="/notifications" element={<NotificationParent />}>
+  <Route path="/notifications" element={<NotificationParent />}>
       <Route index element={<NotificationList />} />
       <Route path="create" element={<CreateNotification />} />
       <Route path=":id" element={<NotificationDetail />} />

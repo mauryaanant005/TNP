@@ -1,4 +1,6 @@
 import { Route } from "react-router";
+import RequireRole from "../components/RequireRole";
+import { ROLE_GROUPS } from "../lib/roles";
 import StudentLayout from "../pages/student/student_layout";
 import SessionAttendance from "../pages/student/SessionAttendance";
 import StudentPersonalInfo from "../pages/student/student-personal-info";
@@ -12,7 +14,7 @@ import StudentTrainingPerformance from "../pages/student/StudentTrainingPerforma
 
 const StudentRoutes = () => {
   return (
-    <>
+    <Route element={<RequireRole allowed={ROLE_GROUPS.STUDENT} />}>
       <Route path="/student" element={<StudentLayout />}>
         <Route path="session-attendance" element={<SessionAttendance />} />
         <Route
@@ -33,11 +35,13 @@ const StudentRoutes = () => {
         />
         <Route path="internships" element={<StudentInternships />} />
       </Route>
+      {/* Outside the layout, but still student-only - it was previously the
+          one student page reachable by any signed-in user. */}
       <Route
         path="/student/student-training-performance"
         element={<StudentTrainingPerformance />}
       />
-    </>
+    </Route>
   );
 };
 
