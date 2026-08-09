@@ -2,7 +2,7 @@
 
 set -e
 
-# ENV=DEV uses SQLite (see t_and_p_automation/settings.py) - there's no
+# ENV=DEV uses SQLite (see config/settings.py) - there's no
 # MySQL to wait for in that mode.
 if [ "${ENV:-PROD}" != "DEV" ]; then
   echo "Waiting for MySQL to be ready..."

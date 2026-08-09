@@ -97,6 +97,12 @@ PERMISSION_MATRIX = [
     ("GET", f"/api/placement_officer/dashboard/{BATCH}/", ("placement_officer", "principal")),
     ("GET", f"/api/placement_officer/branch_wise_report/{BATCH}/", ("placement_officer", "principal")),
     ("GET", f"/api/placement_officer/student_detail_report/{BATCH}/", ("placement_officer", "principal")),
+    # Routed for the first time in T-19: the views and the frontend pages both
+    # existed, only the URL entry was missing, so all three pages 404'd.
+    ("POST", "/api/placement_officer/category-rules/create/", ("placement_officer", "principal")),
+    ("GET", "/api/placement_officer/category-rules/list/", ("placement_officer", "principal")),
+    ("GET", f"/api/placement_officer/students/by-category/Category%201/{BATCH}/",
+     ("placement_officer", "principal")),
 
     # --- training ---------------------------------------------------------
     ("GET", "/api/program_coordinator/training-performance/template/Technical/", TRAINING_ROLES),

@@ -38,9 +38,27 @@ class NotificationSerializer(serializers.ModelSerializer):
             "is_read",
         ]
 
+    #: Views prefetch the requesting user's read rows into this attribute.
+    #: See `NotificationListCreate.get_queryset`.
+    READS_ATTR = "reads_by_requester"
+
     def get_is_read(self, obj):
         request = self.context.get("request")
         if not request or not request.user.is_authenticated:
             return False
-        # Uses prefetched queryset when available — avoids N+1
+
+        # `obj.read_by.filter(...)` looks like it uses the prefetch cache. It
+        # does not — any filter() on a related manager builds a fresh queryset
+        # and issues a query per object. That was a real N+1: 50 notifications
+        # on a page meant 50 extra queries.
+        #
+        # The views instead prefetch only *this user's* read rows (a handful,
+        # not every user's) into READS_ATTR, so this is a list membership test
+        # with no query at all.
+        prefetched = getattr(obj, self.READS_ATTR, None)
+        if prefetched is not None:
+            return bool(prefetched)
+
+        # Fallback for callers that did not prefetch — a single object, so one
+        # query is correct rather than N.
         return obj.read_by.filter(user=request.user).exists()

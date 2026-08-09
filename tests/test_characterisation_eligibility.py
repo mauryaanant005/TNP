@@ -20,8 +20,8 @@ drift is a finding, not a fixture bug.
 
 import pytest
 
-from staff.utils import is_student_eligible as eligible_any_offer
-from student.utils import is_student_eligible as eligible_for_offer
+from placements.services import is_student_eligible as eligible_any_offer
+from placements.services import is_student_eligible_for_offer as eligible_for_offer
 from tests import factories
 
 pytestmark = [pytest.mark.django_db, pytest.mark.characterisation]
@@ -214,6 +214,6 @@ def test_get_eligible_students_filters_by_batch_and_academic_year():
         uid="0003-CMPN003-25", department="CMPN", academic_year="TE", current_category="Category 3"
     )  # wrong year
 
-    from staff.utils import get_eligible_students
+    from placements.services import eligible_student_ids
 
-    assert get_eligible_students(company) == [matching.id]
+    assert eligible_student_ids(company) == [matching.id]

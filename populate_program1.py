@@ -2,7 +2,7 @@ import os
 import django
 import random
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "t_and_p_automation.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
 from program_coordinator_api.models import Program1

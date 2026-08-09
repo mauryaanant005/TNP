@@ -52,9 +52,9 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
 ENTRYPOINT ["/app/entrypoint.sh"]
 
 # Gunicorn with a Uvicorn worker: this app uses Django Channels for a
-# real-time notifications WebSocket (t_and_p_automation/asgi.py), so it needs
+# real-time notifications WebSocket (config/asgi.py), so it needs
 # an ASGI-capable process. Gunicorn is still the invoked process/production
 # server (per the hosting standard); the Uvicorn worker class lets it serve
 # both HTTP and WebSocket traffic on the same port, which IT routes to via
 # both api.<domain> and socket.<domain> (hosting standard section 11.4).
-CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "t_and_p_automation.asgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "config.asgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]

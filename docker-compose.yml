@@ -47,7 +47,7 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    command: celery -A t_and_p_automation worker --loglevel=info
+    command: celery -A config worker --loglevel=info
     restart: unless-stopped
     env_file:
       - .env

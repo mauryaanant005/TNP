@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from base.permissions import HasRole
-from django.db.models import Q
+from notifications.targeting import visible_to
+from django.db.models import Prefetch, Q
 
 from django.core.exceptions import ValidationError
 from .serializers import NotificationSerializer
@@ -204,6 +205,21 @@ def _resolve_recipients(target_audience, departments, academic_years, creator):
 # Views
 # ---------------------------------------------------------------------------
 
+
+def _reads_by(user):
+    """Prefetch only `user`'s read rows, into the attribute the serializer reads.
+
+    Plain `prefetch_related("read_by")` would load every user's read row for
+    every notification on the page — 10,000 rows per notification at target
+    size — and the serializer's `read_by.filter(...)` then bypassed the cache
+    anyway, one query per row. This loads at most one row per notification.
+    """
+    return Prefetch(
+        "read_by",
+        queryset=NotificationRead.objects.filter(user=user),
+        to_attr=NotificationSerializer.READS_ATTR,
+    )
+
 class NotificationListCreate(generics.ListCreateAPIView):
     serializer_class = NotificationSerializer
     # Everyone authenticated reads their own notifications; everyone except a
@@ -224,12 +240,13 @@ class NotificationListCreate(generics.ListCreateAPIView):
         - ?is_read=true|false — filter by read status
         """
         user = self.request.user
+        # Recipients are resolved from the targeting metadata (T-23) rather
+        # than read out of a materialised through table.
         qs = (
-            Notification.objects.filter(recipients=user)
+            visible_to(user)
             .select_related("creator")
-            .prefetch_related("read_by")
+            .prefetch_related(_reads_by(user))
             .order_by("-created_at")
-            .distinct()
         )
 
         # Optional category filter
@@ -350,53 +367,55 @@ class NotificationListCreate(generics.ListCreateAPIView):
                 files=request.FILES.get("files", None),
             )
 
-            # Resolve recipients server-side
-            recipient_users = _resolve_recipients(
-                target_audience, departments, academic_years, user
+            # T-23: recipients are NOT materialised. The targeting metadata
+            # stored above fully determines who receives this, and
+            # `visible_to()` evaluates it at read time — so an "all students"
+            # broadcast writes one row, not one per student.
+            #
+            # The websocket fan-out is still per-user, because a push has to be
+            # addressed to somebody. It resolves ids lazily and uses them only
+            # to pick channel groups; nothing is written to the database.
+            recipient_ids = list(
+                _resolve_recipients(
+                    target_audience, departments, academic_years, user
+                ).values_list("id", flat=True)
             )
-            recipient_list = list(recipient_users)
+            if user.id not in recipient_ids:
+                recipient_ids.append(user.id)
+
             logger.info(
-                "Notification %s created by user %s — %d recipients resolved for audience '%s'",
+                "Notification %s created by user %s — %d recipients for audience '%s' "
+                "(resolved at read time, not stored)",
                 notification.id,
                 user.id,
-                len(recipient_list),
+                len(recipient_ids),
                 target_audience,
             )
-
-            # Always include the creator so they can see their own notification
-            recipient_set = set(recipient_list)
-            recipient_set.add(user)
-            final_recipient_list = list(recipient_set)
-
-            if final_recipient_list:
-                notification.recipients.set(final_recipient_list)
-                
-                # Push real-time WebSocket notification to all recipients
-                from channels.layers import get_channel_layer
-                from asgiref.sync import async_to_sync
-                
-                channel_layer = get_channel_layer()
-                if channel_layer:
-                    for recipient in final_recipient_list:
-                        group_name = f"user_{recipient.id}_notifications"
-                        try:
-                            async_to_sync(channel_layer.group_send)(
-                                group_name,
-                                {
-                                    "type": "new_notification",
-                                    "message": f"New notification: {title}"
-                                }
-                            )
-                        except Exception as e:
-                            logger.error(f"Failed to send websocket notification: {e}")
-            else:
+            if len(recipient_ids) <= 1:
                 logger.warning(
-                    "No recipients resolved for notification %s (audience=%s, depts=%s, years=%s)",
+                    "Notification %s reaches only its creator (audience=%s, depts=%s, years=%s)",
                     notification.id,
                     target_audience,
                     departments,
                     academic_years,
                 )
+
+            from channels.layers import get_channel_layer
+            from asgiref.sync import async_to_sync
+
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                for recipient_id in recipient_ids:
+                    try:
+                        async_to_sync(channel_layer.group_send)(
+                            f"user_{recipient_id}_notifications",
+                            {
+                                "type": "new_notification",
+                                "message": f"New notification: {title}",
+                            },
+                        )
+                    except Exception as e:
+                        logger.error(f"Failed to send websocket notification: {e}")
 
             serializer = self.get_serializer(notification)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -418,9 +437,9 @@ class NotificationDetail(generics.RetrieveAPIView):
 
     def get_queryset(self):
         return (
-            Notification.objects.filter(recipients=self.request.user)
+            visible_to(self.request.user)
             .select_related("creator")
-            .prefetch_related("read_by")
+            .prefetch_related(_reads_by(self.request.user))
         )
 
     def retrieve(self, request, *args, **kwargs):
@@ -448,7 +467,7 @@ class NotificationMarkRead(APIView):
 
     def patch(self, request, pk):
         try:
-            notification = Notification.objects.get(pk=pk, recipients=request.user)
+            notification = visible_to(request.user).get(pk=pk)
         except Notification.DoesNotExist:
             return Response(
                 {"error": "Notification not found or you are not a recipient."},
@@ -474,10 +493,10 @@ class NotificationUnreadCount(APIView):
 
     def get(self, request):
         user = request.user
-        total = Notification.objects.filter(recipients=user).count()
+        visible = visible_to(user)
+        total = visible.count()
         read_count = NotificationRead.objects.filter(
-            user=user,
-            notification__recipients=user,
+            user=user, notification__in=visible
         ).count()
         unread = total - read_count
         return Response({"unread_count": unread}, status=status.HTTP_200_OK)

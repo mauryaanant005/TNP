@@ -8,7 +8,7 @@ def categorize(
     training_performance,
     batch,
 ):
-    from placement_officer.models import CategoryRule
+    from placements.models import CategoryRule
 
     if any(
         x is None or np.isnan(x)

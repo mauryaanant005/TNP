@@ -15,9 +15,9 @@ is refused every drive. That is audit §6.7 and T-29.
 
 import pytest
 
-from placement_officer.models import CategoryRule
+from placements.models import CategoryRule
 from student.models import Student
-from student.utils import categorize
+from placements.services import categorize
 
 pytestmark = [pytest.mark.django_db, pytest.mark.characterisation]
 

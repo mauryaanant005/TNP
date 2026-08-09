@@ -11,8 +11,13 @@ from factory.django import DjangoModelFactory
 from base.models import FacultyResponsibility, User
 from internship_api.models import InternshipRegistration
 from program_coordinator_api.models import AttendanceData, TrainingPerformance
-from staff.models import CompanyRegistration, JobOffer, Notice
-from student.models import Student, StudentOffer
+from placements.models import CompanyRegistration, JobOffer, Notice
+from student.models import (
+    PlacementCompanyProgress,
+    Student,
+    StudentOffer,
+    StudentPlacementAppliedCompany,
+)
 
 
 class UserFactory(DjangoModelFactory):
@@ -128,6 +133,31 @@ class StudentOfferFactory(DjangoModelFactory):
     status = "offered"
     salary = 8.0
     role = "Engineer"
+
+
+class StudentPlacementAppliedCompanyFactory(DjangoModelFactory):
+    class Meta:
+        model = StudentPlacementAppliedCompany
+
+    student = factory.SubFactory(StudentFactory)
+    company = factory.SubFactory(CompanyRegistrationFactory)
+    job_offer = factory.SubFactory(JobOfferFactory)
+    interested = True
+    not_interested_reason = ""
+
+
+class PlacementCompanyProgressFactory(DjangoModelFactory):
+    class Meta:
+        model = PlacementCompanyProgress
+
+    application = factory.SubFactory(StudentPlacementAppliedCompanyFactory)
+    registered = True
+    aptitude_test = False
+    coding_test = False
+    technical_interview = False
+    hr_interview = False
+    gd = False
+    final_result = "Pending"
 
 
 class AttendanceDataFactory(DjangoModelFactory):

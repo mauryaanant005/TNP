@@ -3,7 +3,7 @@ from django.db import models
 from base.models import User
 from base.upload_validators import validate_image_size
 from uuid import uuid4
-from staff.models import CompanyRegistration, JobOffer
+from placements.models import CompanyRegistration, JobOffer
 # Create your models here.
 
 

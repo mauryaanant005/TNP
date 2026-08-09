@@ -30,7 +30,7 @@ from program_coordinator_api.models import (
     AttendanceData,
 )
 from .utils import is_student_eligible
-from staff.models import CompanyRegistration,JobOffer
+from placements.models import CompanyRegistration, JobOffer
 from internship_api.models import InternshipAcceptance
 from program_coordinator_api.models import TrainingPerformance, TrainingPerformanceCategory
 

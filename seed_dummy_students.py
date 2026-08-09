@@ -4,7 +4,7 @@ import uuid
 import datetime
 from django.utils import timezone
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 't_and_p_automation.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
 from base.models import User
@@ -14,7 +14,7 @@ from student.models import (
     Resume_WorkExperience, Resume_ActivitiesAndAchievement, StudentOffer,
     StudentPlacementAppliedCompany, PlacementCompanyProgress
 )
-from staff.models import CompanyRegistration, JobOffer, Notice
+from placements.models import CompanyRegistration, JobOffer, Notice
 from program_coordinator_api.models import AttendanceData, TrainingPerformance, TrainingPerformanceCategory
 from internship_api.models import InternshipAcceptance
 from notifications.models import Notification
