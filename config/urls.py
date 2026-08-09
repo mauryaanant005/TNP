@@ -23,12 +23,17 @@ from base.views import user_profile, password_update
 
 handler500 = "base.error_utils.handle_500"
 
+from django.conf import settings
+
+admin.site.site_url = getattr(settings, "CLIENT_URL", "http://localhost:5173")
+
 # The React build is served by its own Nginx container (client_app/) at the
 # apex domain, not by Django - there is no catch-all SPA route or
 # django.conf.urls.static.static() here anymore (that helper is a no-op
 # outside DEBUG=True anyway, so it never actually served anything in
 # production; see views.serve_media for the real media-serving route).
 urlpatterns = [
+    path("", views.root_redirect, name="root_redirect"),
     path("admin/", admin.site.urls),
     path("api/health/", views.health, name="health"),
     # T-22. /api/schema/ is what the typed TS client is generated from;

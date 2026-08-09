@@ -435,6 +435,7 @@ AUTH_USER_MODEL = "base.User"
 UNFOLD = {
     "SITE_TITLE": "Admin site",
     "SITE_HEADER": "Thakur college of engineering and technology",
+    "SITE_URL": CLIENT_URL,
     "COLORS": {
         "primary": {
             "50": "#fff7ed",

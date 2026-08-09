@@ -7,10 +7,18 @@ from base.models import User, FacultyResponsibility
 from django.contrib.auth import logout
 from student.models import Student
 from django.views.static import serve
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.conf import settings
 from django.db import connections
 from django.http import JsonResponse
+
+def root_redirect(request):
+    """
+    Redirects root requests on the API domain to the primary frontend application site.
+    """
+    client_url = getattr(settings, "CLIENT_URL", "http://localhost:5173")
+    return redirect(client_url)
+
 
 def serve_static(request, path, document_root=""):
     return serve(request, path, document_root, show_indexes=True)
