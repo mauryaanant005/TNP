@@ -111,13 +111,26 @@ cython_debug/
 staticfiles/*
 
 
-docs/*
-docs/
+# docs/ is tracked. It holds the architecture audit, the implementation plan,
+# the agent brief and the phase records - and docs/PERMISSIONS.md, which is the
+# authorisation specification that tests/test_permission_matrix.py enforces.
+# That file drifting from the code while untracked is precisely the failure the
+# matrix exists to catch, so it belongs in git.
+#
+# Data files cannot accumulate there: the *.xls/*.xlsx/*.csv rules below are
+# global and apply inside docs/ too.
 
 # Source data spreadsheets. These hold real student PII - names, UIDs,
 # employers and salaries - and must never be committed. Keep them locally
 # (import_placements.py reads them from the repo root) but out of git.
+#
+# *.csv and local_data/ were recorded as done in the audit's T-04 but were not
+# actually present here. Added. Note this only blocks NEW additions:
+# dummy_attendance.csv and dummy_performance.csv are already tracked and stay
+# tracked until T-02 rewrites history.
 *.xls
 *.xlsx
+*.csv
+local_data/
 # Local curl/session scratch files - can contain a live sessionid
 cookies.txt
