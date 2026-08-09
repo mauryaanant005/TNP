@@ -119,3 +119,5 @@ docs/
 # (import_placements.py reads them from the repo root) but out of git.
 *.xls
 *.xlsx
+# Local curl/session scratch files - can contain a live sessionid
+cookies.txt
