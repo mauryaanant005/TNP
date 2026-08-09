@@ -1,0 +1,3063 @@
+openapi: 3.0.3
+info:
+  title: TNP Portal API
+  version: 1.0.0
+  description: Training & Placement portal. Authorisation rules are specified in docs/PERMISSIONS.md
+    and enforced by base.permissions.HasRole.
+paths:
+  /api/:
+    get:
+      operationId: root_retrieve
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/department_coordinator/attendance/upload-attendance/:
+    post:
+      operationId: department_coordinator_attendance_upload_attendance_create
+      description: |-
+        Restrict a queryset to the caller's own department.
+
+        `FacultyResponsibility` is how department and program ownership is recorded.
+        Five views previously re-implemented this filtering, each slightly
+        differently — `department__iexact`, `department__istartswith`, and one that
+        forgot to filter at all.
+
+        Fails closed: a user with no responsibility row sees nothing. That is
+        deliberate. A missing row is a misconfigured account, and the safe reading
+        of "no department assigned" is "no students", not "all students".
+
+        Superusers are exempt — they are the only accounts that legitimately read
+        across departments.
+      tags:
+      - department_coordinator
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/department_coordinator/attendance/upload-performance/:
+    post:
+      operationId: department_coordinator_attendance_upload_performance_create
+      description: |-
+        Restrict a queryset to the caller's own department.
+
+        `FacultyResponsibility` is how department and program ownership is recorded.
+        Five views previously re-implemented this filtering, each slightly
+        differently — `department__iexact`, `department__istartswith`, and one that
+        forgot to filter at all.
+
+        Fails closed: a user with no responsibility row sees nothing. That is
+        deliberate. A missing row is a misconfigured account, and the safe reading
+        of "no department assigned" is "no students", not "all students".
+
+        Superusers are exempt — they are the only accounts that legitimately read
+        across departments.
+      tags:
+      - department_coordinator
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/department_coordinator/dashboard-summary/:
+    get:
+      operationId: department_coordinator_dashboard_summary_retrieve
+      description: |-
+        Restrict a queryset to the caller's own department.
+
+        `FacultyResponsibility` is how department and program ownership is recorded.
+        Five views previously re-implemented this filtering, each slightly
+        differently — `department__iexact`, `department__istartswith`, and one that
+        forgot to filter at all.
+
+        Fails closed: a user with no responsibility row sees nothing. That is
+        deliberate. A missing row is a misconfigured account, and the safe reading
+        of "no department assigned" is "no students", not "all students".
+
+        Superusers are exempt — they are the only accounts that legitimately read
+        across departments.
+      tags:
+      - department_coordinator
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/department_coordinator/student-data/:
+    get:
+      operationId: department_coordinator_student_data_list
+      description: |-
+        Restrict a queryset to the caller's own department.
+
+        `FacultyResponsibility` is how department and program ownership is recorded.
+        Five views previously re-implemented this filtering, each slightly
+        differently — `department__iexact`, `department__istartswith`, and one that
+        forgot to filter at all.
+
+        Fails closed: a user with no responsibility row sees nothing. That is
+        deliberate. A missing row is a misconfigured account, and the safe reading
+        of "no department assigned" is "no students", not "all students".
+
+        Superusers are exempt — they are the only accounts that legitimately read
+        across departments.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - department_coordinator
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDepartmentStudentList'
+          description: ''
+  /api/department_coordinator/upload-inhouse-internship/:
+    post:
+      operationId: department_coordinator_upload_inhouse_internship_create
+      tags:
+      - department_coordinator
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/faculty_coordinator/attendance:
+    get:
+      operationId: faculty_coordinator_attendance_retrieve
+      description: Fetch saved attendance records.
+      tags:
+      - faculty_coordinator
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/faculty_coordinator/data:
+    get:
+      operationId: faculty_coordinator_data_retrieve
+      tags:
+      - faculty_coordinator
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/faculty_coordinator/reset-attendance:
+    post:
+      operationId: faculty_coordinator_reset_attendance_create
+      description: Reset attendance records for the requesting coordinator's own program(s)
+        only.
+      tags:
+      - faculty_coordinator
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/faculty_coordinator/save-attendance:
+    post:
+      operationId: faculty_coordinator_save_attendance_create
+      tags:
+      - faculty_coordinator
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/health/:
+    get:
+      operationId: health_retrieve
+      tags:
+      - health
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/internship/company/:
+    get:
+      operationId: internship_company_retrieve
+      tags:
+      - internship
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/internship/company/{id}:
+    get:
+      operationId: internship_company_retrieve_2
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - internship
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/internship/company/register/:
+    post:
+      operationId: internship_company_register_create
+      tags:
+      - internship
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/internship/job_application/create/{id}:
+    post:
+      operationId: internship_job_application_create_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - internship
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/internship/jobs/download-report/:
+    get:
+      operationId: internship_jobs_download_report_retrieve
+      tags:
+      - internship
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/internship/jobs/reports/:
+    get:
+      operationId: internship_jobs_reports_retrieve
+      tags:
+      - internship
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/internship/jobs/verify/:
+    get:
+      operationId: internship_jobs_verify_retrieve
+      tags:
+      - internship
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/internship/jobs/verify/selected/:
+    post:
+      operationId: internship_jobs_verify_selected_create
+      tags:
+      - internship
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/logout/:
+    post:
+      operationId: logout_create
+      tags:
+      - logout
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/notifications/:
+    get:
+      operationId: notifications_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - notifications
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationList'
+          description: ''
+    post:
+      operationId: notifications_create
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/notifications/{id}/:
+    get:
+      operationId: notifications_retrieve
+      description: |-
+        Retrieve a single notification.
+
+        Only accessible if the requesting user is a recipient.
+        Automatically marks the notification as read on retrieval.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notifications
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/notifications/{id}/mark-read/:
+    patch:
+      operationId: notifications_mark_read_partial_update
+      description: |-
+        PATCH /api/notifications/<pk>/mark-read/
+
+        Idempotent endpoint to mark a notification as read for the requesting user.
+        Returns 200 regardless of whether it was already read.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notifications
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/notifications/unread-count/:
+    get:
+      operationId: notifications_unread_count_retrieve
+      description: |-
+        GET /api/notifications/unread-count/
+
+        Returns the number of unread notifications for the requesting user.
+        Useful for badge counters in nav bars.
+      tags:
+      - notifications
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/placement_officer/branch_wise_report/{batch}/:
+    get:
+      operationId: placement_officer_branch_wise_report_retrieve
+      parameters:
+      - in: path
+        name: batch
+        schema:
+          type: string
+        required: true
+      tags:
+      - placement_officer
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/placement_officer/category-rules/create/:
+    post:
+      operationId: placement_officer_category_rules_create_create
+      tags:
+      - placement_officer
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/placement_officer/category-rules/list/:
+    get:
+      operationId: placement_officer_category_rules_list_retrieve
+      tags:
+      - placement_officer
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/placement_officer/consent/:
+    get:
+      operationId: placement_officer_consent_retrieve
+      tags:
+      - placement_officer
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/placement_officer/consent/{year}/:
+    get:
+      operationId: placement_officer_consent_retrieve_2
+      parameters:
+      - in: path
+        name: year
+        schema:
+          type: string
+        required: true
+      tags:
+      - placement_officer
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/placement_officer/dashboard/{batch}/:
+    get:
+      operationId: placement_officer_dashboard_retrieve
+      parameters:
+      - in: path
+        name: batch
+        schema:
+          type: string
+        required: true
+      tags:
+      - placement_officer
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/placement_officer/filter/{department}/:
+    get:
+      operationId: placement_officer_filter_retrieve
+      parameters:
+      - in: path
+        name: department
+        schema:
+          type: string
+        required: true
+      tags:
+      - placement_officer
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/placement_officer/filter/{department}/{year}/:
+    get:
+      operationId: placement_officer_filter_retrieve_2
+      parameters:
+      - in: path
+        name: department
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: year
+        schema:
+          type: string
+        required: true
+      tags:
+      - placement_officer
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/placement_officer/get_category_data/:
+    get:
+      operationId: placement_officer_get_category_data_retrieve
+      tags:
+      - placement_officer
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/placement_officer/get_category_data/{year}/:
+    get:
+      operationId: placement_officer_get_category_data_retrieve_2
+      parameters:
+      - in: path
+        name: year
+        schema:
+          type: string
+        required: true
+      tags:
+      - placement_officer
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/placement_officer/get_category_data_by_department/{department}/:
+    get:
+      operationId: placement_officer_get_category_data_by_department_retrieve
+      parameters:
+      - in: path
+        name: department
+        schema:
+          type: string
+        required: true
+      tags:
+      - placement_officer
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/placement_officer/get_category_data_by_department/{department}/{year}/:
+    get:
+      operationId: placement_officer_get_category_data_by_department_retrieve_2
+      parameters:
+      - in: path
+        name: department
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: year
+        schema:
+          type: string
+        required: true
+      tags:
+      - placement_officer
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/placement_officer/get_data_by_year/{batch}/:
+    get:
+      operationId: placement_officer_get_data_by_year_retrieve
+      parameters:
+      - in: path
+        name: batch
+        schema:
+          type: string
+        required: true
+      tags:
+      - placement_officer
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/placement_officer/student_detail_report/{batch}/:
+    get:
+      operationId: placement_officer_student_detail_report_retrieve
+      parameters:
+      - in: path
+        name: batch
+        schema:
+          type: string
+        required: true
+      tags:
+      - placement_officer
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/placement_officer/students/by-category/{category}/{batch}/:
+    get:
+      operationId: placement_officer_students_by_category_retrieve
+      parameters:
+      - in: path
+        name: batch
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: category
+        schema:
+          type: string
+        required: true
+      tags:
+      - placement_officer
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/placement_officer/unique-departments/:
+    get:
+      operationId: placement_officer_unique_departments_retrieve
+      tags:
+      - placement_officer
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/placement_officer/unique-departments/{year}/:
+    get:
+      operationId: placement_officer_unique_departments_retrieve_2
+      parameters:
+      - in: path
+        name: year
+        schema:
+          type: string
+        required: true
+      tags:
+      - placement_officer
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/program_coordinator/aggregate-analytics/:
+    get:
+      operationId: program_coordinator_aggregate_analytics_retrieve
+      description: |-
+        Restrict a queryset to the caller's own department.
+
+        `FacultyResponsibility` is how department and program ownership is recorded.
+        Five views previously re-implemented this filtering, each slightly
+        differently — `department__iexact`, `department__istartswith`, and one that
+        forgot to filter at all.
+
+        Fails closed: a user with no responsibility row sees nothing. That is
+        deliberate. A missing row is a misconfigured account, and the safe reading
+        of "no department assigned" is "no students", not "all students".
+
+        Superusers are exempt — they are the only accounts that legitimately read
+        across departments.
+      tags:
+      - program_coordinator
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/program_coordinator/attendance/{table_name}/:
+    get:
+      operationId: program_coordinator_attendance_retrieve
+      parameters:
+      - in: path
+        name: table_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - program_coordinator
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/program_coordinator/average-data/{table_name}/:
+    get:
+      operationId: program_coordinator_average_data_retrieve
+      parameters:
+      - in: path
+        name: table_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - program_coordinator
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/program_coordinator/avg-data/{table_name}/:
+    get:
+      operationId: program_coordinator_avg_data_retrieve
+      parameters:
+      - in: path
+        name: table_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - program_coordinator
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/program_coordinator/create-attendance-record/:
+    post:
+      operationId: program_coordinator_create_attendance_record_create
+      tags:
+      - program_coordinator
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/program_coordinator/get-attendance/{table_name}/:
+    get:
+      operationId: program_coordinator_get_attendance_retrieve
+      parameters:
+      - in: path
+        name: table_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - program_coordinator
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/program_coordinator/save-branch-attendance/{table_name}/:
+    post:
+      operationId: program_coordinator_save_branch_attendance_create
+      parameters:
+      - in: path
+        name: table_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - program_coordinator
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/program_coordinator/student-analytics/:
+    get:
+      operationId: program_coordinator_student_analytics_list
+      description: |-
+        Restrict a queryset to the caller's own department.
+
+        `FacultyResponsibility` is how department and program ownership is recorded.
+        Five views previously re-implemented this filtering, each slightly
+        differently — `department__iexact`, `department__istartswith`, and one that
+        forgot to filter at all.
+
+        Fails closed: a user with no responsibility row sees nothing. That is
+        deliberate. A missing row is a misconfigured account, and the safe reading
+        of "no department assigned" is "no students", not "all students".
+
+        Superusers are exempt — they are the only accounts that legitimately read
+        across departments.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - program_coordinator
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStudentAnalyticsList'
+          description: ''
+  /api/program_coordinator/student-analytics/{id}:
+    get:
+      operationId: program_coordinator_student_analytics_retrieve
+      description: |-
+        Restrict a queryset to the caller's own department.
+
+        `FacultyResponsibility` is how department and program ownership is recorded.
+        Five views previously re-implemented this filtering, each slightly
+        differently — `department__iexact`, `department__istartswith`, and one that
+        forgot to filter at all.
+
+        Fails closed: a user with no responsibility row sees nothing. That is
+        deliberate. A missing row is a misconfigured account, and the safe reading
+        of "no department assigned" is "no students", not "all students".
+
+        Superusers are exempt — they are the only accounts that legitimately read
+        across departments.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - program_coordinator
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentAnalytics'
+          description: ''
+  /api/program_coordinator/training-performance/template/{training_type}/:
+    get:
+      operationId: program_coordinator_training_performance_template_retrieve
+      parameters:
+      - in: path
+        name: training_type
+        schema:
+          type: string
+        required: true
+      tags:
+      - program_coordinator
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/program_coordinator/training-performance/upload/{training_type}/:
+    post:
+      operationId: program_coordinator_training_performance_upload_create
+      parameters:
+      - in: path
+        name: training_type
+        schema:
+          type: string
+        required: true
+      tags:
+      - program_coordinator
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/program_coordinator/update-attendance/{table_name}/:
+    post:
+      operationId: program_coordinator_update_attendance_create
+      parameters:
+      - in: path
+        name: table_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - program_coordinator
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/staff/category_update/:
+    post:
+      operationId: staff_category_update_create
+      description: |-
+        Re-categorise a whole batch against threshold values.
+
+        ⚠️ The single most destructive endpoint in the API: one POST rewrites
+        `current_category` for every matching student. See docs/PERMISSIONS.md.
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/staff/companies/batches/:
+    get:
+      operationId: staff_companies_batches_retrieve
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/staff/company/{company_id}/eligible-not-registered/:
+    get:
+      operationId: staff_company_eligible_not_registered_list
+      description: Shared plumbing for the three applicant lists.
+      parameters:
+      - in: path
+        name: company_id
+        schema:
+          type: string
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBasicStudentList'
+          description: ''
+  /api/staff/company/{company_id}/interested-students/:
+    get:
+      operationId: staff_company_interested_students_list
+      description: Shared plumbing for the three applicant lists.
+      parameters:
+      - in: path
+        name: company_id
+        schema:
+          type: string
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInterestedStudentApplicationList'
+          description: ''
+  /api/staff/company/{company_id}/not-interested-students/:
+    get:
+      operationId: staff_company_not_interested_students_list
+      description: Shared plumbing for the three applicant lists.
+      parameters:
+      - in: path
+        name: company_id
+        schema:
+          type: string
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotInterestedStudentApplicationList'
+          description: ''
+  /api/staff/company/{company_id}/trigger-excel-export/:
+    get:
+      operationId: staff_company_trigger_excel_export_retrieve
+      parameters:
+      - in: path
+        name: company_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/staff/company/{company_id}/trigger-resume-export/:
+    get:
+      operationId: staff_company_trigger_resume_export_retrieve
+      parameters:
+      - in: path
+        name: company_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/staff/company/bulk-update-progress/:
+    post:
+      operationId: staff_company_bulk_update_progress_create
+      description: Advance a batch of applicants through a selection round.
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/staff/placement/companies/batch/{batch}/:
+    get:
+      operationId: staff_placement_companies_batch_list
+      parameters:
+      - in: path
+        name: batch
+        schema:
+          type: string
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFormDataList'
+          description: ''
+  /api/staff/placement/company/:
+    post:
+      operationId: staff_placement_company_create
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FormDataRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FormDataRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FormDataRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormData'
+          description: ''
+  /api/staff/placement/company/{id}/:
+    get:
+      operationId: staff_placement_company_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormData'
+          description: ''
+    put:
+      operationId: staff_placement_company_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FormDataRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FormDataRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FormDataRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormData'
+          description: ''
+    patch:
+      operationId: staff_placement_company_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFormDataRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFormDataRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFormDataRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormData'
+          description: ''
+    delete:
+      operationId: staff_placement_company_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/staff/placement/company/send_notifications/{id}/:
+    post:
+      operationId: staff_placement_company_send_notifications_create
+      description: Notify a drive's eligible or registered students.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/staff/task-status/{task_id}/:
+    get:
+      operationId: staff_task_status_retrieve
+      parameters:
+      - in: path
+        name: task_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/staff/update/student/{uid}/:
+    get:
+      operationId: staff_update_student_retrieve
+      parameters:
+      - in: path
+        name: uid
+        schema:
+          type: string
+        required: true
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+          description: ''
+    put:
+      operationId: staff_update_student_update
+      parameters:
+      - in: path
+        name: uid
+        schema:
+          type: string
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+          description: ''
+    patch:
+      operationId: staff_update_student_partial_update
+      parameters:
+      - in: path
+        name: uid
+        schema:
+          type: string
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+          description: ''
+  /api/student/attendance-data/:
+    get:
+      operationId: student_attendance_data_retrieve
+      tags:
+      - student
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/student/company/register:
+    post:
+      operationId: student_company_register_create
+      tags:
+      - student
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/student/delete-account/:
+    delete:
+      operationId: student_delete_account_destroy
+      tags:
+      - student
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/student/info/:
+    get:
+      operationId: student_info_retrieve
+      tags:
+      - student
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+          description: ''
+  /api/student/internships/:
+    get:
+      operationId: student_internships_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - student
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInternshipAcceptanceList'
+          description: ''
+  /api/student/placement-card/:
+    get:
+      operationId: student_placement_card_retrieve
+      tags:
+      - student
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/student/resume/:
+    get:
+      operationId: student_resume_retrieve
+      tags:
+      - student
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: student_resume_create
+      tags:
+      - student
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: student_resume_update
+      tags:
+      - student
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/student/training-performance/:
+    get:
+      operationId: student_training_performance_retrieve
+      tags:
+      - student
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/training_officer/get-avg-data/{table_name}/:
+    get:
+      operationId: training_officer_get_avg_data_retrieve
+      parameters:
+      - in: path
+        name: table_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - training_officer
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: No response body
+  /auth/api/passkey/credentials/:
+    get:
+      operationId: auth_api_passkey_credentials_retrieve
+      description: |-
+        GET /auth/api/passkey/credentials/ — List passkeys
+        DELETE /auth/api/passkey/credentials/<pk>/ — Delete passkey
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: auth_api_passkey_credentials_destroy
+      description: |-
+        GET /auth/api/passkey/credentials/ — List passkeys
+        DELETE /auth/api/passkey/credentials/<pk>/ — Delete passkey
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /auth/api/passkey/credentials/{id}/:
+    get:
+      operationId: auth_api_passkey_credentials_retrieve_2
+      description: |-
+        GET /auth/api/passkey/credentials/ — List passkeys
+        DELETE /auth/api/passkey/credentials/<pk>/ — Delete passkey
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: auth_api_passkey_credentials_destroy_2
+      description: |-
+        GET /auth/api/passkey/credentials/ — List passkeys
+        DELETE /auth/api/passkey/credentials/<pk>/ — Delete passkey
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /auth/api/passkey/login/begin/:
+    post:
+      operationId: auth_api_passkey_login_begin_create
+      description: |-
+        POST /auth/api/passkey/login/begin/
+        Initiates WebAuthn Passkey authentication.
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /auth/api/passkey/login/finish/:
+    post:
+      operationId: auth_api_passkey_login_finish_create
+      description: |-
+        POST /auth/api/passkey/login/finish/
+        Completes Passkey login, authenticates user, and sets session cookies.
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /auth/api/passkey/register/begin/:
+    post:
+      operationId: auth_api_passkey_register_begin_create
+      description: |-
+        POST /auth/api/passkey/register/begin/
+        Initiates WebAuthn Passkey registration for the authenticated user.
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /auth/api/passkey/register/finish/:
+    post:
+      operationId: auth_api_passkey_register_finish_create
+      description: |-
+        POST /auth/api/passkey/register/finish/
+        Completes WebAuthn Passkey registration.
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /auth/api/password_reset/confirm/:
+    post:
+      operationId: auth_api_password_reset_confirm_create
+      description: |-
+        POST /auth/api/password_reset/confirm/
+        Updates password using valid reset_token. Instantly synchronizes authentication state.
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /auth/api/password_reset/request/:
+    post:
+      operationId: auth_api_password_reset_request_create
+      description: |-
+        POST /auth/api/password_reset/request/
+        Initiates password recovery. Generates a secure 2-minute 6-digit OTP and emails it.
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /auth/api/password_reset/resend_otp/:
+    post:
+      operationId: auth_api_password_reset_resend_otp_create
+      description: |-
+        POST /auth/api/password_reset/resend_otp/
+        Resends OTP after cooldown expires. Invalidates previous OTP and restarts 2-min timer.
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /auth/api/password_reset/verify_otp/:
+    post:
+      operationId: auth_api_password_reset_verify_otp_create
+      description: |-
+        POST /auth/api/password_reset/verify_otp/
+        Verifies 6-digit OTP code. Issues a single-use 10-minute reset_token on success.
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    AcademicAttendanceSemester:
+      type: object
+      properties:
+        semester:
+          $ref: '#/components/schemas/SemesterEnum'
+        attendance:
+          type: number
+          format: double
+      required:
+      - semester
+    AcademicAttendanceSemesterRequest:
+      type: object
+      properties:
+        semester:
+          $ref: '#/components/schemas/SemesterEnum'
+        attendance:
+          type: number
+          format: double
+      required:
+      - semester
+    AcademicPerformanceSemester:
+      type: object
+      properties:
+        semester:
+          $ref: '#/components/schemas/SemesterEnum'
+        performance:
+          type: number
+          format: double
+      required:
+      - semester
+    AcademicPerformanceSemesterRequest:
+      type: object
+      properties:
+        semester:
+          $ref: '#/components/schemas/SemesterEnum'
+        performance:
+          type: number
+          format: double
+      required:
+      - semester
+    BasicStudent:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+        role:
+          type: string
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        uid:
+          type: string
+          maxLength: 100
+        department:
+          type: string
+          maxLength: 100
+        academic_year:
+          type: string
+          maxLength: 30
+        current_category:
+          $ref: '#/components/schemas/CurrentCategoryEnum'
+        is_dse_student:
+          type: boolean
+        gender:
+          type: string
+          maxLength: 10
+        dob:
+          type: string
+          nullable: true
+          maxLength: 20
+        contact:
+          type: string
+          maxLength: 15
+        personal_email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        tenth_grade:
+          type: number
+          format: double
+        higher_secondary_grade:
+          type: number
+          format: double
+        card:
+          $ref: '#/components/schemas/CardEnum'
+        consent:
+          $ref: '#/components/schemas/ConsentEnum'
+        batch:
+          type: string
+          maxLength: 100
+        cgpa:
+          type: number
+          format: double
+          nullable: true
+        attendance:
+          type: number
+          format: double
+          nullable: true
+        is_kt:
+          type: boolean
+        is_blacklisted:
+          type: boolean
+        joined_company:
+          type: boolean
+      required:
+      - academic_year
+      - department
+      - email
+      - full_name
+      - id
+      - role
+      - uid
+    BlankEnum:
+      enum:
+      - ''
+    CardEnum:
+      enum:
+      - Green
+      - Yellow
+      - Orange
+      - Red
+      type: string
+      description: |-
+        * `Green` - Green
+        * `Yellow` - Yellow
+        * `Orange` - Orange
+        * `Red` - Red
+    CategoryEnum:
+      enum:
+      - general
+      - training
+      - placement
+      - internship
+      - resource
+      type: string
+      description: |-
+        * `general` - General
+        * `training` - Training
+        * `placement` - Placement
+        * `internship` - Internship
+        * `resource` - Resource
+    ConsentEnum:
+      enum:
+      - placement
+      - placement+aedp/pli
+      - Higher studies
+      - Entrepreneurship
+      type: string
+      description: |-
+        * `placement` - placement
+        * `placement+aedp/pli` - placement+aedp/pli
+        * `Higher studies` - Higher studies
+        * `Entrepreneurship` - Entrepreneurship
+    CurrentCategoryEnum:
+      enum:
+      - Category 1
+      - Category 2
+      - Category 3
+      - No category
+      type: string
+      description: |-
+        * `Category 1` - category 1
+        * `Category 2` - category 2
+        * `Category 3` - category 3
+        * `No category` - No category
+    DepartmentStudent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        uid:
+          type: string
+          maxLength: 100
+        department:
+          type: string
+          maxLength: 100
+        academic_year:
+          type: string
+          maxLength: 30
+        current_category:
+          $ref: '#/components/schemas/CurrentCategoryEnum'
+        is_dse_student:
+          type: boolean
+        division:
+          type: string
+          maxLength: 10
+        gender:
+          type: string
+          maxLength: 10
+        dob:
+          type: string
+          nullable: true
+          maxLength: 20
+        contact:
+          type: string
+          maxLength: 15
+        personal_email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        tenth_grade:
+          type: number
+          format: double
+        higher_secondary_grade:
+          type: number
+          format: double
+        card:
+          $ref: '#/components/schemas/CardEnum'
+        consent:
+          $ref: '#/components/schemas/ConsentEnum'
+        batch:
+          type: string
+          maxLength: 100
+        cgpa:
+          type: number
+          format: double
+          nullable: true
+        attendance:
+          type: number
+          format: double
+          nullable: true
+        is_kt:
+          type: boolean
+        is_blacklisted:
+          type: boolean
+        joined_company:
+          type: boolean
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        academic_performance:
+          type: array
+          items:
+            $ref: '#/components/schemas/AcademicPerformanceSemester'
+          readOnly: true
+        academic_attendance:
+          type: array
+          items:
+            $ref: '#/components/schemas/AcademicAttendanceSemester'
+          readOnly: true
+        offers:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentOffer'
+          readOnly: true
+        applications:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentPlacementAppliedCompany'
+          readOnly: true
+        training_performance:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrainingPerformance'
+          readOnly: true
+        internship_acceptances:
+          type: array
+          items:
+            $ref: '#/components/schemas/InternshipAcceptance'
+          readOnly: true
+      required:
+      - academic_attendance
+      - academic_performance
+      - academic_year
+      - applications
+      - department
+      - id
+      - internship_acceptances
+      - offers
+      - training_performance
+      - uid
+      - user
+    FormData:
+      type: object
+      description: 'A drive: the company, its notice and its roles, written in one
+        request.'
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        batch:
+          type: string
+          maxLength: 50
+        min_tenth_marks:
+          type: string
+          maxLength: 10
+        min_higher_secondary_marks:
+          type: string
+          maxLength: 10
+        min_cgpa:
+          type: string
+          maxLength: 10
+        accepted_kt:
+          type: boolean
+        domain:
+          type: string
+          maxLength: 100
+        departments:
+          type: string
+          maxLength: 255
+        is_aedp_or_pli:
+          type: boolean
+        is_aedp_or_ojt:
+          type: boolean
+        selected_departments: {}
+        notice:
+          $ref: '#/components/schemas/Notice'
+        job_offers:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobOffer'
+      required:
+      - batch
+      - departments
+      - domain
+      - id
+      - job_offers
+      - min_cgpa
+      - min_higher_secondary_marks
+      - min_tenth_marks
+      - name
+      - notice
+    FormDataRequest:
+      type: object
+      description: 'A drive: the company, its notice and its roles, written in one
+        request.'
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        batch:
+          type: string
+          minLength: 1
+          maxLength: 50
+        min_tenth_marks:
+          type: string
+          minLength: 1
+          maxLength: 10
+        min_higher_secondary_marks:
+          type: string
+          minLength: 1
+          maxLength: 10
+        min_cgpa:
+          type: string
+          minLength: 1
+          maxLength: 10
+        accepted_kt:
+          type: boolean
+        domain:
+          type: string
+          minLength: 1
+          maxLength: 100
+        departments:
+          type: string
+          minLength: 1
+          maxLength: 255
+        is_aedp_or_pli:
+          type: boolean
+        is_aedp_or_ojt:
+          type: boolean
+        selected_departments: {}
+        notice:
+          $ref: '#/components/schemas/NoticeRequest'
+        job_offers:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobOfferRequest'
+      required:
+      - batch
+      - departments
+      - domain
+      - job_offers
+      - min_cgpa
+      - min_higher_secondary_marks
+      - min_tenth_marks
+      - name
+      - notice
+    InterestedStudentApplication:
+      type: object
+      properties:
+        application_id:
+          type: string
+          format: uuid
+        student:
+          allOf:
+          - $ref: '#/components/schemas/BasicStudent'
+          readOnly: true
+        progress:
+          allOf:
+          - $ref: '#/components/schemas/PlacementCompanyProgress'
+          readOnly: true
+      required:
+      - application_id
+      - progress
+      - student
+    InternshipAcceptance:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        year:
+          type: string
+          maxLength: 100
+        company_name:
+          type: string
+          nullable: true
+          maxLength: 100
+        offer_letter:
+          type: string
+          format: uri
+          pattern: (?:pdf|jpg|jpeg|png)$
+        type:
+          type: string
+          maxLength: 100
+        salary:
+          type: number
+          format: double
+        is_verified:
+          type: boolean
+        domain_name:
+          type: string
+          maxLength: 100
+        total_hours:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        start_date:
+          type: string
+          format: date
+        completion_date:
+          type: string
+          format: date
+        offer_type:
+          type: string
+          maxLength: 100
+        student:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - completion_date
+      - id
+      - offer_letter
+      - start_date
+      - type
+    JobOffer:
+      type: object
+      properties:
+        role:
+          type: string
+          maxLength: 255
+        salary:
+          type: string
+          maxLength: 50
+        skills:
+          type: string
+      required:
+      - role
+      - salary
+      - skills
+    JobOfferRequest:
+      type: object
+      properties:
+        role:
+          type: string
+          minLength: 1
+          maxLength: 255
+        salary:
+          type: string
+          minLength: 1
+          maxLength: 50
+        skills:
+          type: string
+          minLength: 1
+      required:
+      - role
+      - salary
+      - skills
+    NotInterestedStudentApplication:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          allOf:
+          - $ref: '#/components/schemas/BasicStudent'
+          readOnly: true
+        not_interested_reason:
+          type: string
+      required:
+      - id
+      - not_interested_reason
+      - student
+    Notice:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        subject:
+          type: string
+          maxLength: 255
+        date:
+          type: string
+          format: date
+        intro:
+          type: string
+        about:
+          type: string
+        company_registration_link:
+          type: string
+          format: uri
+          maxLength: 200
+        note:
+          type: string
+          nullable: true
+        location:
+          type: string
+          maxLength: 255
+        deadline:
+          type: string
+          format: date
+      required:
+      - about
+      - company_registration_link
+      - date
+      - deadline
+      - id
+      - intro
+      - location
+      - subject
+    NoticeRequest:
+      type: object
+      properties:
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 255
+        date:
+          type: string
+          format: date
+        intro:
+          type: string
+          minLength: 1
+        about:
+          type: string
+          minLength: 1
+        company_registration_link:
+          type: string
+          format: uri
+          minLength: 1
+          maxLength: 200
+        note:
+          type: string
+          nullable: true
+        location:
+          type: string
+          minLength: 1
+          maxLength: 255
+        deadline:
+          type: string
+          format: date
+      required:
+      - about
+      - company_registration_link
+      - date
+      - deadline
+      - intro
+      - location
+      - subject
+    Notification:
+      type: object
+      description: |-
+        Serializes Notification instances for list and detail views.
+
+        Extra read-only fields:
+        - creator_name: full name of the creator (avoids a separate user lookup on the frontend)
+        - is_read: whether the requesting user has opened this notification
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        message:
+          type: string
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        target_audience:
+          $ref: '#/components/schemas/TargetAudienceEnum'
+        target_departments: {}
+        target_academic_years: {}
+        files:
+          type: string
+          format: uri
+          nullable: true
+          pattern: (?:pdf|doc|docx|xls|xlsx|ppt|pptx|jpg|jpeg|png|gif|webp|txt|csv)$
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        creator:
+          type: string
+          format: uuid
+          readOnly: true
+        creator_name:
+          type: string
+          readOnly: true
+        is_read:
+          type: string
+          readOnly: true
+      required:
+      - created_at
+      - creator
+      - creator_name
+      - id
+      - is_read
+      - message
+      - title
+    NotificationRequest:
+      type: object
+      description: |-
+        Serializes Notification instances for list and detail views.
+
+        Extra read-only fields:
+        - creator_name: full name of the creator (avoids a separate user lookup on the frontend)
+        - is_read: whether the requesting user has opened this notification
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        message:
+          type: string
+          minLength: 1
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        target_audience:
+          $ref: '#/components/schemas/TargetAudienceEnum'
+        target_departments: {}
+        target_academic_years: {}
+        files:
+          type: string
+          format: binary
+          nullable: true
+          pattern: (?:pdf|doc|docx|xls|xlsx|ppt|pptx|jpg|jpeg|png|gif|webp|txt|csv)$
+      required:
+      - message
+      - title
+    NullEnum:
+      enum:
+      - null
+    OfferTypeEnum:
+      enum:
+      - PLACEMENT
+      - AEDP_PLI
+      - AEDP_OJT
+      type: string
+      description: |-
+        * `PLACEMENT` - Placement
+        * `AEDP_PLI` - AEDP/PLI
+        * `AEDP_OJT` - AEDP/OJT
+    PaginatedBasicStudentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BasicStudent'
+    PaginatedDepartmentStudentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DepartmentStudent'
+    PaginatedFormDataList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormData'
+    PaginatedInterestedStudentApplicationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/InterestedStudentApplication'
+    PaginatedInternshipAcceptanceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/InternshipAcceptance'
+    PaginatedNotInterestedStudentApplicationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotInterestedStudentApplication'
+    PaginatedNotificationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+    PaginatedStudentAnalyticsList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentAnalytics'
+    PatchedFormDataRequest:
+      type: object
+      description: 'A drive: the company, its notice and its roles, written in one
+        request.'
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        batch:
+          type: string
+          minLength: 1
+          maxLength: 50
+        min_tenth_marks:
+          type: string
+          minLength: 1
+          maxLength: 10
+        min_higher_secondary_marks:
+          type: string
+          minLength: 1
+          maxLength: 10
+        min_cgpa:
+          type: string
+          minLength: 1
+          maxLength: 10
+        accepted_kt:
+          type: boolean
+        domain:
+          type: string
+          minLength: 1
+          maxLength: 100
+        departments:
+          type: string
+          minLength: 1
+          maxLength: 255
+        is_aedp_or_pli:
+          type: boolean
+        is_aedp_or_ojt:
+          type: boolean
+        selected_departments: {}
+        notice:
+          $ref: '#/components/schemas/NoticeRequest'
+        job_offers:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobOfferRequest'
+    PatchedStudentRequest:
+      type: object
+      properties:
+        uid:
+          type: string
+          minLength: 1
+          maxLength: 100
+        department:
+          type: string
+          minLength: 1
+          maxLength: 100
+        academic_year:
+          type: string
+          minLength: 1
+          maxLength: 30
+        current_category:
+          $ref: '#/components/schemas/CurrentCategoryEnum'
+        is_dse_student:
+          type: boolean
+        division:
+          type: string
+          minLength: 1
+          maxLength: 10
+        gender:
+          type: string
+          minLength: 1
+          maxLength: 10
+        dob:
+          type: string
+          nullable: true
+          maxLength: 20
+        contact:
+          type: string
+          minLength: 1
+          maxLength: 15
+        personal_email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        tenth_grade:
+          type: number
+          format: double
+        higher_secondary_grade:
+          type: number
+          format: double
+        card:
+          $ref: '#/components/schemas/CardEnum'
+        consent:
+          $ref: '#/components/schemas/ConsentEnum'
+        batch:
+          type: string
+          minLength: 1
+          maxLength: 100
+        cgpa:
+          type: number
+          format: double
+          nullable: true
+        attendance:
+          type: number
+          format: double
+          nullable: true
+        is_kt:
+          type: boolean
+        is_blacklisted:
+          type: boolean
+        joined_company:
+          type: boolean
+    PlacementCompanyProgress:
+      type: object
+      properties:
+        registered:
+          type: boolean
+        aptitude_test:
+          type: boolean
+        coding_test:
+          type: boolean
+        technical_interview:
+          type: boolean
+        hr_interview:
+          type: boolean
+        gd:
+          type: boolean
+        final_result:
+          type: string
+          maxLength: 100
+    RoleEnum:
+      enum:
+      - student
+      - system_admin
+      - principal
+      - training_officer
+      - placement_officer
+      - internship_officer
+      - faculty
+      - staff
+      type: string
+      description: |-
+        * `student` - student
+        * `system_admin` - system_admin
+        * `principal` - principal
+        * `training_officer` - training_officer
+        * `placement_officer` - placement_officer
+        * `internship_officer` - internship_officer
+        * `faculty` - faculty
+        * `staff` - staff
+    SemesterEnum:
+      enum:
+      - Semester 1
+      - Semester 2
+      - Semester 3
+      - Semester 4
+      - Semester 5
+      - Semester 6
+      - Semester 7
+      - Semester 8
+      type: string
+      description: |-
+        * `Semester 1` - Semester 1
+        * `Semester 2` - Semester 2
+        * `Semester 3` - Semester 3
+        * `Semester 4` - Semester 4
+        * `Semester 5` - Semester 5
+        * `Semester 6` - Semester 6
+        * `Semester 7` - Semester 8
+        * `Semester 8` - Semester 8
+    StatusEnum:
+      enum:
+      - offered
+      - accepted
+      - rejected
+      - joined
+      type: string
+      description: |-
+        * `offered` - Offered
+        * `accepted` - Accepted
+        * `rejected` - Rejected
+        * `joined` - Joined
+    Student:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        academic_performance:
+          type: array
+          items:
+            $ref: '#/components/schemas/AcademicPerformanceSemester'
+          readOnly: true
+        academic_attendance:
+          type: array
+          items:
+            $ref: '#/components/schemas/AcademicAttendanceSemester'
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        uid:
+          type: string
+          maxLength: 100
+        department:
+          type: string
+          maxLength: 100
+        academic_year:
+          type: string
+          maxLength: 30
+        current_category:
+          $ref: '#/components/schemas/CurrentCategoryEnum'
+        is_dse_student:
+          type: boolean
+        division:
+          type: string
+          maxLength: 10
+        gender:
+          type: string
+          maxLength: 10
+        dob:
+          type: string
+          nullable: true
+          maxLength: 20
+        contact:
+          type: string
+          maxLength: 15
+        personal_email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        tenth_grade:
+          type: number
+          format: double
+        higher_secondary_grade:
+          type: number
+          format: double
+        card:
+          $ref: '#/components/schemas/CardEnum'
+        consent:
+          $ref: '#/components/schemas/ConsentEnum'
+        batch:
+          type: string
+          maxLength: 100
+        cgpa:
+          type: number
+          format: double
+          nullable: true
+        attendance:
+          type: number
+          format: double
+          nullable: true
+        is_kt:
+          type: boolean
+        is_blacklisted:
+          type: boolean
+        joined_company:
+          type: boolean
+      required:
+      - academic_attendance
+      - academic_performance
+      - academic_year
+      - department
+      - id
+      - uid
+      - user
+    StudentAnalytics:
+      type: object
+      properties:
+        uid:
+          type: string
+          maxLength: 100
+        name:
+          type: string
+          readOnly: true
+        batch:
+          type: string
+          maxLength: 100
+        department:
+          type: string
+          readOnly: true
+        attendance_summary:
+          type: string
+          readOnly: true
+        performance_summary:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrainingPerformance'
+          readOnly: true
+      required:
+      - attendance_summary
+      - department
+      - name
+      - performance_summary
+      - uid
+    StudentOffer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        company_name:
+          type: string
+          readOnly: true
+        job_offer_info:
+          type: string
+          readOnly: true
+        offer_type:
+          $ref: '#/components/schemas/OfferTypeEnum'
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        salary:
+          type: number
+          format: double
+      required:
+      - company_name
+      - id
+      - job_offer_info
+      - salary
+    StudentPlacementAppliedCompany:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        company_name:
+          type: string
+          readOnly: true
+        job_offer_info:
+          type: string
+          readOnly: true
+        interested:
+          type: boolean
+        not_interested_reason:
+          type: string
+        application_date:
+          type: string
+          format: date
+          readOnly: true
+        progress:
+          allOf:
+          - $ref: '#/components/schemas/PlacementCompanyProgress'
+          readOnly: true
+      required:
+      - application_date
+      - company_name
+      - id
+      - job_offer_info
+      - not_interested_reason
+      - progress
+    StudentRequest:
+      type: object
+      properties:
+        uid:
+          type: string
+          minLength: 1
+          maxLength: 100
+        department:
+          type: string
+          minLength: 1
+          maxLength: 100
+        academic_year:
+          type: string
+          minLength: 1
+          maxLength: 30
+        current_category:
+          $ref: '#/components/schemas/CurrentCategoryEnum'
+        is_dse_student:
+          type: boolean
+        division:
+          type: string
+          minLength: 1
+          maxLength: 10
+        gender:
+          type: string
+          minLength: 1
+          maxLength: 10
+        dob:
+          type: string
+          nullable: true
+          maxLength: 20
+        contact:
+          type: string
+          minLength: 1
+          maxLength: 15
+        personal_email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        tenth_grade:
+          type: number
+          format: double
+        higher_secondary_grade:
+          type: number
+          format: double
+        card:
+          $ref: '#/components/schemas/CardEnum'
+        consent:
+          $ref: '#/components/schemas/ConsentEnum'
+        batch:
+          type: string
+          minLength: 1
+          maxLength: 100
+        cgpa:
+          type: number
+          format: double
+          nullable: true
+        attendance:
+          type: number
+          format: double
+          nullable: true
+        is_kt:
+          type: boolean
+        is_blacklisted:
+          type: boolean
+        joined_company:
+          type: boolean
+      required:
+      - academic_year
+      - department
+      - uid
+    TargetAudienceEnum:
+      enum:
+      - all_students
+      - all_faculty
+      - all_staff
+      - all_placement_officers
+      - all_training_officers
+      - all_internship_officers
+      - department_students
+      - year_students
+      - department_faculty
+      - all_users
+      type: string
+      description: |-
+        * `all_students` - All Students
+        * `all_faculty` - All Faculty
+        * `all_staff` - All Staff
+        * `all_placement_officers` - All Placement Officers
+        * `all_training_officers` - All Training Officers
+        * `all_internship_officers` - All Internship Officers
+        * `department_students` - Department-specific Students
+        * `year_students` - Year-specific Students
+        * `department_faculty` - Department-specific Faculty
+        * `all_users` - All Users
+    TrainingPerformance:
+      type: object
+      properties:
+        training_type:
+          type: string
+          maxLength: 50
+        semester:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/SemesterEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        date:
+          type: string
+          format: date
+          nullable: true
+        total_marks:
+          type: string
+          readOnly: true
+        average_marks:
+          type: string
+          readOnly: true
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrainingPerformanceCategory'
+          readOnly: true
+      required:
+      - average_marks
+      - categories
+      - total_marks
+      - training_type
+    TrainingPerformanceCategory:
+      type: object
+      properties:
+        category_name:
+          type: string
+          maxLength: 100
+        marks:
+          type: number
+          format: double
+      required:
+      - category_name
+      - marks
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        full_name:
+          type: string
+          maxLength: 100
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+      - email
+      - full_name
+      - id
+    UserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+      required:
+      - email
+      - full_name
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid

@@ -1,0 +1,161 @@
+# CI (T-06).
+#
+# Two checks, both cheap, both catching a failure mode this project has
+# actually hit:
+#
+#   pytest                        - the permission matrix (T-08) and the
+#                                   characterisation tests (T-09). These are
+#                                   what make Phases 2-4 safe to attempt.
+#   makemigrations --check        - a model edited without a migration. This is
+#                                   the single most common agent slip, it is
+#                                   invisible in review, and it breaks the next
+#                                   deploy rather than the current one.
+#
+# The suite runs on both engines. SQLite is the fast gate; MySQL is the one
+# that matters, because production is MySQL and the two disagree about
+# constraint enforcement, collation and casing (T-05). A schema change that is
+# green on SQLite alone has not been tested.
+
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - engine: sqlite
+            name: sqlite
+          - engine: mysql
+            name: mysql (production engine)
+
+    name: tests · ${{ matrix.name }}
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: tnp_test
+          MYSQL_ROOT_PASSWORD: ci-root-password
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pci-root-password"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    env:
+      ENV: DEV
+      SECRET_KEY: ci-only-not-a-real-secret
+      EMAIL_USERNAME: ci@example.test
+      EMAIL_PASSWORD: ci-password
+      REDIS_PASSWORD: ""
+      DATABASE_ENGINE: ${{ matrix.engine }}
+      DATABASE_NAME: tnp_test
+      DATABASE_USER: root
+      DATABASE_PASSWORD: ci-root-password
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_PORT: "3306"
+      DATABASE_SSL_MODE: DISABLED
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install system libraries
+        # mysqlclient and WeasyPrint both need headers that are not on the
+        # runner image by default.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            default-libmysqlclient-dev pkg-config build-essential \
+            libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Missing migrations
+        # A model changed without a matching migration fails here rather than
+        # on the next deploy.
+        run: python manage.py makemigrations --check --dry-run
+        env:
+          DJANGO_SETTINGS_MODULE: config.test_settings
+
+      - name: Tests
+        run: pytest -q
+
+  frontend:
+    runs-on: ubuntu-latest
+    name: frontend typecheck
+    defaults:
+      run:
+        working-directory: client_app
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: client_app/package-lock.json
+
+      - run: npm ci
+
+      - name: Generated types are current
+        # The schema itself is checked against the code by
+        # tests/test_api_schema.py; this checks the TS types against the schema.
+        # Together they mean a serializer change that nobody regenerated fails
+        # the build instead of reaching production as a wrong field name (T-22).
+        run: |
+          npm run generate:api
+          if ! git diff --quiet -- src/lib/generated/api-types.ts; then
+            echo "::error::src/lib/generated/api-types.ts is out of date."
+            echo "Run: cd client_app && npm run generate:api  — and commit the result."
+            git diff --stat -- src/lib/generated/api-types.ts
+            exit 1
+          fi
+          echo "Generated types match the committed schema."
+
+      # `npm run build` is `tsc -b && vite build` - the typecheck is the point.
+      # With generated types the frontend cannot drift a field name away from
+      # its serializer: tsc fails instead.
+      - run: npm run build
+
+  no-student-data:
+    runs-on: ubuntu-latest
+    name: no student data committed
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject spreadsheets and CSVs
+        # Rule 4 in docs/AGENTS_PROMPT.md, enforced rather than trusted. The
+        # repository was public with four batches of real students and their
+        # salaries in it (audit §1); .gitignore prevents new additions only if
+        # nobody uses `git add -f`.
+        #
+        # ALLOWLIST - temporary. These two predate the ignore rules and are
+        # still tracked. They hold UID + semester + a number, no names and no
+        # salaries, and nothing in the tree references them. T-02 removes every
+        # *.csv from history, which deletes them; drop the allowlist then and
+        # this check becomes absolute.
+        run: |
+          allowed='^(dummy_attendance\.csv|dummy_performance\.csv)$'
+          matches=$(git ls-files '*.xls' '*.xlsx' '*.csv' 'local_data/*' | grep -Ev "$allowed" || true)
+          if [ -n "$matches" ]; then
+            echo "::error::Data files are tracked in git:"
+            echo "$matches"
+            exit 1
+          fi
+          echo "No tracked spreadsheets or CSVs beyond the documented allowlist."

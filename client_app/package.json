@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate:api": "openapi-typescript src/lib/generated/schema.yaml -o src/lib/generated/api-types.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -59,6 +60,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "openapi-typescript": "^7.13.0",
     "@eslint/js": "^9.15.0",
     "@tailwindcss/typography": "^0.5.19",
     "@types/file-saver": "^2.0.7",
