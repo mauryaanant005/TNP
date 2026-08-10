@@ -1,0 +1,37 @@
+# Line-ending policy.
+#
+# This repository is developed on Windows and runs on Linux in Docker. Git is
+# configured with core.autocrlf=true, which rewrites LF to CRLF on checkout —
+# fine for source files, fatal for anything Linux has to *execute*.
+#
+# entrypoint.sh with CRLF makes its shebang read "#!/bin/sh\r". Linux looks for
+# an interpreter literally named "/bin/sh\r", does not find one, and the
+# container crash-loops with the memorably unhelpful:
+#
+#     exec /app/entrypoint.sh: no such file or directory
+#
+# The file is right there. It is the line endings.
+#
+# CI never saw this because GitHub's runners check out on Linux, where autocrlf
+# does nothing. Only a Windows checkout produces the broken artefact — so the
+# image built locally is broken while the one built by the server is fine.
+
+# Anything Linux executes, or parses as a script, must be LF.
+*.sh              text eol=lf
+entrypoint.sh     text eol=lf
+Dockerfile        text eol=lf
+*.Dockerfile      text eol=lf
+
+# Compose and CI files are read by Linux tooling; keep them LF for consistency.
+*.yml             text eol=lf
+*.yaml            text eol=lf
+
+# Binary — never touch these.
+*.png             binary
+*.jpg             binary
+*.jpeg            binary
+*.webp            binary
+*.pdf             binary
+*.xls             binary
+*.xlsx            binary
+*.ico             binary

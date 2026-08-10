@@ -6,6 +6,16 @@
 FROM python:3.12-slim AS builder
 WORKDIR /app
 
+# ARG, not ENV: this only needs to hold while apt runs during the build.
+# Setting it as ENV would bake it into the final image, so anyone who later
+# apt-installs inside a running container gets silent non-interactive
+# behaviour they did not ask for - Docker's own docs call that out.
+#
+# Without it, debconf tries to open its dialog frontend, finds no TTY, and
+# logs "unable to initialize frontend: Dialog" before falling back. Harmless,
+# but it is noise in every build log.
+ARG DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential default-libmysqlclient-dev pkg-config \
     && rm -rf /var/lib/apt/lists/*
@@ -19,6 +29,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # ---------- Stage 2: Production runner ----------
 FROM python:3.12-slim AS runner
 WORKDIR /app
+
+# ARG is per-stage, so it has to be declared again here. See stage 1.
+ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     default-libmysqlclient-dev curl \
