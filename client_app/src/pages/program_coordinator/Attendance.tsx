@@ -60,9 +60,7 @@ const Attendance = () => {
         setPrograms(uniquePrograms);
 
         if (data.length > 0) {
-            generateTables(data);
-        } else {
-            generateTables(getDummyAttendanceData());
+          generateTables(data);
         }
       } catch (error) {
         console.error("Error fetching attendance data:", error);
@@ -82,51 +80,6 @@ const Attendance = () => {
     present: string;
     late: string;
   }
-
-  const getDummyAttendanceData = (): AttendanceData[] => {
-    return [
-      {
-        session: "2024-03-01 - Session 1",
-        uid: "24-COMP01-01",
-        name: "Alice Smith",
-        program_name: "ACT_TECHNICAL",
-        batch: "2024",
-        year: "be",
-        present: "Present",
-        late: ""
-      },
-      {
-        session: "2024-03-01 - Session 1",
-        uid: "24-COMP01-02",
-        name: "Bob Johnson",
-        program_name: "ACT_TECHNICAL",
-        batch: "2024",
-        year: "be",
-        present: "Absent",
-        late: ""
-      },
-      {
-        session: "2024-03-02 - Session 2",
-        uid: "24-COMP01-01",
-        name: "Alice Smith",
-        program_name: "ACT_TECHNICAL",
-        batch: "2024",
-        year: "be",
-        present: "Present",
-        late: ""
-      },
-      {
-        session: "2024-03-02 - Session 2",
-        uid: "24-COMP01-02",
-        name: "Bob Johnson",
-        program_name: "ACT_TECHNICAL",
-        batch: "2024",
-        year: "be",
-        present: "Present",
-        late: "Late"
-      }
-    ];
-  };
 
   const generateTables = (data: AttendanceData[]) => {
     if (data.length === 0) {

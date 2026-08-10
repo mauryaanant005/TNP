@@ -290,7 +290,11 @@ def verify_selected_internships(request):
 @authentication_classes([SessionAuthentication])
 @permission_classes([HasRole.of(*ROLES.INTERNSHIP)])
 def get_verified_internships(request):
-    acceptances = InternshipAcceptance.objects.filter(is_verified=True).select_related('student', 'student__user')
+    batch = request.query_params.get("batch") or request.query_params.get("year")
+    acceptances = InternshipAcceptance.objects.filter(is_verified=True)
+    if batch:
+        acceptances = acceptances.filter(student__batch=batch)
+    acceptances = acceptances.select_related('student', 'student__user')
     data = []
     for acc in acceptances:
         data.append({
@@ -315,7 +319,11 @@ def get_verified_internships(request):
 @permission_classes([HasRole.of(*ROLES.INTERNSHIP)])
 def download_verified_internships(request):
     try:
-        acceptances = InternshipAcceptance.objects.filter(is_verified=True).select_related('student', 'student__user')
+        batch = request.query_params.get("batch") or request.query_params.get("year")
+        acceptances = InternshipAcceptance.objects.filter(is_verified=True)
+        if batch:
+            acceptances = acceptances.filter(student__batch=batch)
+        acceptances = acceptances.select_related('student', 'student__user')
         
         data = []
         for index, acc in enumerate(acceptances):

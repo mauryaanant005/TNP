@@ -71,13 +71,8 @@ const TrainingStats = () => {
         return response.json();
       })
       .then((data) => {
-        let displayData = data;
-        if (!data || data.length === 0) {
-          displayData = DUMMY_ANALYTICS;
-          setIsDummyData(true);
-        } else {
-          setIsDummyData(false);
-        }
+        const displayData = data || [];
+        setIsDummyData(false);
 
         setAvgData(displayData);
         const uniqueYears = [

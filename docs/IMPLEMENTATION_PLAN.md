@@ -1,3 +1,4 @@
+
 # TNP Portal — Implementation Plan
 
 **Companion to** [`ARCHITECTURE_AUDIT.md`](ARCHITECTURE_AUDIT.md) — that document explains *what

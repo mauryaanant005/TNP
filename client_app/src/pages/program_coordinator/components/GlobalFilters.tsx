@@ -49,12 +49,22 @@ export default function GlobalFilters({ filters, setFilters }: { filters: any; s
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-2">
                 <Label htmlFor="batch">Batch</Label>
-                <Input
-                  id="batch"
-                  placeholder="e.g., A"
-                  value={filters.batch}
-                  onChange={(e) => handleFilterChange("batch", e.target.value)}
-                />
+                <Select
+                  value={filters.batch || "all"}
+                  onValueChange={(value) => {
+                    handleFilterChange("batch", value === "all" ? "" : value);
+                  }}
+                >
+                  <SelectTrigger id="batch">
+                    <SelectValue placeholder="All Batches" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Batches</SelectItem>
+                    <SelectItem value="2028">2028</SelectItem>
+                    <SelectItem value="2027">2027</SelectItem>
+                    <SelectItem value="2026">2026</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="department">Department</Label>

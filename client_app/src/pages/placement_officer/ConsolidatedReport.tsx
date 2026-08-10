@@ -224,6 +224,11 @@ export function ConsolidationReportPage() {
               {selectedBatch
                 ? `Showing results for Batch: ${selectedBatch}`
                 : "Select a batch to view report"}
+              {selectedBatch === "2026" && (
+                <span className="block mt-1 text-amber-700 dark:text-amber-300 font-medium">
+                  Note: Batch 2026 contains offer records only (unplaced student roster is unavailable).
+                </span>
+              )}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">

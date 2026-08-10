@@ -105,6 +105,10 @@ class DepartmentStudentDataView(DepartmentScopedMixin, ListAPIView):
         if student_uid:
             queryset = queryset.filter(uid__icontains=student_uid)
             
+        batch = self.request.query_params.get("batch") or self.request.query_params.get("year")
+        if batch:
+            queryset = queryset.filter(batch=batch)
+
         return queryset
 class AttendanceViewSet(DepartmentScopedMixin, viewsets.ViewSet):
     permission_classes = [HasRole.of(*ROLES.DEPARTMENT)]

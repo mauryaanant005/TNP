@@ -17,7 +17,11 @@ from django.db.models import Avg, Count, Q
 def get_avg_data(request, table_name):
     try:
         # 1. Fetch Students to map uid -> (Branch_Div, Year)
-        students = Student.objects.values('uid', 'department', 'division', 'batch')
+        batch_param = request.query_params.get("batch") or request.query_params.get("year")
+        students_qs = Student.objects.all()
+        if batch_param:
+            students_qs = students_qs.filter(batch=batch_param)
+        students = students_qs.values('uid', 'department', 'division', 'batch')
         student_map = {
             s['uid']: {
                 'Branch_Div': f"{s['department']}-{s['division']}",

@@ -95,6 +95,10 @@ INSTALLED_APPS = [
     "internship_api",
     "faculty_coordinator",
     "staff",
+    # Owns no models — management commands only. Bulk import of the historical
+    # batch spreadsheets (rosters + placement registers) and the synthetic
+    # training/internship seeder.
+    "dataimport",
 ]
 
 # ---------------------------------

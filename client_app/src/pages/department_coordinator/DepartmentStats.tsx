@@ -42,49 +42,7 @@ export default function DepartmentDashboard() {
         const batches = Object.keys(res.data.summary_by_batch);
         if (batches.length) setSelectedBatch(batches[0]);
       } catch (err: any) {
-        // Fallback to dummy data
-        setIsDummy(true);
-        const dummyData: DashboardData = {
-          department_name: "Computer Engineering (Dummy)",
-          summary_by_batch: {
-            "2024": {
-              total_students: 120,
-              average_cgpa: 8.5,
-              students_with_kt: 5,
-              consent_breakdown: { placement: 80, higher_studies: 30, entrepreneurship: 10 },
-              placement_stats: { actual_placed_count: 75, average_salary_lpa: 6.5, highest_salary_lpa: 15.0, median_salary_lpa: 5.5 },
-              internship_stats: { total_internships: 100, in_house: 40, outhouse: 60 },
-              training_stats: { Aptitude: 80, Technical: 75, Coding: 85 }
-            },
-            "2025": {
-              total_students: 130,
-              average_cgpa: 8.2,
-              students_with_kt: 8,
-              consent_breakdown: { placement: 90, higher_studies: 25, entrepreneurship: 15 },
-              placement_stats: { actual_placed_count: 85, average_salary_lpa: 7.0, highest_salary_lpa: 20.0, median_salary_lpa: 6.0 },
-              internship_stats: { total_internships: 110, in_house: 50, outhouse: 60 },
-              training_stats: { Aptitude: 78, Technical: 82, Coding: 80 }
-            }
-          },
-          overall_consent_summary: [
-            { name: "Placement", value: 170 },
-            { name: "Higher Studies", value: 55 },
-            { name: "Entrepreneurship", value: 25 }
-          ],
-          overall_top_companies: [
-            { company_name: "TCS", hires: 40 },
-            { company_name: "Infosys", hires: 35 },
-            { company_name: "Accenture", hires: 30 },
-            { company_name: "Cognizant", hires: 25 }
-          ],
-          overall_training_summary: {
-            Aptitude: 79,
-            Technical: 78.5,
-            Coding: 82.5
-          }
-        };
-        setDashboardData(dummyData);
-        setSelectedBatch("2024");
+        setError(err.message || "Failed to load department statistics");
       } finally {
         setLoading(false);
       }

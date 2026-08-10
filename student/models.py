@@ -1,5 +1,6 @@
 from django.core.validators import FileExtensionValidator
 from django.db import models
+from django.utils import timezone
 from base.models import User
 from base.upload_validators import validate_image_size
 from uuid import uuid4
@@ -214,7 +215,13 @@ class StudentOffer(models.Model):
 
     salary = models.FloatField()
     role = models.CharField(max_length=255)
-    offer_date = models.DateField(auto_now_add=True)
+    # `default=`, not `auto_now_add=`: auto_now_add is unconditional and
+    # unsettable, so every back-imported offer was stamped with its import date
+    # and the dashboard's "placements over time" chart (TruncMonth over this
+    # column) collapsed four years of historical drives into one bar. New
+    # offers still get today's date; historical ones keep the date the
+    # placement register recorded.
+    offer_date = models.DateField(default=timezone.now)
 
     # Optional helper flags
     is_aedp_pli = models.BooleanField(default=False)

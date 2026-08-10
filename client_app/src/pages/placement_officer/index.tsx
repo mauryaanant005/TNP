@@ -96,6 +96,12 @@ export function PlacementDashboard() {
       {/* Error */}
       {error && <ErrorBanner message={error} onRetry={retry} />}
 
+      {selectedBatch === "2026" && (
+        <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 p-4 rounded-lg text-sm">
+          <strong>Cohort Note (Batch 2026):</strong> Batch 2026 data contains offer records only; unplaced student roster data is unavailable for this cohort.
+        </div>
+      )}
+
       {!loading && !data && (
         <p className="text-center text-muted-foreground py-8">{NO_DATA_MESSAGE}</p>
       )}

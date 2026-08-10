@@ -482,27 +482,24 @@ def attach_progress(students, batch):
     return [c for c in companies if c.id in active_company_ids]
 
 
-def consent_breakdown():
-    """⚠️ Not scoped to anything.
-
-    The endpoint accepts a `year` and computes a batch suffix from it, then
-    never uses either — every query is `Student.objects.all()`. So the report is
-    college-wide and all-time whichever year you ask for. Pinned; unscheduled.
-    """
+def consent_breakdown(batch=None):
+    students = Student.objects.filter(batch=batch) if batch else Student.objects.all()
     return {
         "consent_graph": list(
-            Student.objects.all().values("consent").annotate(count=Count("consent"))
+            students.values("consent").annotate(count=Count("consent"))
         ),
         "consent_counts_by_branch": list(
-            Student.objects.all().values("department").annotate(count=Count("consent"))
+            students.values("department").annotate(count=Count("consent"))
         ),
     }
 
 
-def consent_by_department(department):
+def consent_by_department(department, batch=None):
+    students = Student.objects.filter(department__istartswith=department)
+    if batch:
+        students = students.filter(batch=batch)
     return list(
-        Student.objects.filter(department__istartswith=department)
-        .values("consent")
+        students.values("consent")
         .annotate(count=Count("consent"))
     )
 
@@ -512,14 +509,14 @@ def unique_departments(batch=None):
     return list(students.values_list("department", flat=True).distinct())
 
 
-def category_breakdown(department=None):
-    """⚠️ Filters `academic_year="BE"` and ignores batch, so this is also
-    all-time — except when a department is given, which drops the year filter
-    instead. Two different scopes behind one report."""
+def category_breakdown(department=None, batch=None):
+    students = Student.objects.all()
     if department:
-        students = Student.objects.filter(department__istartswith=department)
-    else:
-        students = Student.objects.filter(academic_year="BE")
+        students = students.filter(department__istartswith=department)
+    elif not batch:
+        students = students.filter(academic_year="BE")
+    if batch:
+        students = students.filter(batch=batch)
     return list(
         students.values("current_category").annotate(count=Count("current_category"))
     )

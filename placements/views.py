@@ -90,9 +90,13 @@ class CompanyBatchesView(APIView):
     permission_classes = [DRIVE_OR_READ]
 
     def get(self, request, *args, **kwargs):
-        return Response(
-            CompanyRegistration.objects.values_list("batch", flat=True).distinct()
-        )
+        batches = [
+            b
+            for b in CompanyRegistration.objects.values_list("batch", flat=True).distinct()
+            if b
+        ]
+        batches.sort(reverse=True)
+        return Response(batches)
 
 
 class SendPlacementNotificationApiView(generics.CreateAPIView):
@@ -409,12 +413,10 @@ class UpdateStudentCategoryView(APIView):
 @api_view(["GET"])
 @permission_classes([REPORTS])
 def consent_statistics(request, year=None):
-    # Response is JSON containing JSON strings - the frontend parses twice.
-    # Pinned in tests/test_characterisation_reports.py; changing it breaks the
-    # client.
     import json
 
-    breakdown = services.consent_breakdown()
+    batch = year or request.query_params.get("batch") or request.query_params.get("year")
+    breakdown = services.consent_breakdown(batch)
     return JsonResponse(
         {
             "consent_graph": json.dumps(breakdown["consent_graph"]),
@@ -428,29 +430,33 @@ def consent_statistics(request, year=None):
 def filter_by_department(request, department, year=None):
     import json
 
+    batch = year or request.query_params.get("batch") or request.query_params.get("year")
     return JsonResponse(
-        {"filtered_data": json.dumps(services.consent_by_department(department))}
+        {"filtered_data": json.dumps(services.consent_by_department(department, batch))}
     )
 
 
 @api_view(["GET"])
 @permission_classes([REPORTS])
 def get_unique_departments(request, year=None):
+    batch = year or request.query_params.get("batch") or request.query_params.get("year")
     return JsonResponse(
-        {"unique_departments": services.unique_departments(request.query_params.get("batch"))}
+        {"unique_departments": services.unique_departments(batch)}
     )
 
 
 @api_view(["GET"])
 @permission_classes([REPORTS])
 def get_category(request, year=None):
-    return JsonResponse({"category": services.category_breakdown()})
+    batch = year or request.query_params.get("batch") or request.query_params.get("year")
+    return JsonResponse({"category": services.category_breakdown(batch=batch)})
 
 
 @api_view(["GET"])
 @permission_classes([REPORTS])
 def get_category_by_department(request, department, year=None):
-    return JsonResponse({"category": services.category_breakdown(department)})
+    batch = year or request.query_params.get("batch") or request.query_params.get("year")
+    return JsonResponse({"category": services.category_breakdown(department, batch=batch)})
 
 
 @api_view(["POST"])

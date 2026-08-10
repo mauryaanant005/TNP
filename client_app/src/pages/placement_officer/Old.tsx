@@ -17,6 +17,7 @@ import { data2025 } from "./components/old/Year2025/data";
 import { data2024 } from "./components/old/Year2024/data";
 import { data2023 } from "./components/old/Year2023/data";
 import { data2022 } from "./components/old/Year2022/data";
+import { useBatchOptions } from "./hooks";
 
 // Define the data structure type for better type checking
 interface PlacementData {
@@ -34,15 +35,17 @@ interface PlacementData {
   "No of Companies Visited"?: number;
 }
 
-type YearType = "2022" | "2023" | "2024" | "2025";
+type YearType = string;
 
 function App() {
+  const { batches } = useBatchOptions();
+  const availableYears = batches.length > 0 ? batches : ["2025", "2024", "2023", "2022"];
   const [selectedYear, setSelectedYear] = useState<YearType>("2025");
   const [displayData, setDisplayData] = useState<PlacementData[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   // Map year selection to corresponding data set
-  const yearDataMap: Record<YearType, PlacementData[]> = {
+  const yearDataMap: Record<string, PlacementData[]> = {
     "2025": data2025["2025"],
     "2024": data2024["2024"],
     "2023": data2023["2023"],
@@ -74,13 +77,14 @@ function App() {
             <select
               id="year-select"
               value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value as YearType)}
+              onChange={(e) => setSelectedYear(e.target.value)}
               className="year-dropdown"
             >
-              <option value="2025">2025</option>
-              <option value="2024">2024</option>
-              <option value="2023">2023</option>
-              <option value="2022">2022</option>
+              {availableYears.map((yr) => (
+                <option key={yr} value={yr}>
+                  {yr}
+                </option>
+              ))}
             </select>
           </div>
         </header>
@@ -317,13 +321,14 @@ function App() {
           <select
             id="year-select"
             value={selectedYear}
-            onChange={(e) => setSelectedYear(e.target.value as YearType)}
+            onChange={(e) => setSelectedYear(e.target.value)}
             className="year-dropdown"
           >
-            <option value="2025">2025</option>
-            <option value="2024">2024</option>
-            <option value="2023">2023</option>
-            <option value="2022">2022</option>
+            {availableYears.map((yr) => (
+              <option key={yr} value={yr}>
+                {yr}
+              </option>
+            ))}
           </select>
         </div>
       </header>
