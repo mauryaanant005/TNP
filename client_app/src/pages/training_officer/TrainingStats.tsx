@@ -41,14 +41,6 @@ ChartJS.register(
   Tooltip,
   Legend
 );
-const DUMMY_ANALYTICS: ProgramData[] = [
-  { Branch_Div: "CMPN-A", Year: 2028, Program_name: "Aptitude", avg_attendance: 85, avg_performance: 75 },
-  { Branch_Div: "CMPN-B", Year: 2028, Program_name: "Aptitude", avg_attendance: 82, avg_performance: 78 },
-  { Branch_Div: "IT-A", Year: 2028, Program_name: "Technical", avg_attendance: 90, avg_performance: 88 },
-  { Branch_Div: "EXTC-A", Year: 2027, Program_name: "Coding", avg_attendance: 75, avg_performance: 82 },
-  { Branch_Div: "CMPN-A", Year: 2027, Program_name: "Technical", avg_attendance: 88, avg_performance: 92 },
-  { Branch_Div: "IT-B", Year: 2028, Program_name: "Coding", avg_attendance: 80, avg_performance: 86 },
-];
 
 const TrainingStats = () => {
   const [avgData, setAvgData] = useState<ProgramData[]>([]);

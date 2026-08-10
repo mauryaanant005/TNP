@@ -21,9 +21,8 @@ export default function DepartmentDashboard() {
   const csrfToken = getCookie("csrftoken");
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error] = useState("");
+  const [error, setError] = useState("");
   const [selectedBatch, setSelectedBatch] = useState("");
-  const [isDummy, setIsDummy] = useState(false);
 
   useEffect(() => {
     (async () => {
