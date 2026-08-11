@@ -109,7 +109,7 @@ def sync_user(email, full_name, report, existing=None):
 
 # Fields the register may set on a student it did not create. Deliberately
 # narrow: a register must never blank out roster-sourced personal details.
-_REGISTER_SAFE_FIELDS = ("department", "division")
+_REGISTER_SAFE_FIELDS = ("department", "division", "academic_year")
 
 
 def upsert_student(uid, fields, report, *, source_kind, dry_run=False):

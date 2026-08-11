@@ -24,6 +24,69 @@ every page that should show them.**
 | **H4** | **Make it visible** — batch filters, dropdowns, charts | H-11 … H-15 | [gate 3 →](#-test-gate-3--end-to-end-audit) | ✅ done |
 | **H5** | **Synthetic activity data** — training / internships | H-16 … H-17 | gate 3 | ✅ done |
 
+### Deployment note — the build break at `93c6de3`
+
+The first deploy of this work failed in the **frontend** image, not the backend. H-13 removed the
+dummy-data fallback from `DepartmentStats.tsx`, but the JSX banner that *described* that fallback
+survived at line 62, still referencing a now-deleted `isDummy`. With `strict` and `noUnusedLocals`
+on, `tsc -b` fails and Dokploy never reaches the API image at all.
+
+Both images now build clean. Note that the useful part of a failed deploy log is the **tail** — a
+log truncated inside `apt-get` shows nothing about the failure.
+
+> **Reproduce a deploy locally before pushing.** Far faster than a Dokploy round trip:
+> ```bash
+> docker build -f client_app/Dockerfile --target builder -t tnp-fe-test .
+> docker build -f backend/Dockerfile -t tnp-api-test .
+> ```
+
+### Two repair bugs found on the first real run
+
+Both were invisible to the dry run **until H5 had seeded data**, which is why they surfaced only
+after H4/H5 landed:
+
+1. **`InternshipAcceptance.student` is `on_delete=DO_NOTHING`** (audit §6.6). Django's collector
+   neither cascades nor nulls it, but MySQL's FK constraint is real, so deleting a fabricated
+   student died with `IntegrityError 1451`. `repair._delete_student` now clears it explicitly.
+2. **`--batches` narrowed the orphan whitelist.** `purge_register_orphans` treats "absent from
+   every source file" as evidence a student is fake, so a filtered run would have judged 2028
+   students against 2026/2027 sources alone. The whitelist is now always built from *every*
+   discoverable source, regardless of `--batches`.
+
+### Three empty-page causes only the endpoint audit could find
+
+Importing offers is not sufficient for the reports to render. Each of these was
+invisible until gate 3 actually called the endpoint:
+
+| Page | Root cause | Fix |
+|---|---|---|
+| **Consolidated Report** returned `[]` | `placements.services.consolidation_report` iterates **`JobOffer`** — one row per *advertised role* — and that table had 0 rows | the register importer now creates a `JobOffer` per (company, scheme) and links `StudentOffer.job_offer` to it |
+| **Branch-wise** stage counts blank | built on `StudentPlacementAppliedCompany` / `PlacementCompanyProgress`, both empty — registers record outcomes, never applications | derived from the imported offers, tagged `[DERIVED]`, purgeable |
+| **Internship report** empty | every seeded `InternshipAcceptance` had `is_verified=False`, and `jobs/reports/` only returns verified rows | two thirds seeded verified, leaving a non-empty verification queue |
+
+### The salary-unit conflict, resolved without a schema change
+
+The audit records (T-25) that `StudentOffer.salary` is read as **LPA** by the dashboard and
+`JobOffer.salary` as **rupees** by the consolidation report's `employee_type`. These are two
+different columns, so each can simply carry the units its reader expects:
+
+- `StudentOffer.salary` — `FloatField`, keeps the register's LPA (`6.25`). The dashboard's
+  `0-5 / 5-7 / 7-10 / 10-15 / 15+` bands are correct against it.
+- `JobOffer.salary` — `CharField`, written as whole rupees (`625000`).
+
+This is not cosmetic. `consolidation_report` runs the value through `int(...)`: storing `"6.25"`
+would raise `ValueError` and return **HTTP 500**, and anything under `500000` classifies as
+"Normal", which is precisely the "every offer reads Normal" defect T-25 describes. Writing rupees
+both parses and classifies correctly.
+
+### H-12 changed a pinned behaviour, on purpose
+
+`tests/test_characterisation_reports.py::test_consent_report_ignores_the_year_it_is_given` pinned
+a bug its own docstring called "a real bug": the consent endpoint accepted a year and ignored it,
+reporting college-wide all-time figures. H-12 fixed it, so the test was repinned as
+`…_honours_the_year_it_is_given` — the batch now narrows the report, and no year still means
+college-wide.
+
 `⬜ not started` · `🟨 in progress` · `✅ done` · `⛔ blocked`
 
 ### Review levels
@@ -457,7 +520,14 @@ Stated plainly, because the original request asked for it and the data does not 
 3. **Real notification history.** `Notification` is empty; notifications are generated going
    forward, not backfilled.
 4. **Resumes** for historical students. `Resume` is empty and no source contains one.
-5. **A correct consolidation-report `employee_type`** — blocked on the salary-unit conflict (T-25).
+5. **Application funnels that mean anything.** Applications are derived from offers, so every
+   department reads `applied == selected`. The registers never recorded who applied and was
+   rejected, and inventing an applicant pool would be fabricating outcomes rather than inferring
+   them.
+6. **Clean batch values for four students.** `23-CS&E67-28`, `23-CS&E70-31`, `23-CS&E66-27` and
+   `23-CS&E68-29` sit in the 2026 register with typo'd year suffixes, and `Student.save()` files
+   by suffix — so the batch dropdown shows phantom 2029 and 2031 entries. Correcting a UID changes
+   a real person's record and is left as an explicit decision.
 
 ---
 

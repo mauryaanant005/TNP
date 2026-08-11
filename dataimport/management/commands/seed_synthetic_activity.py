@@ -11,7 +11,17 @@ from program_coordinator_api.models import (
     TrainingPerformance,
     TrainingPerformanceCategory,
 )
-from student.models import Student
+from student.models import (
+    PlacementCompanyProgress,
+    Student,
+    StudentOffer,
+    StudentPlacementAppliedCompany,
+)
+
+# Marker for the derived application rows. `not_interested_reason` is a
+# non-null TextField that is meaningless for an accepted application, which
+# makes it the natural place to record provenance.
+APPLICATION_MARKER = "[DERIVED] reconstructed from an imported placement offer"
 
 
 class Command(BaseCommand):
@@ -52,16 +62,37 @@ class Command(BaseCommand):
             intern_deleted, _ = InternshipAcceptance.objects.filter(
                 company_name__startswith="[SYNTHETIC]"
             ).delete()
+            # Progress rows hang off the application by a CASCADE OneToOne, so
+            # deleting the applications takes them with it.
+            app_deleted, _ = StudentPlacementAppliedCompany.objects.filter(
+                not_interested_reason=APPLICATION_MARKER
+            ).delete()
 
             self.stdout.write(
                 self.style.SUCCESS(
                     f"Purged synthetic data: {att_deleted} attendance rows, "
-                    f"{perf_deleted} training performance rows, {intern_deleted} internship acceptances."
+                    f"{perf_deleted} training performance rows, "
+                    f"{intern_deleted} internship acceptances, "
+                    f"{app_deleted} derived applications."
                 )
             )
             return
 
         batches = options["batches"]
+
+        # Seeding is not idempotent — every run appends another set of sessions,
+        # marks and internships, quietly doubling every average on the
+        # dashboards. Refuse rather than corrupt the numbers.
+        existing = AttendanceData.objects.filter(
+            session__startswith="SYNTH-", batch__in=batches
+        ).count()
+        if existing:
+            raise CommandError(
+                f"{existing} synthetic attendance rows already exist for "
+                f"batches {', '.join(batches)}. Run with --purge first, or this "
+                f"run would double every attendance and performance average."
+            )
+
         students = Student.objects.filter(batch__in=batches).select_related("user")
         if not students.exists():
             self.stdout.write(
@@ -138,7 +169,13 @@ class Command(BaseCommand):
                             offer_letter="offer_letters/synthetic_offer.pdf",
                             type="Part-time",
                             salary=float(random.randint(10000, 35000)),
-                            is_verified=False,
+                            # `jobs/reports/` and `jobs/download-report/` only
+                            # ever return verified internships, so leaving every
+                            # row unverified makes the internship report render
+                            # empty — the exact "No Data Found" this seeding
+                            # exists to remove. Two thirds verified also leaves
+                            # the verification queue non-empty to click through.
+                            is_verified=random.random() < 0.67,
                             domain_name="synthetic",
                             total_hours=120,
                             start_date=start_d,
@@ -151,9 +188,75 @@ class Command(BaseCommand):
             TrainingPerformanceCategory.objects.bulk_create(cat_objs, batch_size=1000)
             InternshipAcceptance.objects.bulk_create(intern_objs, batch_size=1000)
 
+            app_count, progress_count = self._derive_applications(batches)
+
         self.stdout.write(
             self.style.SUCCESS(
                 f"Successfully seeded: {len(att_objs)} AttendanceData rows, "
-                f"{perf_count} TrainingPerformance rows, {len(intern_objs)} InternshipAcceptance rows."
+                f"{perf_count} TrainingPerformance rows, {len(intern_objs)} InternshipAcceptance rows, "
+                f"{app_count} derived applications, {progress_count} progress rows."
             )
         )
+
+    def _derive_applications(self, batches):
+        """Reconstruct applications and round progress from imported offers.
+
+        The Consolidated Report (`get_data_by_year`) and the Branch-wise
+        report's stage counts are built on `StudentPlacementAppliedCompany` and
+        `PlacementCompanyProgress`. The placement registers record *outcomes*
+        only — who was hired, by whom, for how much — so both tables stay empty
+        after an import and both reports render blank.
+
+        This is inference rather than invention: a student holding an offer from
+        a company necessarily applied to it and cleared its rounds. Nothing is
+        created for a student who has no offer, which is why every department
+        reads applied == selected. That is a limitation of the source, and it
+        is better than a blank page or a fabricated applicant pool.
+        """
+        offers = (
+            StudentOffer.objects.filter(student__batch__in=batches)
+            .select_related("student", "company")
+        )
+        existing = set(
+            StudentPlacementAppliedCompany.objects.values_list(
+                "student_id", "company_id"
+            )
+        )
+
+        applications = []
+        for offer in offers:
+            key = (offer.student_id, offer.company_id)
+            if key in existing:
+                continue
+            existing.add(key)
+            applications.append(
+                StudentPlacementAppliedCompany(
+                    student=offer.student,
+                    company=offer.company,
+                    # `consolidation_report` counts the `applied_*` columns
+                    # through this FK (`related_name="offer"`), not through the
+                    # company — leaving it null renders every applied count as
+                    # 0 while the selected counts populate.
+                    job_offer=offer.job_offer,
+                    interested=True,
+                    not_interested_reason=APPLICATION_MARKER,
+                )
+            )
+
+        StudentPlacementAppliedCompany.objects.bulk_create(applications, batch_size=1000)
+
+        progress = [
+            PlacementCompanyProgress(
+                application=application,
+                registered=True,
+                aptitude_test=True,
+                coding_test=True,
+                technical_interview=True,
+                hr_interview=True,
+                gd=True,
+                final_result="Selected",
+            )
+            for application in applications
+        ]
+        PlacementCompanyProgress.objects.bulk_create(progress, batch_size=1000)
+        return len(applications), len(progress)

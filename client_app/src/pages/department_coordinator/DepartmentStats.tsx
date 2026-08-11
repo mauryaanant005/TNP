@@ -59,12 +59,6 @@ export default function DepartmentDashboard() {
 
   return (
     <Box sx={{ bgcolor: "#f5f7fa", minHeight: "100vh", p: { xs: 2, md: 4 } }}>
-      {isDummy && (
-        <Box sx={{ mb: 3, p: 2, bgcolor: "#fff3cd", color: "#856404", borderRadius: 1, border: "1px solid #ffeeba" }}>
-          <strong>Note:</strong> Showing sample fallback data because no actual department stats are available.
-        </Box>
-      )}
-
       {/* Metric Cards */}
       {currentBatchData && (
         <Grid container spacing={3} mb={4}>

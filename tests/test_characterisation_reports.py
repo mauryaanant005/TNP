@@ -242,15 +242,14 @@ def test_consent_report_is_double_encoded(data, officer):
     assert consent == {"placement": 4, "Higher studies": 1, "Entrepreneurship": 1}
 
 
-def test_consent_report_ignores_the_year_it_is_given(data, officer):
-    """⚠️ Pinned, and a real bug.
+def test_consent_report_honours_the_year_it_is_given(data, officer):
+    """The year narrows the report to that batch.
 
-    The endpoint takes a `year` and computes `batch_year_suffix` from it — then
-    never uses either. Every query is `Student.objects.all()`, so the report is
-    college-wide and all-time whichever year you ask for.
-
-    Visible here: IT-A shows 3 students, but only 2 are in batch 2025. The
-    third is the 2024 student.
+    This test previously pinned the opposite — the endpoint accepted a `year`,
+    computed `batch_year_suffix` from it and then used neither, so every query
+    was `Student.objects.all()` and the report was college-wide and all-time
+    whichever year you asked for. H-12 fixed that, because merging cohorts is
+    exactly what breaks once historical batches are imported.
     """
     body = officer.get(f"/api/placement_officer/consent/{BATCH}/").json()
     by_department = {
@@ -258,11 +257,27 @@ def test_consent_report_ignores_the_year_it_is_given(data, officer):
         for row in json.loads(body["consent_counts_by_branch"])
     }
 
-    assert by_department["IT-A"] == 3, "expected the 2024 student to be included"
+    # Three IT-A students exist; only two are in batch 2025.
+    assert by_department["IT-A"] == 2, "the 2024 student must not leak into 2025"
+    assert by_department["IT-B"] == 1
+    assert by_department["CMPN-A"] == 2
 
-    # And asking for a different year returns exactly the same numbers.
+    # A different year returns different numbers.
     other = officer.get(f"/api/placement_officer/consent/{report_fixture.OTHER_BATCH}/").json()
-    assert other["consent_counts_by_branch"] == body["consent_counts_by_branch"]
+    other_by_department = {
+        row["department"]: row["count"]
+        for row in json.loads(other["consent_counts_by_branch"])
+    }
+    assert other_by_department["IT-A"] == 1
+    assert other["consent_counts_by_branch"] != body["consent_counts_by_branch"]
+
+    # With no year at all the report stays college-wide.
+    everyone = officer.get("/api/placement_officer/consent/").json()
+    everyone_by_department = {
+        row["department"]: row["count"]
+        for row in json.loads(everyone["consent_counts_by_branch"])
+    }
+    assert everyone_by_department["IT-A"] == 3
 
 
 # ---------------------------------------------------------------------------

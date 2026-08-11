@@ -31,6 +31,7 @@ import datetime as dt
 
 from django.db.models import Count
 
+from internship_api.models import InternshipAcceptance
 from placements.models import CompanyRegistration, Notice
 from student.models import Student, StudentOffer, StudentPlacementAppliedCompany
 
@@ -43,6 +44,13 @@ def _delete_student(student, report, bucket):
     user = student.user
     StudentOffer.objects.filter(student=student).delete()
     StudentPlacementAppliedCompany.objects.filter(student=student).delete()
+
+    # `InternshipAcceptance.student` is `on_delete=DO_NOTHING` (audit §6.6), so
+    # Django's collector neither cascades nor nulls it — but MySQL still has a
+    # real FK constraint, which rejects the delete with error 1451. Anything
+    # pointing at a student with DO_NOTHING has to be cleared by hand.
+    InternshipAcceptance.objects.filter(student=student).delete()
+
     student.delete()
     report.deleted[bucket] += 1
     if user is not None and student_utils.is_placeholder(user.email):
@@ -198,6 +206,62 @@ def rebatch_companies(report, *, dry_run=False, prune_empty=True):
             if notice is not None:
                 notice.delete()
         report.deleted["empty companies"] += 1
+
+
+# The old `import_placements.py` wrote this literal string into every offer it
+# created, for every student and every employer, because the register has no
+# job-title column.
+LEGACY_OFFER_ROLE = "Software Engineer"
+
+
+def prune_superseded_legacy_offers(report, *, dry_run=False):
+    """Pass 5 — drop legacy offers the import has replaced. Runs *after* import.
+
+    `StudentOffer` is unique on ``(student, company, role)``. The old script
+    used a constant ``role``; this import uses the placement scheme, so the two
+    do not collide and a re-import leaves **both** rows — doubling every offer
+    count, every salary average and every placement chart.
+
+    Only a legacy row that now sits alongside a real one for the same student
+    and company is removed. A legacy offer with no replacement is left alone
+    and reported: it means the import did not cover that row, which is worth
+    knowing rather than silently deleting.
+    """
+    legacy = StudentOffer.objects.filter(role=LEGACY_OFFER_ROLE).select_related(
+        "student", "company"
+    )
+    superseded, orphaned = 0, 0
+
+    for offer in legacy:
+        replacement = (
+            StudentOffer.objects.filter(student=offer.student, company=offer.company)
+            .exclude(role=LEGACY_OFFER_ROLE)
+            .exists()
+        )
+        if not replacement:
+            orphaned += 1
+            report.anomaly(
+                "legacy offer kept — the import produced no replacement for it",
+                f"{offer.student.uid} / {offer.company.name} [{offer.company.batch}]",
+            )
+            continue
+        superseded += 1
+        if not dry_run:
+            offer.delete()
+        report.deleted["superseded legacy offers"] += 1
+
+    if superseded:
+        report.anomaly(
+            "legacy offers replaced by imported ones",
+            f"{superseded} rows written by the previous import_placements.py "
+            f"(role={LEGACY_OFFER_ROLE!r}) removed in favour of the register's "
+            f"own placement scheme",
+        )
+    if orphaned:
+        report.anomaly(
+            "legacy offers with no import replacement (left in place)",
+            f"{orphaned} rows — check whether their register rows were rejected",
+        )
 
 
 def run(valid_uids, report, *, dry_run=False, prune_empty=True):

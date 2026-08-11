@@ -36,7 +36,7 @@ from __future__ import annotations
 
 import datetime as dt
 
-from placements.models import CompanyRegistration, Notice
+from placements.models import CompanyRegistration, JobOffer, Notice
 from student.models import Student, StudentOffer
 
 from . import normalize, sources, students
@@ -90,6 +90,44 @@ def _company_for(name, batch, offer_type, category, cache, report, *, dry_run=Fa
     return company
 
 
+def _job_offer_for(company, role, salary_lpa, cache):
+    """The `JobOffer` row the consolidation report is built from.
+
+    `placements.services.consolidation_report` iterates `JobOffer`, one row per
+    advertised role — not per application — so with no JobOffer rows the whole
+    report renders empty however many offers exist.
+
+    ### Why the salary is stored in rupees here, and LPA on `StudentOffer`
+
+    They are read by different code with different assumptions, and both are
+    load-bearing:
+
+    * `StudentOffer.salary` is a `FloatField` the dashboard buckets as **LPA**
+      (`0-5`, `5-7`, …), so it keeps the register's own units.
+    * `JobOffer.salary` is a `CharField` that `consolidation_report` runs
+      through ``int(...)`` and compares against **rupee** thresholds
+      (500000 / 1000000) for `employee_type`.
+
+    Storing "6.25" here would do two bad things: ``int("6.25")`` raises
+    `ValueError` and 500s the endpoint, and even if it parsed, every offer
+    would classify as "Normal" — the defect the audit records as T-25. Writing
+    whole rupees satisfies the parse and makes the classification correct,
+    without touching the schema.
+    """
+    key = (company.pk, role.lower())
+    if key in cache:
+        return cache[key]
+
+    rupees = str(int(round((salary_lpa or 0) * 100_000)))
+    job_offer = JobOffer.objects.filter(form=company, role=role).first()
+    if job_offer is None:
+        job_offer = JobOffer.objects.create(
+            form=company, role=role, salary=rupees, skills=""
+        )
+    cache[key] = job_offer
+    return job_offer
+
+
 def import_register(source, report, *, dry_run=False):
     frame = sources.load(source)
     report.files_processed.append(f"{source.name} [register, batch {source.batch}]")
@@ -116,6 +154,7 @@ def import_register(source, report, *, dry_run=False):
         return
 
     company_cache = {}
+    job_offer_cache = {}
     seen_offers = set()
     stipends_dropped = 0
     campus_dropped = 0
@@ -160,6 +199,13 @@ def import_register(source, report, *, dry_run=False):
             "department": department,
             "division": normalize.split_division(department) if department else None,
             "batch": row_batch,
+            # A register only ever covers a graduating cohort, and the register
+            # itself has no year column. Leaving this blank is not neutral:
+            # `placements.get_eligible_students` filters on
+            # `academic_year="BE"`, and the student placement card blanks
+            # itself for anything else — so a blank year makes these students
+            # invisible to both.
+            "academic_year": "BE",
         }
         student, _created = students.upsert_student(
             uid, student_fields, report, source_kind="register", dry_run=dry_run
@@ -188,6 +234,16 @@ def import_register(source, report, *, dry_run=False):
             row.get(column["remark"]) if column["remark"] else None, joining
         )
         offer_date = normalize.to_date(row.get(column["visit"])) if column["visit"] else None
+
+        # A drive cannot predate the cohort's admission. The 2026 register
+        # contains a handful of 2005 dates — real cell contents, almost
+        # certainly typos — and they stretch the dashboard's timeline axis over
+        # twenty years, flattening the part anyone wants to read.
+        if offer_date and offer_date.year < int(row_batch) - 6:
+            report.anomaly(
+                "offer date implausibly early for the cohort (imported as-is)",
+                f"{source.name} row {excel_row}: {uid} / {employer} -> {offer_date}",
+            )
 
         salary = normalize.to_float(row.get(column["salary"])) if column["salary"] else None
         if salary is None:
@@ -236,6 +292,8 @@ def import_register(source, report, *, dry_run=False):
         if dry_run:
             report.offers_created += 1
             continue
+
+        defaults["job_offer"] = _job_offer_for(company, role, salary, job_offer_cache)
 
         offer = StudentOffer.objects.filter(
             student=student, company=company, role=role

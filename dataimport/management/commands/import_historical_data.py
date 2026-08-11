@@ -102,8 +102,12 @@ class Command(BaseCommand):
             with transaction.atomic():
                 if options["repair"]:
                     self.stdout.write("Repairing the previous import…")
+                    # Deliberately scans EVERY source, not just the ones
+                    # `--batches` selected. The whitelist decides which students
+                    # count as orphans, so narrowing it would make a filtered
+                    # run delete perfectly good students from other cohorts.
                     repair.run(
-                        self._collect_uids(found),
+                        self._collect_uids(sources.discover(directory)),
                         report,
                         dry_run=False,
                         prune_empty=not options["no_prune_companies"],
@@ -115,6 +119,12 @@ class Command(BaseCommand):
                         roster.import_roster(source, report, dry_run=False)
                     else:
                         register.import_register(source, report, dry_run=False)
+
+                if options["repair"]:
+                    # Must run *after* the import: it can only tell a superseded
+                    # legacy offer from a still-needed one once the replacement
+                    # rows exist.
+                    repair.prune_superseded_legacy_offers(report, dry_run=False)
 
                 register.link_students_without_offers(report)
                 self._seed_reference_data(report)
