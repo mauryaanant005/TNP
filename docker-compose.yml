@@ -12,6 +12,12 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+    # Pinned so `celery` below can reuse this exact image instead of running a
+    # second, byte-identical build. Compose builds a service per image name, so
+    # without this the same Dockerfile is built twice, concurrently - two
+    # `build-essential` installs and two pip resolves of numpy/pandas/weasyprint
+    # at once. On a small host that is what pushes the box into OOM mid-deploy.
+    image: tnp-backend:latest
     restart: unless-stopped
     # No ports: section - Traefik reaches this container over the internal
     # Docker network by service name ("api").
@@ -44,9 +50,10 @@ services:
       start_period: 30s
 
   celery:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
+    # Same image as `api` - same Dockerfile, same context, only the command
+    # differs. Declaring `image:` without `build:` makes Compose reuse what the
+    # api service just built rather than building it again.
+    image: tnp-backend:latest
     command: celery -A config worker --loglevel=info
     restart: unless-stopped
     env_file:
@@ -55,6 +62,10 @@ services:
       - REDIS_HOST=redis
       - RUN_RELEASE_TASKS=0
     depends_on:
+      # `api` is listed so Compose builds that image before this service needs
+      # it - without it, a `--build` run can try to start celery from an image
+      # that does not exist yet on a clean host.
+      - api
       - redis
     volumes:
       - media:/app/media

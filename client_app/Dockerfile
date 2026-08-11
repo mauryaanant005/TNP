@@ -16,6 +16,17 @@ COPY client_app/ .
 ARG VITE_SERVER_URL
 ENV VITE_SERVER_URL=$VITE_SERVER_URL
 
+# Node sizes its heap from the *host's* total RAM, not from what the container
+# is actually allowed to use, and `tsc -b && vite build` over ~3500 modules is
+# the single hungriest step in a deploy. Left uncapped it will happily grow
+# until the kernel OOM-kills something - and on a small host the victim is
+# usually dockerd or MySQL, not this build, which is why a failing deploy takes
+# the whole server with it.
+#
+# 1536 MB is comfortably above what this bundle needs and low enough to leave
+# room for the backend image building alongside it.
+ENV NODE_OPTIONS=--max-old-space-size=1536
+
 RUN npm run build
 
 # ---------- Stage 2: Production runner ----------
