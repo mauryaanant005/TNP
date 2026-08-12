@@ -183,9 +183,20 @@ function DashboardCard({
           <Skeleton className="h-[300px] w-full" />
         ) : (
           <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <>{children}</>
-            </ResponsiveContainer>
+            {/* ResponsiveContainer clones its child to inject the measured
+                width/height, which only works if that child is the chart
+                itself - a Fragment wrapper here hides the chart behind an
+                element Recharts can't clone props onto, so it silently
+                rendered an empty <div> instead of the SVG regardless of
+                whether real data ever arrived. Guarded on `children` being
+                a real element: every caller passes `{data && <Chart/>}`,
+                which is `false` before data loads, and ResponsiveContainer's
+                cloneElement throws on anything that isn't one. */}
+            {children ? (
+              <ResponsiveContainer width="100%" height="100%">
+                {children as React.ReactElement}
+              </ResponsiveContainer>
+            ) : null}
           </div>
         )}
       </CardContent>
