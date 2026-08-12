@@ -1069,6 +1069,44 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/staff/historical-import/status/{task_id}/:
+    get:
+      operationId: staff_historical_import_status_retrieve
+      description: |-
+        Poll target for ``UploadHistoricalImportView`` — mirrors ``GetTaskStatusView``,
+        kept separate because a successful import returns a full report, not a file URL.
+      parameters:
+      - in: path
+        name: task_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/staff/historical-import/upload/:
+    post:
+      operationId: staff_historical_import_upload_create
+      description: |-
+        ``POST`` one or more spreadsheets, queue their import, return a task id.
+
+        Files are saved into a per-request directory under ``MEDIA_ROOT`` — the
+        same volume the ``celery`` container mounts — then handed to
+        ``run_historical_import_task``, which deletes them once it finishes. A
+        file whose format neither importer recognises is rejected here, before
+        anything is queued, so a stray spreadsheet fails immediately with a clear
+        message rather than reporting "0 files processed" a minute later.
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/staff/placement/companies/batch/{batch}/:
     get:
       operationId: staff_placement_companies_batch_list
@@ -2095,7 +2133,7 @@ components:
           maxLength: 100
         total_hours:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 4294967295
           minimum: 0
           format: int64
         start_date:

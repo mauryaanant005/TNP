@@ -56,6 +56,16 @@ urlpatterns = [
     ),
     path("task-status/<str:task_id>/", views.GetTaskStatusView.as_view(), name="get-task-status"),
     path(
+        "historical-import/upload/",
+        views.UploadHistoricalImportView.as_view(),
+        name="historical-import-upload",
+    ),
+    path(
+        "historical-import/status/<str:task_id>/",
+        views.HistoricalImportStatusView.as_view(),
+        name="historical-import-status",
+    ),
+    path(
         "update/student/<str:uid>/",
         views.StudentDetailUpdateView.as_view(),
         name="student-detail-update",

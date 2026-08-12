@@ -1,9 +1,13 @@
 import io
+import shutil
 import uuid
 import zipfile
+from pathlib import Path
+
 import openpyxl
 from celery import shared_task
 from django.core.files.base import ContentFile
+from django.db import transaction
 from django.template.loader import render_to_string
 from django.utils.text import slugify
 from django.shortcuts import get_object_or_404
@@ -102,3 +106,54 @@ def generate_resume_zip_task(company_id):
     filename = f"exports/resumes/{slugify(company.name)}_{uuid.uuid4().hex}_resumes.zip"
     file_path = default_storage.save(filename, ContentFile(zip_buffer.read()))
     return {"file_url": default_storage.url(file_path)}
+
+
+class _Rollback(Exception):
+    """Raised to unwind the import transaction when only a preview was asked for."""
+
+
+@shared_task
+def run_historical_import_task(upload_dir, dry_run=False):
+    """Import the rosters/placement registers a placement officer uploaded.
+
+    `upload_dir` is a directory under MEDIA_ROOT holding only this request's
+    files - the `api` and `celery` containers share that volume
+    (`docker-compose.yml`), so a file the view just wrote is already visible
+    here. Mirrors `manage.py import_historical_data` exactly: the importer
+    functions always run for real, and `dry_run` decides only whether the
+    surrounding transaction is committed or rolled back - so a preview's
+    counts are the counts an officer would actually get, not an estimate.
+
+    Deliberately does not run `--repair`. Repair is a one-time cleanup of a
+    specific historical mistake (see `dataimport/repair.py`); a routine upload
+    should never delete or re-batch existing records as a side effect.
+
+    The upload directory - and the spreadsheets in it - are removed in every
+    case, success or failure, because these files carry real student PII and
+    have no reason to persist in the media volume once processed.
+    """
+    from dataimport import register as register_import
+    from dataimport import roster as roster_import
+    from dataimport import sources
+    from dataimport.report import ImportReport
+
+    upload_path = Path(upload_dir)
+    try:
+        found = sources.discover(upload_path)
+        report = ImportReport(dry_run=dry_run)
+
+        try:
+            with transaction.atomic():
+                for source in found:
+                    if source.kind == sources.ROSTER:
+                        roster_import.import_roster(source, report, dry_run=False)
+                    else:
+                        register_import.import_register(source, report, dry_run=False)
+                if dry_run:
+                    raise _Rollback
+        except _Rollback:
+            pass
+
+        return report.to_dict()
+    finally:
+        shutil.rmtree(upload_path, ignore_errors=True)

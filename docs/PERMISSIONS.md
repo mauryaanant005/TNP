@@ -121,6 +121,8 @@ before deciding whether to apply, and that is the intended flow.
 | `GET /api/staff/task-status/<tid>/` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ |
 | `GET,PATCH /api/staff/update/student/<uid>/` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ |
 | `POST /api/staff/category_update/` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ |
+| `POST /api/staff/historical-import/upload/` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ |
+| `GET /api/staff/historical-import/status/<tid>/` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ |
 
 > ⚠️ **`category_update` rewrites `current_category` for a whole batch in one POST.** It is listed
 > as `staff` + `placement_officer` because that is who runs it today. If you want it narrowed to

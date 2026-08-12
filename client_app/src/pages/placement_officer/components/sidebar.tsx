@@ -24,6 +24,9 @@ const Sidebar = () => {
         <NavLink to="student-performance" className="menu-item">
           <p>Student Performance</p>
         </NavLink>
+        <NavLink to="upload-historical-data" className="menu-item">
+          <p>Import Historical Data</p>
+        </NavLink>
         <NavLink to="/notifications/create" className="menu-item gap-3">
           <p>Notification</p>
         </NavLink>

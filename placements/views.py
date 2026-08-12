@@ -12,8 +12,12 @@ unchanged, so the frontend does not notice this move.
 
 import logging
 import os
+import shutil
+import uuid
+from pathlib import Path
 
 from celery.result import AsyncResult
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Avg
 from django.http import JsonResponse
@@ -22,11 +26,13 @@ from dotenv import load_dotenv
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from base.error_utils import safe_error_payload
 from base.permissions import ROLES, HasRole
+from dataimport import sources as historical_sources
 from notifications.models import Notification
 from notifications.serializers import NotificationSerializer
 from placements import services
@@ -39,7 +45,11 @@ from placements.serializers import (
     NotInterestedStudentApplicationSerializer,
     StudentDetailReportSerializer,
 )
-from placements.tasks import generate_excel_export_task, generate_resume_zip_task
+from placements.tasks import (
+    generate_excel_export_task,
+    generate_resume_zip_task,
+    run_historical_import_task,
+)
 from program_coordinator_api.models import AttendanceData, TrainingPerformanceCategory
 from student.models import Student, StudentOffer, StudentPlacementAppliedCompany
 from student.serializers import StudentSerializer
@@ -334,6 +344,116 @@ class GetTaskStatusView(APIView):
             payload["url"] = result.result.get("file_url")
         elif result.state == "FAILURE":
             logger.exception("Background task %s failed", task_id, exc_info=result.info)
+            payload.update(safe_error_payload(result.info))
+        return Response(payload, status=status.HTTP_200_OK)
+
+
+# ---------------------------------------------------------------------------
+# Historical batch import
+#
+# Lets a placement officer add a graduated batch's placement records — the
+# rosters and "Students Placement Register" workbooks — by uploading them in
+# the browser, instead of needing shell access to run
+# `manage.py import_historical_data` on the server. Wraps the exact same
+# `dataimport` package that command uses.
+# ---------------------------------------------------------------------------
+
+#: Comfortably above the largest source workbook seen (~2.2MB); well below
+#: anything that would make a synchronous multipart upload itself slow.
+MAX_HISTORICAL_UPLOAD_MB = 15
+ALLOWED_HISTORICAL_UPLOAD_EXTENSIONS = (".xls", ".xlsx")
+
+
+class UploadHistoricalImportView(APIView):
+    """``POST`` one or more spreadsheets, queue their import, return a task id.
+
+    Files are saved into a per-request directory under ``MEDIA_ROOT`` — the
+    same volume the ``celery`` container mounts — then handed to
+    ``run_historical_import_task``, which deletes them once it finishes. A
+    file whose format neither importer recognises is rejected here, before
+    anything is queued, so a stray spreadsheet fails immediately with a clear
+    message rather than reporting "0 files processed" a minute later.
+    """
+
+    permission_classes = [DRIVE]
+    parser_classes = [MultiPartParser]
+
+    def post(self, request, *args, **kwargs):
+        files = request.FILES.getlist("files")
+        if not files:
+            return Response(
+                {"error": "Attach at least one .xls or .xlsx file."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        dry_run = str(request.data.get("dry_run", "")).strip().lower() in ("1", "true", "yes")
+
+        upload_dir = Path(settings.MEDIA_ROOT) / "historical_import_uploads" / uuid.uuid4().hex
+        upload_dir.mkdir(parents=True, exist_ok=True)
+
+        try:
+            saved_names = []
+            for uploaded in files:
+                # Path(...).name strips any directory component a crafted
+                # filename might carry, so the file can only land inside
+                # upload_dir - never escape it.
+                safe_name = Path(uploaded.name).name
+                suffix = Path(safe_name).suffix.lower()
+
+                if suffix not in ALLOWED_HISTORICAL_UPLOAD_EXTENSIONS:
+                    return Response(
+                        {"error": f"'{safe_name}' is not a .xls or .xlsx file."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                if uploaded.size > MAX_HISTORICAL_UPLOAD_MB * 1024 * 1024:
+                    return Response(
+                        {"error": f"'{safe_name}' is larger than {MAX_HISTORICAL_UPLOAD_MB}MB."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                destination = upload_dir / safe_name
+                with open(destination, "wb") as out:
+                    for chunk in uploaded.chunks():
+                        out.write(chunk)
+                saved_names.append(safe_name)
+
+            unrecognised = [
+                name for name in saved_names
+                if historical_sources.classify(upload_dir / name) is None
+            ]
+            if unrecognised:
+                return Response(
+                    {
+                        "error": (
+                            "Could not recognise the format of: " + ", ".join(unrecognised) +
+                            ". Expected a student roster (uid, department, full_name, email, "
+                            "batch, ... columns) or a 'Students Placement Register' workbook."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except Exception:
+            shutil.rmtree(upload_dir, ignore_errors=True)
+            raise
+
+        task = run_historical_import_task.delay(str(upload_dir), dry_run)
+        return Response({"task_id": task.id}, status=status.HTTP_202_ACCEPTED)
+
+
+class HistoricalImportStatusView(APIView):
+    """Poll target for ``UploadHistoricalImportView`` — mirrors ``GetTaskStatusView``,
+    kept separate because a successful import returns a full report, not a file URL.
+    """
+
+    permission_classes = [DRIVE]
+
+    def get(self, request, task_id, *args, **kwargs):
+        result = AsyncResult(task_id)
+        payload = {"task_id": task_id, "status": result.state}
+        if result.state == "SUCCESS":
+            payload["report"] = result.result
+        elif result.state == "FAILURE":
+            logger.exception("Historical import task %s failed", task_id, exc_info=result.info)
             payload.update(safe_error_payload(result.info))
         return Response(payload, status=status.HTTP_200_OK)
 

@@ -84,6 +84,8 @@ PERMISSION_MATRIX = [
     ("GET", f"/api/staff/company/{COMPANY_ID}/trigger-excel-export/", PLACEMENT_DRIVE_ROLES),
     ("GET", f"/api/staff/company/{COMPANY_ID}/trigger-resume-export/", PLACEMENT_DRIVE_ROLES),
     ("GET", f"/api/staff/task-status/{TASK_ID}/", PLACEMENT_DRIVE_ROLES),
+    ("POST", "/api/staff/historical-import/upload/", PLACEMENT_DRIVE_ROLES),
+    ("GET", f"/api/staff/historical-import/status/{TASK_ID}/", PLACEMENT_DRIVE_ROLES),
     ("GET", f"/api/staff/update/student/{UID}/", PLACEMENT_DRIVE_ROLES),
     ("POST", "/api/staff/category_update/", PLACEMENT_DRIVE_ROLES),
 

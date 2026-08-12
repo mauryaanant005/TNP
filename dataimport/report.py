@@ -58,6 +58,43 @@ class ImportReport:
     def error(self, message):
         self.errors.append(str(message))
 
+    # -- serialising ---------------------------------------------------------
+
+    def to_dict(self) -> dict:
+        """JSON-safe snapshot for API responses.
+
+        The Celery result backend (Redis, `CELERY_RESULT_SERIALIZER = "json"`)
+        cannot round-trip `Counter`/`defaultdict`/tuples, so this flattens them
+        to plain dicts/lists/strings. `render()` stays untouched for the CLI.
+        """
+        return {
+            "dry_run": self.dry_run,
+            "files_processed": list(self.files_processed),
+            "rows_read": self.rows_read,
+            "students_created": self.students_created,
+            "students_updated": self.students_updated,
+            "students_unchanged": self.students_unchanged,
+            "users_created": self.users_created,
+            "users_relinked": self.users_relinked,
+            "companies_created": self.companies_created,
+            "notices_created": self.notices_created,
+            "offers_created": self.offers_created,
+            "offers_updated": self.offers_updated,
+            "attendance_created": self.attendance_created,
+            "training_performance_created": self.training_performance_created,
+            "internships_created": self.internships_created,
+            "sessions_created": self.sessions_created,
+            "duplicates_skipped": self.duplicates_skipped,
+            "invalid_skipped": self.invalid_skipped,
+            "deleted": dict(self.deleted),
+            "rejects": {
+                reason: [{"file": f, "row": row_no, "value": v} for f, row_no, v in rows]
+                for reason, rows in self.rejects.items()
+            },
+            "anomalies": dict(self.anomalies),
+            "errors": list(self.errors),
+        }
+
     # -- rendering ---------------------------------------------------------
 
     def render(self) -> str:

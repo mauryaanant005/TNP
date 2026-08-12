@@ -11,6 +11,7 @@ import { ConsolidationReportPage } from "../pages/placement_officer/Consolidated
 import CategoryRuleForm from "../pages/placement_officer/CategoryRuleForm";
 import CategoryRuleList from "../pages/placement_officer/CategoryRuleList";
 import StudentByCategory from "../pages/placement_officer/StudentByCategory";
+import UploadHistoricalData from "../pages/placement_officer/UploadHistoricalData";
 
 const PlacementRoutes = () => {
   return (
@@ -32,6 +33,7 @@ const PlacementRoutes = () => {
           }
         />
         <Route path="placement_old" element={<Old />} />
+        <Route path="upload-historical-data" element={<UploadHistoricalData />} />
       </Route>
       {/* Top-level paths outside the layout. The category rules decide which
           students a company may see, so they belong behind the same guard. */}

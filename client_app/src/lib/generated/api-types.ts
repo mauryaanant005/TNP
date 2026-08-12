@@ -1115,6 +1115,52 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/staff/historical-import/status/{task_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Poll target for ``UploadHistoricalImportView`` — mirrors ``GetTaskStatusView``,
+         *     kept separate because a successful import returns a full report, not a file URL.
+         */
+        get: operations["staff_historical_import_status_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/staff/historical-import/upload/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description ``POST`` one or more spreadsheets, queue their import, return a task id.
+         *
+         *     Files are saved into a per-request directory under ``MEDIA_ROOT`` — the
+         *     same volume the ``celery`` container mounts — then handed to
+         *     ``run_historical_import_task``, which deletes them once it finishes. A
+         *     file whose format neither importer recognises is rejected here, before
+         *     anything is queued, so a stray spreadsheet fails immediately with a clear
+         *     message rather than reporting "0 files processed" a minute later.
+         */
+        post: operations["staff_historical_import_upload_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/staff/placement/companies/batch/{batch}/": {
         parameters: {
             query?: never;
@@ -3390,6 +3436,44 @@ export interface operations {
         };
     };
     staff_company_bulk_update_progress_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    staff_historical_import_status_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    staff_historical_import_upload_create: {
         parameters: {
             query?: never;
             header?: never;
