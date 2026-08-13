@@ -273,24 +273,47 @@ def placement_dashboard(batch):
         .count()
     )
 
+    dept_perf = [
+        {
+            "department": row["department"] or "Unknown",
+            "total": row["total"],
+            "placed": row["placed"],
+            "avg_salary": f"{row['avg_salary']:.2f}" if row["avg_salary"] is not None else None,
+        }
+        for row in Student.objects.filter(batch=batch)
+        .values("department")
+        .annotate(
+            total=Count("id"),
+            placed=Count("student_offers", distinct=True),
+            avg_salary=Avg("student_offers__salary"),
+        )
+        .order_by("-placed")
+    ]
+
+    top_recruiters = [
+        {"company__name": row["company__name"] or "Direct / Other", "hires": row["hires"]}
+        for row in offers.values("company__name")
+        .annotate(hires=Count("student_id", distinct=True))
+        .order_by("-hires")[:10]
+    ]
+
+    top_roles = [
+        {"role": row["role"] or "Other", "count": row["count"]}
+        for row in offers.values("role").annotate(count=Count("id")).order_by("-count")[:10]
+    ]
+
     return {
         "placementsOverTime": [
-            {"month": row["month"].strftime("%b %Y"), "placements": row["placements"]}
+            {
+                "month": row["month"].strftime("%b %Y") if row["month"] else "Unknown",
+                "placements": row["placements"],
+            }
             for row in offers.annotate(month=TruncMonth("offer_date"))
             .values("month")
             .annotate(placements=Count("id"))
             .order_by("month")
         ],
-        "departmentPerformance": list(
-            Student.objects.filter(batch=batch)
-            .values("department")
-            .annotate(
-                total=Count("id"),
-                placed=Count("student_offers", distinct=True),
-                avg_salary=Avg("student_offers__salary"),
-            )
-            .order_by("-placed")
-        ),
+        "departmentPerformance": dept_perf,
         "salaryDistribution": list(
             offers.annotate(range=salary_band)
             .values("range")
@@ -306,16 +329,10 @@ def placement_dashboard(batch):
         "placementStatusFunnel": [
             {"name": "Total Students", "value": total_students},
             {"name": "Placed", "value": placed_students},
-            {"name": "Unplaced", "value": total_students - placed_students},
+            {"name": "Unplaced", "value": max(0, total_students - placed_students)},
         ],
-        "topRecruiters": list(
-            offers.values("company__name")
-            .annotate(hires=Count("student_id", distinct=True))
-            .order_by("-hires")[:10]
-        ),
-        "topJobRoles": list(
-            offers.values("role").annotate(count=Count("id")).order_by("-count")[:10]
-        ),
+        "topRecruiters": top_recruiters,
+        "topJobRoles": top_roles,
     }
 
 
