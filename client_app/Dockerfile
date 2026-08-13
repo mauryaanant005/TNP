@@ -27,7 +27,21 @@ ENV VITE_SERVER_URL=$VITE_SERVER_URL
 # room for the backend image building alongside it.
 ENV NODE_OPTIONS=--max-old-space-size=1536
 
-RUN npm run build
+# The `ls` is not decoration. Vite content-hashes its output
+# (build/assets/index-<hash>.js), so printing the filename puts the identity
+# of the built bundle directly in the deploy log - which is the one piece of
+# information that makes "did my change actually ship?" answerable at a
+# glance. Without it, a deploy that reuses a cached layer and a deploy that
+# genuinely rebuilt look identical in the log, and the only way to tell them
+# apart is to diff the hash in the served HTML against a local build.
+#
+# `test -f` fails the build loudly if Vite produced nothing: the runner stage
+# below copies build/ into nginx unconditionally, so an empty build would
+# otherwise ship a container that 404s every route instead of failing here.
+RUN npm run build \
+    && test -f build/index.html \
+    && echo "=== built bundle ===" \
+    && ls -1 build/assets/ | grep -E '^index-.*\.(js|css)$'
 
 # ---------- Stage 2: Production runner ----------
 FROM nginx:1.27-alpine AS runner
