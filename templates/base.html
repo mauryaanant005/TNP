@@ -5,6 +5,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {# These pages (login, OTP, profile, password reset) are served from
+       api.<domain>, a different origin to the React app, so they do not
+       inherit its favicon and were showing the browser's default. #}
+    <link rel="icon" type="image/png" href="{% static 'img/tcet-logo.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'img/tcet-logo.png' %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>
         {% block title %}{% endblock title %}
