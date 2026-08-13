@@ -278,7 +278,12 @@ def placement_dashboard(batch):
             "department": row["department"] or "Unknown",
             "total": row["total"],
             "placed": row["placed"],
-            "avg_salary": f"{row['avg_salary']:.2f}" if row["avg_salary"] is not None else None,
+            # round(), not f"{:.2f}" - the latter makes this a *string* in the
+            # JSON, so every consumer has to parse it back before it can be
+            # charted or compared, and `"9.00" > "10.00"` sorts wrong.
+            # Rounding to 2dp was the actual intent; keeping it numeric costs
+            # nothing. Pinned by test_dashboard_department_performance.
+            "avg_salary": round(row["avg_salary"], 2) if row["avg_salary"] is not None else None,
         }
         for row in Student.objects.filter(batch=batch)
         .values("department")

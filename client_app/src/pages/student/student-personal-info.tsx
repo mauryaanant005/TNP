@@ -3,9 +3,6 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { getCookie } from "@/utils";
-import { SERVER_URL } from "@/constant";
 
 export default function StudentDashboard() {
   interface Student {
@@ -80,25 +77,6 @@ export default function StudentDashboard() {
         console.error(err);
       });
   }, []);
-
-  const handleDeleteAccount = () => {
-    if (window.confirm("Are you sure you want to delete your account? This action cannot be undone and will delete all your data permanently.")) {
-      api.delete("/api/student/delete-account/", {
-        headers: {
-          "X-CSRFToken": getCookie("csrftoken") || "",
-        },
-        withCredentials: true
-      })
-      .then(() => {
-        alert("Account deleted successfully.");
-        window.open(`${SERVER_URL}/auth/login/`, "_self");
-      })
-      .catch((err) => {
-        alert("Failed to delete account. Please try again.");
-        console.error(err);
-      });
-    }
-  };
 
   if (error) return <p className="p-6 text-red-500">{error}</p>;
   if (!student) return <p className="p-6">Loading your dashboard...</p>;
@@ -203,22 +181,6 @@ export default function StudentDashboard() {
         </CardContent>
       </Card>
 
-      <Separator className="my-4" />
-
-      {/* Danger Zone */}
-      <Card className="border-red-500">
-        <CardHeader>
-          <CardTitle className="text-red-500">Danger Zone</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-4 text-sm text-gray-600">
-            Deleting your account will permanently remove all your personal data, resume, and application history. This action cannot be undone.
-          </p>
-          <Button variant="destructive" onClick={handleDeleteAccount}>
-            Delete Account
-          </Button>
-        </CardContent>
-      </Card>
     </div>
   );
 }

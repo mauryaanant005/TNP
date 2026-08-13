@@ -27,7 +27,7 @@ interface DashboardData {
     department: string;
     total: number;
     placed: number;
-    avg_salary: string | null;
+    avg_salary: number | null;
   }[];
   salaryDistribution: { range: string; count: number }[];
   offerCategoryBreakdown: { name: string; value: number }[];

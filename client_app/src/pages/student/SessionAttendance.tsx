@@ -23,7 +23,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#4169e1", // Orange theme
+      main: "#4169e1", // royalblue theme
     },
     secondary: {
       main: "#4169e1",

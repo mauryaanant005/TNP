@@ -18,10 +18,10 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 const theme = createTheme({
   palette: {
-    primary: { main: "#4169e1" }, // Orange
-    secondary: { main: "#4169e1" }, // Deep Orange
-    success: { main: "#4caf50" }, // Green
-    warning: { main: "#4169e1" }, // Warning Orange
+    primary: { main: "#4169e1" }, // royalblue
+    secondary: { main: "#4169e1" }, // royalblue
+    success: { main: "#4caf50" }, // green
+    warning: { main: "#4169e1" }, // royalblue
   },
 });
 

@@ -8,10 +8,10 @@ export const sampleDashboardData = {
     { month: "Jun 2024", placements: 150 },
   ],
   departmentPerformance: [
-    { department: "COMP", total: 120, placed: 105, avg_salary: "8.5" },
-    { department: "IT", total: 100, placed: 85, avg_salary: "7.8" },
-    { department: "E&TC", total: 80, placed: 60, avg_salary: "6.5" },
-    { department: "AI&DS", total: 60, placed: 55, avg_salary: "9.2" },
+    { department: "COMP", total: 120, placed: 105, avg_salary: 8.5 },
+    { department: "IT", total: 100, placed: 85, avg_salary: 7.8 },
+    { department: "E&TC", total: 80, placed: 60, avg_salary: 6.5 },
+    { department: "AI&DS", total: 60, placed: 55, avg_salary: 9.2 },
   ],
   salaryDistribution: [
     { range: "0-5 LPA", count: 20 },
