@@ -195,14 +195,28 @@ function DashboardCard({
   );
 }
 
+/**
+ * The width/height `ResponsiveContainer` injects into its child.
+ *
+ * The container measures itself, then `cloneElement`s its child with the
+ * result - that is the only way a Recharts chart learns its own size. Each
+ * wrapper below sits *between* the container and the chart, so it has to pass
+ * those props through: a component declaring only `data` silently swallows
+ * them, the chart renders at zero size, and the card shows an empty
+ * `<div class="recharts-responsive-container">` with no `<svg>` inside.
+ */
+type InjectedChartSize = { width?: number; height?: number };
+
 function PlacementStatusChart({
   data,
+  ...size
 }: {
   data: { name: string; value: number }[];
-}) {
+} & InjectedChartSize) {
   return (
     <BarChart
       data={data}
+      {...size}
       margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
     >
       <CartesianGrid strokeDasharray="3 3" />
@@ -222,11 +236,12 @@ function PlacementStatusChart({
 
 function OfferCategoryChart({
   data,
+  ...size
 }: {
   data: { name: string; value: number }[];
-}) {
+} & InjectedChartSize) {
   return (
-    <BarChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
+    <BarChart data={data} {...size} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="name" tick={{ fontSize: 12 }} />
       <YAxis />
@@ -246,11 +261,12 @@ function OfferCategoryChart({
 
 function SalaryDistributionChart({
   data,
+  ...size
 }: {
   data: { range: string; count: number }[];
-}) {
+} & InjectedChartSize) {
   return (
-    <BarChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
+    <BarChart data={data} {...size} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="range" />
       <YAxis />
@@ -262,12 +278,14 @@ function SalaryDistributionChart({
 
 function PlacementsTimeChart({
   data,
+  ...size
 }: {
   data: { month: string; placements: number }[];
-}) {
+} & InjectedChartSize) {
   return (
     <LineChart
       data={data}
+      {...size}
       margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
     >
       <CartesianGrid strokeDasharray="3 3" />
@@ -287,11 +305,12 @@ function PlacementsTimeChart({
 
 function DepartmentChart({
   data,
+  ...size
 }: {
   data: { department: string; total: number; placed: number }[];
-}) {
+} & InjectedChartSize) {
   return (
-    <BarChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
+    <BarChart data={data} {...size} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="department" />
       <YAxis />
@@ -303,10 +322,14 @@ function DepartmentChart({
   );
 }
 
-function TopRolesChart({ data }: { data: { role: string; count: number }[] }) {
+function TopRolesChart({
+  data,
+  ...size
+}: { data: { role: string; count: number }[] } & InjectedChartSize) {
   return (
     <BarChart
       data={data}
+      {...size}
       layout="vertical"
       margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
     >
@@ -321,12 +344,14 @@ function TopRolesChart({ data }: { data: { role: string; count: number }[] }) {
 
 function TopRecruitersChart({
   data,
+  ...size
 }: {
   data: { company__name: string; hires: number }[];
-}) {
+} & InjectedChartSize) {
   return (
     <BarChart
       data={data}
+      {...size}
       layout="vertical"
       margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
     >
