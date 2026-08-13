@@ -287,7 +287,7 @@ const Attendance = () => {
         }}
       >
         <Table>
-          <TableHead sx={{ backgroundColor: "royalblue" }}>
+          <TableHead sx={{ backgroundColor: "#153f74" }}>
             <TableRow>
               <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
                 Batch
@@ -357,7 +357,7 @@ const Attendance = () => {
             padding: "10px 20px",
             fontSize: "16px",
             fontWeight: "bold",
-            "&:hover": { backgroundColor: "royalblue", color: "black" },
+            "&:hover": { backgroundColor: "#153f74", color: "black" },
           }}
         >
           Download Excel

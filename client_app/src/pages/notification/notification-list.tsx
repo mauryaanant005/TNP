@@ -181,7 +181,7 @@ const NotificationList = () => {
         <Typography
           variant="h4"
           sx={{
-            backgroundColor: "#4169e1",
+            backgroundColor: "#153f74",
             padding: "10px 20px",
             borderRadius: "8px",
             color: "white",
@@ -195,7 +195,7 @@ const NotificationList = () => {
             variant="contained"
             startIcon={<Plus size={18} />}
             onClick={() => navigate("/notifications/create")}
-            sx={{ backgroundColor: "#4169e1", "&:hover": { backgroundColor: "#b86800" } }}
+            sx={{ backgroundColor: "#153f74", "&:hover": { backgroundColor: "#b86800" } }}
           >
             Create
           </Button>
@@ -267,7 +267,7 @@ const NotificationList = () => {
                   borderRadius: 2,
                   borderLeft: notification.is_read
                     ? "4px solid transparent"
-                    : "4px solid #4169e1",
+                    : "4px solid #153f74",
                   opacity: notification.is_read ? 0.85 : 1,
                   transition: "box-shadow 0.2s",
                 }}
@@ -307,7 +307,7 @@ const NotificationList = () => {
 
                     <Typography variant="caption" color="textSecondary" display="block">
                       Created by:{" "}
-                      <Box component="span" fontWeight="medium" color="#4169e1">
+                      <Box component="span" fontWeight="medium" color="#153f74">
                         {notification.creator_name}
                       </Box>
                     </Typography>

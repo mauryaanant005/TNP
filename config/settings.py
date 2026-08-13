@@ -440,21 +440,23 @@ UNFOLD = {
     "SITE_TITLE": "Admin site",
     "SITE_HEADER": "Thakur college of engineering and technology",
     "SITE_URL": CLIENT_URL,
-    # Royalblue ramp, matching the portal's own theme (#4169e1 lands on 500).
-    # Unfold needs the full 50-900 scale, not a single value - it picks
-    # different steps for hover, focus, borders and dark mode.
+    # TCET navy ramp, taken from tcetmumbai.in: #153f74 (its menu navy, and the
+    # portal's own sidebar colour) sits at 700, with #0059b3 / #2c80d3 - the
+    # college's mid and light blues - at 500 and 400. Unfold needs the full
+    # 50-900 scale, not a single value: it picks different steps for hover,
+    # focus, borders and dark mode.
     "COLORS": {
         "primary": {
-            "50": "#eff3fd",
-            "100": "#dbe4fb",
-            "200": "#bccdf7",
-            "300": "#93aef2",
-            "400": "#6a8bea",
-            "500": "#4169e1",
-            "600": "#2f52c4",
-            "700": "#26419e",
-            "800": "#1f357e",
-            "900": "#1a2c66",
+            "50": "#eef4fb",
+            "100": "#d6e4f5",
+            "200": "#aecae9",
+            "300": "#7dabdc",
+            "400": "#2c80d3",
+            "500": "#0059b3",
+            "600": "#004080",
+            "700": "#153f74",
+            "800": "#0f2f57",
+            "900": "#06213f",
         }
     },
     "SIDEBAR": {

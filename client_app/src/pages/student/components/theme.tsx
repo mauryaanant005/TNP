@@ -4,10 +4,10 @@ import { createTheme } from "@mui/material";
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#4169e1", // royalblue
+      main: "#153f74", // TCET navy
     },
     secondary: {
-      main: "#4169e1", // royalblue
+      main: "#0059b3", // TCET mid blue
     },
   },
 });

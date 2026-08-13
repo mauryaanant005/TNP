@@ -165,7 +165,7 @@ const NotificationDetail = () => {
           mt: "90px",
         }}
       >
-        <CircularProgress sx={{ color: "#4169e1" }} />
+        <CircularProgress sx={{ color: "#153f74" }} />
       </Box>
     );
   }
@@ -220,7 +220,7 @@ const NotificationDetail = () => {
         {/* Header bar */}
         <Box
           sx={{
-            backgroundColor: "#4169e1",
+            backgroundColor: "#153f74",
             px: 3,
             py: 2,
             display: "flex",
@@ -260,7 +260,7 @@ const NotificationDetail = () => {
           {/* Metadata */}
           <Typography variant="caption" color="textSecondary" display="block">
             Created by:{" "}
-            <Box component="span" fontWeight="medium" color="#4169e1">
+            <Box component="span" fontWeight="medium" color="#153f74">
               {notification.creator_name}
             </Box>
           </Typography>

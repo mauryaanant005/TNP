@@ -79,7 +79,7 @@ const ForgotPassword = () => {
       >
         <Box
           sx={{
-            backgroundColor: "#4169e1",
+            backgroundColor: "#153f74",
             py: 3,
             px: 4,
             textAlign: "center",
@@ -131,7 +131,7 @@ const ForgotPassword = () => {
               disabled={loading}
               sx={{
                 py: 1.4,
-                backgroundColor: "#4169e1",
+                backgroundColor: "#153f74",
                 fontWeight: "bold",
                 fontSize: "1rem",
                 "&:hover": { backgroundColor: "#3152b8" },
@@ -147,7 +147,7 @@ const ForgotPassword = () => {
               href={`${SERVER_URL}/auth/login/`}
               style={{
                 textDecoration: "none",
-                color: "#4169e1",
+                color: "#153f74",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 6,

@@ -25,7 +25,7 @@ const TrainingLayout = () => {
         component="main"
         sx={{
           flexGrow: 1,
-          bgcolor: "royalblue",
+          bgcolor: "#153f74",
           padding: "2rem",
           overflowY: "auto",
           marginLeft: "26dvw",
@@ -37,7 +37,7 @@ const TrainingLayout = () => {
       >
         <Box
           sx={{
-            backgroundColor: "royalblue",
+            backgroundColor: "#153f74",
             color: "#fff",
             padding: "1.5rem 3rem",
             borderRadius: "15px",

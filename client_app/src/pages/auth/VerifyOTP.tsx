@@ -162,7 +162,7 @@ const VerifyOTP = () => {
       >
         <Box
           sx={{
-            backgroundColor: "#4169e1",
+            backgroundColor: "#153f74",
             py: 3,
             px: 4,
             textAlign: "center",
@@ -221,7 +221,7 @@ const VerifyOTP = () => {
                     outline: "none",
                     transition: "border-color 0.2s",
                   }}
-                  onFocus={(e) => (e.target.style.borderColor = "#4169e1")}
+                  onFocus={(e) => (e.target.style.borderColor = "#153f74")}
                   onBlur={(e) => (e.target.style.borderColor = "#cbd5e1")}
                 />
               ))}
@@ -244,7 +244,7 @@ const VerifyOTP = () => {
                 <Box
                   component="span"
                   fontWeight="bold"
-                  color={timeLeft > 0 ? "#4169e1" : "#ef4444"}
+                  color={timeLeft > 0 ? "#153f74" : "#ef4444"}
                 >
                   {formatTime(timeLeft)}
                 </Box>
@@ -259,7 +259,7 @@ const VerifyOTP = () => {
                 startIcon={resending ? <CircularProgress size={14} color="inherit" /> : <RotateCcw size={16} />}
                 sx={{
                   fontWeight: "bold",
-                  color: timeLeft === 0 ? "#4169e1" : "#94a3b8",
+                  color: timeLeft === 0 ? "#153f74" : "#94a3b8",
                 }}
               >
                 {resending ? "Sending..." : "Resend OTP"}
@@ -274,7 +274,7 @@ const VerifyOTP = () => {
               disabled={loading || otpValues.join("").length !== 6}
               sx={{
                 py: 1.4,
-                backgroundColor: "#4169e1",
+                backgroundColor: "#153f74",
                 fontWeight: "bold",
                 fontSize: "1rem",
                 "&:hover": { backgroundColor: "#3152b8" },
@@ -290,7 +290,7 @@ const VerifyOTP = () => {
               to="/forgot-password"
               style={{
                 textDecoration: "none",
-                color: "#4169e1",
+                color: "#153f74",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 6,

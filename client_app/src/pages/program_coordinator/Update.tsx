@@ -275,7 +275,7 @@ const Update = () => {
               }}
             >
               <TableHead>
-                <TableRow sx={{ backgroundColor: "royalblue" }}>
+                <TableRow sx={{ backgroundColor: "#153f74" }}>
                   <TableCell sx={{ border: "1px solid black", fontWeight: "bold" }}>UID</TableCell>
                   <TableCell sx={{ border: "1px solid black", fontWeight: "bold" }}>Name</TableCell>
                   <TableCell sx={{ border: "1px solid black", fontWeight: "bold" }}>

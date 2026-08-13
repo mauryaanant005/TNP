@@ -18,10 +18,14 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 const theme = createTheme({
   palette: {
-    primary: { main: "#4169e1" }, // royalblue
-    secondary: { main: "#4169e1" }, // royalblue
-    success: { main: "#4caf50" }, // green
-    warning: { main: "#4169e1" }, // royalblue
+    primary: { main: "#153f74" }, // TCET navy
+    secondary: { main: "#0059b3" }, // TCET mid blue
+    success: { main: "#2e7d32" }, // green - average at or above 75
+    // Below-75 averages are rendered in `warning.main`. Navy here would make
+    // them indistinguishable from ordinary text, so this stays a distinct
+    // attention colour - red rather than the college's orange, which the
+    // portal's palette deliberately excludes.
+    warning: { main: "#c0392b" },
   },
 });
 
@@ -241,7 +245,7 @@ const StudentTrainingPerformance: React.FC = () => {
                     <TableContainer component={Paper} variant="outlined">
                       <Table>
                         <TableHead>
-                          <TableRow sx={{ backgroundColor: "#4169e1" }}>
+                          <TableRow sx={{ backgroundColor: "#153f74" }}>
                             <TableCell
                               sx={{ color: "black", fontWeight: "bold" }}
                             >

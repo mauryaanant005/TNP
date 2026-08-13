@@ -5,10 +5,10 @@ import Logo from "@/assets/tcet_logo_2.png";
 const NavBar = ({ title }: { title: string }) => {
   const navigate = useNavigate();
   return (
-    <div className="flex bg-[#4169e1] w-full justify-between absolute top-0 left-0  mb-10">
+    <div className="flex bg-[#153f74] w-full justify-between absolute top-0 left-0  mb-10">
       <div className="flex items-center gap-2 p-2">
         <Button
-          className="bg-[#4169e1] hover:bg-[#4169e1]/80 text-white text-3xl"
+          className="bg-[#153f74] hover:bg-[#153f74]/80 text-white text-3xl"
           onClick={() => navigate(-1)}
         >
           <MoveLeft size={100} />

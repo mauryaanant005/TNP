@@ -116,7 +116,7 @@ const ResetPassword = () => {
             onClick={() => { window.location.href = `${SERVER_URL}/auth/login/`; }}
             variant="contained"
             fullWidth
-            sx={{ py: 1.4, backgroundColor: "#4169e1", fontWeight: "bold" }}
+            sx={{ py: 1.4, backgroundColor: "#153f74", fontWeight: "bold" }}
           >
             Go to Login
           </Button>
@@ -147,7 +147,7 @@ const ResetPassword = () => {
       >
         <Box
           sx={{
-            backgroundColor: "#4169e1",
+            backgroundColor: "#153f74",
             py: 3,
             px: 4,
             textAlign: "center",
@@ -261,7 +261,7 @@ const ResetPassword = () => {
               disabled={loading || strengthScore < 3 || password !== confirmPassword}
               sx={{
                 py: 1.4,
-                backgroundColor: "#4169e1",
+                backgroundColor: "#153f74",
                 fontWeight: "bold",
                 fontSize: "1rem",
                 "&:hover": { backgroundColor: "#3152b8" },
