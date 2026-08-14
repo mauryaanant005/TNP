@@ -23,8 +23,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 # Installed to the system site-packages (no --user) rather than /root/.local
 # - the latter is only readable by root, and USER django below drops root,
-# so a non-root process couldn't import anything from there.
-RUN pip install --no-cache-dir -r requirements.txt
+# so a non-root process couldn't import anything from there. Root is correct
+# here (this stage's filesystem is discarded; only site-packages/bin get
+# copied into the runner, which does drop to USER django) - so the pip
+# root-user warning is expected noise, not a real risk. --root-user-action
+# silences it instead of leaving it to show up red in deploy logs.
+RUN pip install --no-cache-dir --root-user-action=ignore -r requirements.txt
 
 # ---------- Stage 2: Production runner ----------
 FROM python:3.12-slim AS runner
