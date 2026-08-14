@@ -97,6 +97,7 @@ PERMISSION_MATRIX = [
     ("GET", "/api/placement_officer/get_category_data_by_department/CMPN/", ("placement_officer", "principal")),
     ("GET", f"/api/placement_officer/get_data_by_year/{BATCH}/", ("placement_officer", "principal")),
     ("GET", f"/api/placement_officer/dashboard/{BATCH}/", ("placement_officer", "principal")),
+    ("GET", "/api/placement_officer/report-batches/", ("placement_officer", "principal")),
     ("GET", f"/api/placement_officer/branch_wise_report/{BATCH}/", ("placement_officer", "principal")),
     ("GET", f"/api/placement_officer/student_detail_report/{BATCH}/", ("placement_officer", "principal")),
     # Routed for the first time in T-19: the views and the frontend pages both

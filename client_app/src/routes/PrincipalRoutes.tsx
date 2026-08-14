@@ -3,7 +3,7 @@ import RequireRole from "../components/RequireRole";
 import { ROLE_GROUPS } from "../lib/roles";
 import PrincipalLayout from "../pages/principal/PrincipalLayout";
 import TrainingStats from "../pages/training_officer/TrainingStats";
-import Old from "../pages/placement_officer/Old";
+import { PlacementDashboard } from "../pages/placement_officer";
 import InternshipStats from "../pages/internship_officer/Stats";
 
 const PrincipalRoutes = () => {
@@ -13,11 +13,7 @@ const PrincipalRoutes = () => {
         <Route index element={<TrainingStats />} />
         <Route
           path="placement"
-          element={
-            <div>
-              <Old />
-            </div>
-          }
+          element={<PlacementDashboard showLegacyLink={false} />}
         />
         <Route path="internship" element={<InternshipStats />} />
       </Route>

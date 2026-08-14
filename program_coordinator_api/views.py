@@ -26,7 +26,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.utils import timezone
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
-from base.permissions import ROLES, DepartmentScopedMixin, HasRole
+from base.permissions import ROLES, DepartmentScopedMixin, HasRole, scope_queryset_to_department
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from base.models import FacultyResponsibility
@@ -439,16 +439,25 @@ def get_avg_data(request, table_name):
         from django.db.models import Avg, Count, Q
 
         # 1. Fetch Students to map uid -> (Branch_Div, Year)
+        # ROLES.ANALYTICS mixes department-owning roles (faculty,
+        # program_coordinator, department_coordinator) with college-wide ones
+        # (training_officer, principal) under one permission class. Scope the
+        # former to their own department; `scope_queryset_to_department`
+        # passes the latter through untouched (base/permissions.py).
         batch_param = request.query_params.get("batch") or request.query_params.get("year")
-        students_qs = Student.objects.all()
+        students_qs = scope_queryset_to_department(Student.objects.all(), request.user)
         if batch_param:
             students_qs = students_qs.filter(batch=batch_param)
         students = students_qs.values('uid', 'department', 'division', 'batch')
+        # AttendanceData.uid is free text with no FK to Student, joined here
+        # in Python by string equality - normalize both sides so a stray
+        # space or case difference from an uploaded sheet doesn't silently
+        # drop the row.
         student_map = {
-            s['uid']: {
+            s['uid'].strip().upper(): {
                 'Branch_Div': f"{s['department']}-{s['division']}",
                 'Year': s['batch']
-            } for s in students
+            } for s in students if s['uid']
         }
 
         stats_map = {}
@@ -459,10 +468,10 @@ def get_avg_data(request, table_name):
             present=Count('id', filter=Q(present='Present'))
         )
         for att in att_aggs:
-            uid = att['uid']
+            uid = (att['uid'] or '').strip().upper()
             if uid not in student_map:
                 continue
-            
+
             branch_div = student_map[uid]['Branch_Div']
             year = student_map[uid]['Year']
             program = att['program_name']
@@ -480,7 +489,7 @@ def get_avg_data(request, table_name):
         ).filter(avg_marks__isnull=False)
 
         for perf in perf_aggs:
-            uid = perf['student__uid']
+            uid = (perf['student__uid'] or '').strip().upper()
             if uid not in student_map:
                 continue
 

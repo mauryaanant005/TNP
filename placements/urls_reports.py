@@ -42,6 +42,11 @@ urlpatterns = [
     ),
     path("dashboard/<str:batch>/", views.PlacementDashboardAPIView.as_view(), name="get_all_data"),
     path(
+        "report-batches/",
+        views.PlacementReportBatchesView.as_view(),
+        name="report-batches",
+    ),
+    path(
         "branch_wise_report/<str:batch>/",
         views.BranchwiseReportAPIView.as_view(),
         name="branch_wise_report",

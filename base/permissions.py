@@ -70,6 +70,12 @@ class ROLES:
     STUDENT = ("student",)
 
 
+#: Roles that read across the whole college rather than owning one
+#: department. `DepartmentScopedMixin` must not fail these closed just
+#: because they (correctly) have no `FacultyResponsibility` row.
+COLLEGE_WIDE_ROLES = ("principal", "training_officer")
+
+
 class HasRole(BasePermission):
     """Allow a request when `request.user.role` is in `roles`.
 
@@ -109,6 +115,40 @@ class HasRole(BasePermission):
         return f"<HasRole {'|'.join(self.roles)}{' +read_any' if self.read_any else ''}>"
 
 
+def department_match_q(field, department):
+    """A `Q` matching `field` against `department` itself or any of its
+    divisions ("IT" -> "IT" or "IT-A", "IT-B", ...).
+
+    Never a bare `istartswith`, which would let "IT" also match "ITC".
+    Shared by `DepartmentScopedMixin` and any function-based view that needs
+    the same department-vs-division matching without a queryset already
+    wrapped in the mixin's `self.request`.
+    """
+    from django.db.models import Q
+
+    return Q(**{f"{field}__iexact": department}) | Q(**{f"{field}__istartswith": f"{department}-"})
+
+
+def scope_queryset_to_department(queryset, user, field="department"):
+    """Function form of `DepartmentScopedMixin.scope_to_department`, for
+    `@api_view` functions that have a `user` but no `self.request` to hang
+    the mixin off of. Same rules: superuser and `COLLEGE_WIDE_ROLES` pass
+    through unfiltered, everyone else is scoped to their
+    `FacultyResponsibility.department` and fails closed with none.
+    """
+    from base.models import FacultyResponsibility
+
+    if getattr(user, "is_superuser", False) or getattr(user, "role", None) in COLLEGE_WIDE_ROLES:
+        return queryset
+
+    responsibility = FacultyResponsibility.objects.filter(user=user).first()
+    department = responsibility.department.strip() if responsibility and responsibility.department else None
+    if not department:
+        return queryset.none()
+
+    return queryset.filter(department_match_q(field, department))
+
+
 class DepartmentScopedMixin:
     """Restrict a queryset to the caller's own department.
 
@@ -121,8 +161,11 @@ class DepartmentScopedMixin:
     deliberate. A missing row is a misconfigured account, and the safe reading
     of "no department assigned" is "no students", not "all students".
 
-    Superusers are exempt — they are the only accounts that legitimately read
-    across departments.
+    Superusers and `COLLEGE_WIDE_ROLES` (principal, training_officer) are
+    exempt — they legitimately read across every department, and neither
+    kind of account is expected to carry a `FacultyResponsibility` row, so
+    scoping them by one would silently zero out the college-wide dashboards
+    they're explicitly permitted to see (docs/PERMISSIONS.md).
     """
 
     #: Path from the queryset's model to the department string.
@@ -140,22 +183,13 @@ class DepartmentScopedMixin:
         return None
 
     def scope_to_department(self, queryset, field=None):
-        if getattr(self.request.user, "is_superuser", False):
+        user = self.request.user
+        if getattr(user, "is_superuser", False) or getattr(user, "role", None) in COLLEGE_WIDE_ROLES:
             return queryset
 
         department = self.get_scoped_department()
         if not department:
             return queryset.none()
 
-        # Student.department holds "IT-A" while FacultyResponsibility holds
-        # "IT", so an exact match silently returns nothing for any department
-        # that has divisions. Match the department itself or any of its
-        # divisions - never a bare `istartswith`, which would let "IT" also
-        # match "ITC".
-        from django.db.models import Q
-
         field = field or self.department_field
-        return queryset.filter(
-            Q(**{f"{field}__iexact": department})
-            | Q(**{f"{field}__istartswith": f"{department}-"})
-        )
+        return queryset.filter(department_match_q(field, department))

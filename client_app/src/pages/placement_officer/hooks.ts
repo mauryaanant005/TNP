@@ -3,9 +3,16 @@ import { apiFetch } from "@/lib/api";
 
 /**
  * Fetches the batch dropdown options shared by every Placement Coordinator
- * report page, defaulting the selection to the first batch returned.
- * Previously duplicated identically across index.tsx, ConsolidatedReport.tsx,
- * BranchWiseReport.tsx and StudentPerformance.tsx.
+ * report page, defaulting the selection to the first (most recent) batch
+ * returned. Previously duplicated identically across index.tsx,
+ * ConsolidatedReport.tsx, BranchWiseReport.tsx and StudentPerformance.tsx.
+ *
+ * Deliberately NOT `/api/staff/companies/batches/`: that lists
+ * `CompanyRegistration.batch` values, which can include a batch that has a
+ * drive registered but zero actual `Student` rows (e.g. a future/mistyped
+ * batch) - selecting it here would default every report to "no data
+ * available for year X". `report-batches/` lists batches that have real
+ * Student data, so the default selection always has something to show.
  */
 export function useBatchOptions() {
   const [batches, setBatches] = useState<string[]>([]);
@@ -15,7 +22,7 @@ export function useBatchOptions() {
   useEffect(() => {
     const controller = new AbortController();
     setBatchesLoading(true);
-    apiFetch("/api/staff/companies/batches/", { signal: controller.signal })
+    apiFetch("/api/placement_officer/report-batches/", { signal: controller.signal })
       .then((res) => res.json())
       .then((data: string[]) => {
         setBatches(data);

@@ -144,6 +144,7 @@ reports (`client_app/src/routes/PrincipalRoutes.tsx`).
 | `GET /api/placement_officer/get_category_data_by_department/<d>/` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ✅ |
 | `GET /api/placement_officer/get_data_by_year/<b>/` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ✅ |
 | `GET /api/placement_officer/dashboard/<b>/` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ✅ |
+| `GET /api/placement_officer/report-batches/` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ✅ |
 | `GET /api/placement_officer/branch_wise_report/<b>/` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ✅ |
 | `GET /api/placement_officer/student_detail_report/<b>/` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ✅ |
 | `POST /api/placement_officer/category-rules/create/` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ✅ |
@@ -181,13 +182,22 @@ That clause goes — it is the same conflation as `/api/staff/`, one layer down.
 | `POST /api/faculty_coordinator/reset-attendance` | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | `GET /api/training_officer/get-avg-data/<t>/` | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ |
 
-**Change from today:** `/api/training_officer/get-avg-data/` currently has *no role check at all* —
-any authenticated user, including a student, receives college-wide training aggregates by
-branch/division/year (audit §4.3, finding #20). It becomes `training_officer` + `principal`.
+**Done:** `/api/training_officer/get-avg-data/` previously had *no role check at all* — any
+authenticated user, including a student, received college-wide training aggregates by
+branch/division/year (audit §4.3, finding #20). It now requires `training_officer` or `principal`
+(`HasRole.of(*ROLES.TRAINING_OVERSIGHT)`).
 
-`student-analytics` and `aggregate-analytics` additionally scope their queryset by the caller's
-`FacultyResponsibility.department` and return an empty set when there is none. That scoping is
-correct and stays; this table governs only who may reach the endpoint at all.
+`student-analytics`, `aggregate-analytics` and `program_coordinator/avg-data` additionally scope
+their queryset by the caller's `FacultyResponsibility.department`, returning an empty set when
+there is none — correct for `faculty`/`program_coordinator`/`department_coordinator`, who each own
+one department. `training_officer` and `principal` are college-wide roles and never carry a
+`FacultyResponsibility` row, so they're exempt from that scoping (`COLLEGE_WIDE_ROLES` in
+`base/permissions.py`) rather than being silently zeroed out; this table governs only who may
+reach the endpoint at all.
+
+`program_coordinator/avg-data` did not apply this scoping until now — a program coordinator or
+department coordinator hitting it got cross-department averages instead of just their own
+(fixed alongside this doc pass).
 
 ---
 

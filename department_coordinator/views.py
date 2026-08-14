@@ -388,7 +388,12 @@ def upload_inhouse_internship(request):
             for index, row in df.iterrows():
                 try:
                     student = Student.objects.get(uid=row['uid'])
-                    if department and not student.department.startswith(department):
+                    # Match the department itself or any of its divisions
+                    # ("IT" -> "IT" or "IT-A") the same way DepartmentScopedMixin
+                    # does - a bare startswith("IT") would also admit "ITC".
+                    student_department = (student.department or "").strip().lower()
+                    dept_lower = department.strip().lower() if department else None
+                    if dept_lower and student_department != dept_lower and not student_department.startswith(f"{dept_lower}-"):
                         error_rows.append({
                             'row': index + 2,
                             'error': f'Student {row["uid"]} does not belong to your department'

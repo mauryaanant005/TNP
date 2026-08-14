@@ -48,7 +48,15 @@ function hasDashboardData(json: DashboardData): boolean {
   );
 }
 
-export function PlacementDashboard() {
+export function PlacementDashboard({
+  showLegacyLink = true,
+}: {
+  /** The "Go to Old Placement Data" link is a relative route that only
+   * exists under `/placement_officer/*` (PlacementRoutes.tsx). Principal
+   * mounts this component directly under `/principal/placement` where that
+   * route isn't registered, so it's hidden there. */
+  showLegacyLink?: boolean;
+} = {}) {
   const { batches, selectedBatch, setSelectedBatch } = useBatchOptions();
   const { data, isSampleData, loading, error, retry } =
     useRealOrSampleData<DashboardData>({
@@ -87,9 +95,11 @@ export function PlacementDashboard() {
               variant="outlined"
             />
           )}
-          <NavLink to={'placement_old'} className={'bg-blue-600 text-white p-2 rounded'}>
-            Go to Old Placement Data
-          </NavLink>
+          {showLegacyLink && (
+            <NavLink to={'placement_old'} className={'bg-blue-600 text-white p-2 rounded'}>
+              Go to Old Placement Data
+            </NavLink>
+          )}
         </div>
       </div>
 

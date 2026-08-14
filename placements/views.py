@@ -109,6 +109,30 @@ class CompanyBatchesView(APIView):
         return Response(batches)
 
 
+class PlacementReportBatchesView(APIView):
+    """Batches that actually have `Student` rows - i.e. batches the report
+    dashboards (`placement_dashboard`, branch-wise report, ...) can render
+    something for.
+
+    Deliberately not `CompanyBatchesView`: that endpoint lists
+    `CompanyRegistration.batch` values, which a staff member can register a
+    drive against before a single student of that batch exists in the
+    system, or simply mistype. Every report below queries `Student`, so this
+    is the batch list that matches what they can actually show - selecting
+    the newest one first (as the dashboards do by default) never lands on an
+    empty year.
+    """
+
+    permission_classes = [REPORTS]
+
+    def get(self, request, *args, **kwargs):
+        batches = [
+            b for b in Student.objects.values_list("batch", flat=True).distinct() if b
+        ]
+        batches.sort(reverse=True)
+        return Response(batches)
+
+
 class SendPlacementNotificationApiView(generics.CreateAPIView):
     """Notify a drive's eligible or registered students."""
 

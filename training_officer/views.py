@@ -22,11 +22,15 @@ def get_avg_data(request, table_name):
         if batch_param:
             students_qs = students_qs.filter(batch=batch_param)
         students = students_qs.values('uid', 'department', 'division', 'batch')
+        # AttendanceData.uid is free text with no FK to Student (models.py),
+        # so it's joined here in Python by string equality. Normalize both
+        # sides - a stray space or case difference from an uploaded sheet
+        # would otherwise drop the row silently instead of erroring.
         student_map = {
-            s['uid']: {
+            s['uid'].strip().upper(): {
                 'Branch_Div': f"{s['department']}-{s['division']}",
                 'Year': s['batch']
-            } for s in students
+            } for s in students if s['uid']
         }
 
         stats_map = {}
@@ -37,7 +41,7 @@ def get_avg_data(request, table_name):
             present=Count('id', filter=Q(present='Present'))
         )
         for att in att_aggs:
-            uid = att['uid']
+            uid = (att['uid'] or '').strip().upper()
             if uid not in student_map:
                 continue
             
@@ -58,7 +62,7 @@ def get_avg_data(request, table_name):
         ).filter(avg_marks__isnull=False)
 
         for perf in perf_aggs:
-            uid = perf['student__uid']
+            uid = (perf['student__uid'] or '').strip().upper()
             if uid not in student_map:
                 continue
 
