@@ -1,6 +1,10 @@
-{% extends "base.html" %} {% load static %} 
-{% block title %}User profile{%endblock title %} 
+{% extends "base.html" %} {% load static %}
+{% block title %}User profile{%endblock title %}
 {% block content %}
+<style>
+  .back-link { color: #6b7280; }
+  .back-link:hover { color: #374151; }
+</style>
 <div
   style="
    z-index:-1; position:absolute; background:#153f74; height:15%; width:100%;top: 0;left: 0;padding:10px 
@@ -39,19 +43,26 @@
       position: relative;
     "
   >
-    <button
-      onclick="window.history.back()"
+    {% comment %}
+      A link, not window.history.back(): this page is reached from the React
+      app on a different origin (tcettnp.in -> api.tcettnp.in), so there is
+      often no same-origin history entry to go back to and the inline
+      onclick/onmouseover handlers this used to carry are blocked outright
+      by the production Content-Security-Policy (script-src has no
+      unsafe-inline - base/middleware.py). Same fix as password_update.html.
+    {% endcomment %}
+    <a
+      href="{{ client_url }}"
+      class="back-link"
       style="
         position: absolute;
         left: 1rem;
         top: 1rem;
-        color: #6b7280;
         display: flex;
         align-items: center;
         cursor: pointer;
+        text-decoration: none;
       "
-      onmouseover="this.style.color='#374151'"
-      onmouseout="this.style.color='#6b7280'"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -68,7 +79,7 @@
         />
       </svg>
       Back
-    </button>
+    </a>
 
     <h2
       style="

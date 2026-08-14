@@ -577,7 +577,11 @@ def passkey_credentials_api(request, pk=None):
 @login_required
 def user_profile(request):
     user = User.objects.get(id=request.user.id)
-    return render(request, "base/user_profile.html", {"user": user})
+    return render(
+        request,
+        "base/user_profile.html",
+        {"user": user, "client_url": settings.CLIENT_URL},
+    )
 
 
 def logout_view(request):

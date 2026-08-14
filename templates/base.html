@@ -1,22 +1,39 @@
 <!DOCTYPE html>
 {% load static %}
-{% load static tailwind_tags %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {# These pages (login, OTP, profile, password reset) are served from
-       api.<domain>, a different origin to the React app, so they do not
-       inherit its favicon and were showing the browser's default. #}
+    {% comment %}
+      These pages (login, OTP, profile, password reset) are served from
+      api.<domain>, a different origin to the React app, so they do not
+      inherit its favicon and were showing the browser's default.
+
+      The hash-style single-brace comment syntax only hides a comment that
+      opens and closes on the same line in Django - spanning it across
+      lines like this one renders the raw text into the page instead of
+      hiding it. This double-brace block comment tag is the multi-line-safe
+      one; reach for it instead whenever a comment needs more than one line.
+    {% endcomment %}
     <link rel="icon" type="image/png" href="{% static 'img/tcet-logo.png' %}">
     <link rel="apple-touch-icon" href="{% static 'img/tcet-logo.png' %}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>
         {% block title %}{% endblock title %}
     </title>
-    {% tailwind_css %}
+    {% comment %}
+      No Tailwind link tag here: every page under base/templates/base/ is
+      styled entirely with inline style attributes or its own style block
+      (audit), and no "theme" app was ever committed to build
+      css/dist/styles.css - the tag rendered a link to a file that doesn't
+      exist, which the browser then refused to apply (wrong MIME type from
+      the 404 page). The two Tailwind utility classes the body tag used to
+      lean on are inlined below instead.
+    {% endcomment %}
+    <style>
+        body { margin: 0; padding: 0; min-height: 100vh; font-family: ui-sans-serif, system-ui, sans-serif; display: flex; overflow-x: hidden; }
+    </style>
 </head>
-<body class="m-0 p-0 min-h-screen font-sans flex overflow-x-hidden">
+<body>
     {% block content %}{% endblock content %}
 </body>
 </html>

@@ -1,5 +1,4 @@
 {% load static %}
-{% load static tailwind_tags %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -8,7 +7,13 @@
     <title>Login Page</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    {% tailwind_css %}
+    {% comment %}
+      No Tailwind link tag: this page is styled entirely by the style block
+      below, and no "theme" app was ever committed to build
+      css/dist/styles.css - the tag rendered a link to a file that doesn't
+      exist, which the browser refused to apply (wrong MIME type from the
+      404 page).
+    {% endcomment %}
     <link
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
       rel="stylesheet"
@@ -168,7 +173,7 @@
 
           <div class="forgot-password">
             <a href="{% url "password_reset_request" %}">Forgot password ?</a>
-            <a href="/admin/" class="text-blue-600">Admin Login</a>
+            <a href="/admin/">Admin Login</a>
           </div>
 
           <button type="submit">Login</button>

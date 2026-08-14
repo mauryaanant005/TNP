@@ -17,6 +17,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include, re_path
+from django.views.generic.base import RedirectView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from . import views
 from base.views import user_profile, password_update
@@ -34,6 +35,14 @@ admin.site.site_url = getattr(settings, "CLIENT_URL", "http://localhost:5173")
 # production; see views.serve_media for the real media-serving route).
 urlpatterns = [
     path("", views.root_redirect, name="root_redirect"),
+    # Browsers request this at the origin root regardless of the <link
+    # rel="icon"> tag every base/templates page already declares - without
+    # this route it 404s on every single page load (T-27).
+    path(
+        "favicon.ico",
+        RedirectView.as_view(url="/static/img/tcet-logo.png", permanent=True),
+        name="favicon",
+    ),
     path("admin/", admin.site.urls),
     path("api/health/", views.health, name="health"),
     # T-22. /api/schema/ is what the typed TS client is generated from;
