@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
+from base.validators import password_strength_errors
 import logging
 from django_ratelimit.decorators import ratelimit
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
@@ -170,16 +171,20 @@ def password_reset_confirm(request):
     if request.method == "POST":
         password = request.POST.get("password")
         confirm_password = request.POST.get("confirm_password")
-        if password == confirm_password and len(password) >= 8:
-            user.set_password(password)
-            user.save()
-            del request.session["reset_user_id"]
-            if "reset_token" in request.session:
-                del request.session["reset_token"]
-            messages.success(request, "Your password has been reset successfully.")
-            return redirect(f"{settings.CLIENT_URL}/login")
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match.")
         else:
-            messages.error(request, "Passwords do not match or password is too weak.")
+            errors = password_strength_errors(password, user=user)
+            if errors:
+                messages.error(request, " ".join(errors))
+            else:
+                user.set_password(password)
+                user.save()
+                del request.session["reset_user_id"]
+                if "reset_token" in request.session:
+                    del request.session["reset_token"]
+                messages.success(request, "Your password has been reset successfully.")
+                return redirect(f"{settings.CLIENT_URL}/login")
     return redirect(f"{settings.CLIENT_URL}/reset-password")
 
 
@@ -352,16 +357,22 @@ def api_password_reset_confirm(request):
     if new_password != confirm_password:
         return Response({"error": "Passwords do not match."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Password strength check
-    if len(new_password) < 8:
-        return Response({"error": "Password must be at least 8 characters long."}, status=status.HTTP_400_BAD_REQUEST)
-
     try:
         otp_obj = UserOTP.objects.get(reset_token=reset_token)
         if not otp_obj.reset_token_expires_at or timezone.now() >= otp_obj.reset_token_expires_at:
             return Response({"error": "Password reset token has expired. Please request a new OTP."}, status=status.HTTP_400_BAD_REQUEST)
 
         user = otp_obj.user
+
+        # Password strength check. Was length-only; the reset-password screen
+        # (client_app/src/pages/auth/ResetPassword.tsx) shows a 4-item
+        # requirements checklist, so the server needs to enforce all four,
+        # not just the first one - the browser check is a courtesy, not the
+        # boundary (base/permissions.py: "The API is the security boundary").
+        errors = password_strength_errors(new_password, user=user)
+        if errors:
+            return Response({"error": " ".join(errors)}, status=status.HTTP_400_BAD_REQUEST)
+
         user.set_password(new_password)
         user.save()
 
@@ -599,10 +610,17 @@ def password_update(request):
     if request.method == "POST":
         password = request.POST.get("new_password")
         confirm_password = request.POST.get("confirm_password")
-        if password == confirm_password:
-            user.set_password(password)
-            user.save()
-            messages.success(request, "Password updated successfully.")
-        else:
+        if password != confirm_password:
             messages.error(request, "Passwords do not match.")
+        else:
+            # This form previously had no strength check at all - only the
+            # match check above - so a logged-in user could set a one-
+            # character password. Same rules as the reset-password flow.
+            errors = password_strength_errors(password, user=user)
+            if errors:
+                messages.error(request, " ".join(errors))
+            else:
+                user.set_password(password)
+                user.save()
+                messages.success(request, "Password updated successfully.")
     return render(request, "base/password_update.html")

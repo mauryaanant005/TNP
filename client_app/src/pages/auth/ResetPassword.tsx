@@ -36,12 +36,19 @@ const ResetPassword = () => {
     }
   }, [resetToken, navigate]);
 
-  // Password strength validation
+  // Password strength validation. These four are the ones actually listed
+  // in the "Password Requirements" checklist below, so they're also what
+  // gates the submit button - hasSpecial only feeds the strength meter, it
+  // is never a requirement, so it must never be counted toward whether the
+  // button is enabled (it previously was, via a "3 of 5" score that let a
+  // password through without meeting every requirement shown on screen).
   const hasMinLength = password.length >= 8;
   const hasUpper = /[A-Z]/.test(password);
   const hasLower = /[a-z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
   const hasSpecial = /[^A-Za-z0-9]/.test(password);
+
+  const meetsAllRequirements = hasMinLength && hasUpper && hasLower && hasNumber;
 
   const strengthScore = [hasMinLength, hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length;
   const strengthProgress = (strengthScore / 5) * 100;
@@ -60,8 +67,8 @@ const ResetPassword = () => {
       return;
     }
 
-    if (strengthScore < 3) {
-      setErrorMsg("Please choose a stronger password matching the requirements below.");
+    if (!meetsAllRequirements) {
+      setErrorMsg("Please meet all of the password requirements below.");
       return;
     }
 
@@ -258,7 +265,7 @@ const ResetPassword = () => {
               type="submit"
               variant="contained"
               fullWidth
-              disabled={loading || strengthScore < 3 || password !== confirmPassword}
+              disabled={loading || !meetsAllRequirements || password !== confirmPassword}
               sx={{
                 py: 1.4,
                 backgroundColor: "#153f74",
