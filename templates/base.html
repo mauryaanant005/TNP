@@ -17,8 +17,10 @@
     {% endcomment %}
     <link rel="icon" type="image/png" href="{% static 'img/tcet-logo.png' %}">
     <link rel="apple-touch-icon" href="{% static 'img/tcet-logo.png' %}">
+    <meta name="description" content="{% block meta_description %}Official Training &amp; Placement (T&amp;P) portal for Thakur College of Engineering and Technology (TCET), Mumbai.{% endblock meta_description %}">
+    <meta name="robots" content="index, follow">
     <title>
-        {% block title %}{% endblock title %}
+        {% block title %}TCET Training &amp; Placement Cell | Official Portal{% endblock title %}
     </title>
     {% comment %}
       No Tailwind link tag here: every page under base/templates/base/ is

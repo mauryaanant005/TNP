@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Allow: /auth/login/
+Allow: /forgot-password
+Disallow: /api/
+Disallow: /admin/
+
+Sitemap: https://tcettnp.in/sitemap.xml

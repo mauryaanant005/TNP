@@ -2,10 +2,110 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/tcet-logo.png" />
-    <link rel="apple-touch-icon" href="/tcet-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TCET - TNP - Portal</title>
+    <title>TCET Training &amp; Placement Cell | Official Portal</title>
+    
+    <!-- Primary SEO Meta Tags -->
+    <meta name="title" content="TCET Training &amp; Placement Cell | Official Portal" />
+    <meta name="description" content="TCET Training and Placement (T&amp;P) Cell - Official portal for campus placements, internships, training drives, recruiter schedules, and student registration at Thakur College of Engineering and Technology (TCET), Mumbai." />
+    <meta name="keywords" content="TCET TNP, TCET Placement, TCET Training and Placement, Thakur College TNP, tcettnp, tcettnp.in, TCET Placement Portal, Thakur College of Engineering and Technology Placements" />
+    <meta name="author" content="TCET Training &amp; Placement Cell" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <link rel="canonical" href="https://tcettnp.in/" />
+
+    <!-- Favicon and Touch Icons (Google Search compliant) -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/tcet-logo.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/tcet-logo.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/tcet-logo.png" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://tcettnp.in/" />
+    <meta property="og:site_name" content="TCET TNP Official Portal" />
+    <meta property="og:title" content="TCET Training &amp; Placement Cell | Official Portal" />
+    <meta property="og:description" content="Official Training &amp; Placement portal for Thakur College of Engineering and Technology (TCET). Access campus drives, internships, and recruiter details." />
+    <meta property="og:image" content="https://tcettnp.in/tcet-logo.png" />
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:url" content="https://tcettnp.in/" />
+    <meta name="twitter:title" content="TCET Training &amp; Placement Cell | Official Portal" />
+    <meta name="twitter:description" content="Official Training &amp; Placement portal for Thakur College of Engineering and Technology (TCET)." />
+    <meta name="twitter:image" content="https://tcettnp.in/tcet-logo.png" />
+
+    <!-- Schema.org JSON-LD Structured Data for Google Sitelinks & Brand Entity -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "EducationalOrganization",
+            "@id": "https://tcettnp.in/#organization",
+            "name": "TCET Training and Placement Cell",
+            "alternateName": ["TCET TNP", "Thakur College TNP", "TCET Placement Cell", "TCET T&P"],
+            "url": "https://tcettnp.in",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://tcettnp.in/tcet-logo.png",
+              "width": "192",
+              "height": "192"
+            },
+            "parentOrganization": {
+              "@type": "CollegeOrUniversity",
+              "name": "Thakur College of Engineering and Technology",
+              "url": "https://www.tcetmumbai.in"
+            }
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://tcettnp.in/#website",
+            "url": "https://tcettnp.in",
+            "name": "TCET Training & Placement Cell | Official Portal",
+            "alternateName": "TCET TNP Portal",
+            "publisher": {
+              "@id": "https://tcettnp.in/#organization"
+            },
+            "inLanguage": "en-US"
+          },
+          {
+            "@type": "ItemList",
+            "name": "TCET TNP Portal Navigation",
+            "itemListElement": [
+              {
+                "@type": "SiteNavigationElement",
+                "position": 1,
+                "name": "Account Login",
+                "description": "Sign in to the TCET Training and Placement Portal for students, faculty, and recruiters.",
+                "url": "https://tcettnp.in/auth/login/"
+              },
+              {
+                "@type": "SiteNavigationElement",
+                "position": 2,
+                "name": "Student Placement Portal",
+                "description": "Student placement drives, registrations, and interview updates.",
+                "url": "https://tcettnp.in/"
+              },
+              {
+                "@type": "SiteNavigationElement",
+                "position": 3,
+                "name": "Internship Drives",
+                "description": "Explore industry internship opportunities and summer training programmes.",
+                "url": "https://tcettnp.in/"
+              },
+              {
+                "@type": "SiteNavigationElement",
+                "position": 4,
+                "name": "Training Programmes & Notifications",
+                "description": "Skill development sessions, company notices, and placement circulars.",
+                "url": "https://tcettnp.in/"
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const shadowHost = document.querySelector("#loom-companion-mv3");
@@ -17,6 +117,13 @@
     </script>
   </head>
   <body>
+    <noscript>
+      <div style="padding: 20px; font-family: sans-serif; text-align: center;">
+        <h1>TCET Training &amp; Placement Cell (TNP)</h1>
+        <p>Official Placement and Internship Portal of Thakur College of Engineering and Technology (TCET), Mumbai.</p>
+        <p><a href="/auth/login/">Click here to Login</a></p>
+      </div>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
