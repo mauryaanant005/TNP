@@ -52,9 +52,15 @@ CLIENT_URL = os.getenv("CLIENT_URL", "http://localhost:5173")
 if IS_DEV:
     ALLOWED_HOSTS = ["localhost", "127.0.0.1", os.getenv("CURRENT_HOST", "172.30.10.5")]
 else:
-    # e.g. "api.yourproject.example.com" - Traefik forwards the original
-    # Host header, so this must match the public api hostname(s).
-    ALLOWED_HOSTS = require_env("DJANGO_ALLOWED_HOSTS").split(",")
+    from urllib.parse import urlparse
+    _hosts = [h.strip() for h in require_env("DJANGO_ALLOWED_HOSTS").split(",") if h.strip()]
+    for _local in ("localhost", "127.0.0.1"):
+        if _local not in _hosts:
+            _hosts.append(_local)
+    _client_h = urlparse(CLIENT_URL).netloc.split(":")[0] if "://" in CLIENT_URL else CLIENT_URL.split(":")[0]
+    if _client_h and _client_h not in _hosts:
+        _hosts.append(_client_h)
+    ALLOWED_HOSTS = _hosts
 
 
 # ---------------------------------
