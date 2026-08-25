@@ -10,6 +10,7 @@ import Home from "./pages/home";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import VerifyOTP from "./pages/auth/VerifyOTP";
 import ResetPassword from "./pages/auth/ResetPassword";
+import MobileDeviceWarning from "./components/MobileDeviceWarning";
 
 // Route Components
 import NotificationRoutes from "./routes/NotificationRoutes";
@@ -30,45 +31,58 @@ const PUBLIC_AUTH_PATHS = ["/forgot-password", "/verify-otp", "/reset-password"]
 const App = () => {
   const setUser = useSetAtom(authAtom);
   const setAuthStatus = useSetAtom(authStatusAtom);
+
   useEffect(() => {
     const onAuthenticate = async () => {
       const isPublicPath = PUBLIC_AUTH_PATHS.some((path) =>
         window.location.pathname.startsWith(path)
       );
 
-      if (getCookie("is_logged_in") !== "true") {
-        setAuthStatus("anonymous");
-        if (!isPublicPath) {
-          window.location.href = `${SERVER_URL}/auth/login/`;
+      try {
+        if (getCookie("is_logged_in") !== "true") {
+          setAuthStatus("anonymous");
+          if (!isPublicPath && window.location.pathname !== "/") {
+            window.location.replace(`${SERVER_URL}/auth/login/`);
+          }
+          return;
         }
-        return;
-      }
 
-      const res = await apiFetch("/api/", {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "X-CSRFToken": getCookie("csrftoken") || "",
-        },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data);
-        // Set last: RequireRole reads both atoms, and flipping the status
-        // before the user is in place would let one render see
-        // "authenticated" with a null user.
-        setAuthStatus("authenticated");
-      } else {
+        const res = await apiFetch("/api/", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "X-CSRFToken": getCookie("csrftoken") || "",
+          },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data);
+          // Set last: RequireRole reads both atoms, and flipping the status
+          // before the user is in place would let one render see
+          // "authenticated" with a null user.
+          setAuthStatus("authenticated");
+        } else {
+          setAuthStatus("anonymous");
+          if (!isPublicPath && window.location.pathname !== "/") {
+            window.location.replace(`${SERVER_URL}/auth/login/`);
+          }
+        }
+      } catch (err) {
+        console.error("Auth check failed:", err);
         setAuthStatus("anonymous");
-        if (!isPublicPath) {
-          window.open(`${SERVER_URL}/auth/login/`, "_self");
+        if (!isPublicPath && window.location.pathname !== "/") {
+          window.location.replace(`${SERVER_URL}/auth/login/`);
         }
       }
     };
+
     onAuthenticate();
-  }, []);
+  }, [setUser, setAuthStatus]);
+
   return (
     <QueryClientProvider client={queryClient}>
+      <MobileDeviceWarning />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -91,5 +105,4 @@ const App = () => {
   );
 };
 
-export default App;
-// force rebuild// cache bust 2
+export default App;

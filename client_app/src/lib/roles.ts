@@ -41,7 +41,7 @@ export const ROLE_GROUPS = {
 
 // Where each role goes when it lands on "/" — and where an unauthorised user
 // is sent instead of being shown a blank 403.
-const ROLE_HOME: Partial<Record<Role, string>> = {
+const ROLE_HOME: Record<Role, string> = {
   student: "/student",
   faculty: "/faculty_coordinator",
   department_coordinator: "/department_coordinator",
@@ -51,13 +51,13 @@ const ROLE_HOME: Partial<Record<Role, string>> = {
   training_officer: "/training_officer",
   internship_officer: "/internship_officer",
   placement_officer: "/placement_officer",
+  system_admin: "/admin/",
 };
 
-/** The landing route for a role. Falls back to "/" for an unmapped role
- *  (system_admin included — admins use Django admin, not a portal dashboard). */
+/** The landing route for a role. Falls back to "/student" if unmapped. */
 export function homePathForRole(role?: string | null): string {
   if (!role) return "/";
-  return ROLE_HOME[role as Role] ?? "/";
+  return ROLE_HOME[role as Role] ?? "/student";
 }
 
 export function roleIsAllowed(role: string | undefined | null, allowed: readonly string[]): boolean {
