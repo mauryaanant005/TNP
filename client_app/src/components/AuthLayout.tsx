@@ -24,20 +24,21 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-x-hidden font-sans select-none bg-[#0c1e38]">
       {/* 1. TCET Campus Background Image */}
       <div
-        className="fixed inset-0 z-0 bg-cover bg-left sm:bg-center bg-no-repeat"
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url(${CampusBg})`,
           imageRendering: "crisp-edges",
+          filter: "brightness(1.03) contrast(1.06) saturate(1.12)",
         }}
       />
 
-      {/* 2. Professional Navy Scrim for 100% Left Text Legibility */}
+      {/* 2. Refined Crystal-Clear Scrim for Sunlight & Text Legibility */}
       <div
         className="fixed inset-0 z-0 pointer-events-none"
         style={{
           background: `
-            linear-gradient(90deg, rgba(10, 25, 50, 0.90) 0%, rgba(15, 40, 75, 0.75) 45%, rgba(10, 28, 55, 0.45) 70%, rgba(10, 25, 50, 0.70) 100%),
-            linear-gradient(180deg, rgba(10, 25, 50, 0.30) 0%, rgba(15, 35, 65, 0.15) 50%, rgba(8, 20, 40, 0.80) 100%)
+            linear-gradient(90deg, rgba(8, 20, 42, 0.65) 0%, rgba(10, 25, 55, 0.40) 38%, rgba(10, 25, 55, 0.10) 65%, rgba(8, 20, 42, 0.35) 100%),
+            linear-gradient(180deg, rgba(10, 20, 40, 0.20) 0%, rgba(10, 20, 40, 0.0) 40%, rgba(8, 16, 32, 0.50) 100%)
           `,
         }}
       />
