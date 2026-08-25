@@ -1,18 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, Link } from "react-router";
-import {
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Box,
-  CircularProgress,
-  Alert,
-} from "@mui/material";
-import { ShieldCheck, RotateCcw, ArrowLeft } from "lucide-react";
+import { ShieldCheck, RotateCcw, ArrowLeft, AlertCircle } from "lucide-react";
 import { api } from "@/lib/api";
 import toast from "react-hot-toast";
-import Logo from "@/assets/tcet_logo_2.png";
+import { AuthLayout } from "@/components/AuthLayout";
 
 const VerifyOTP = () => {
   const navigate = useNavigate();
@@ -94,12 +85,16 @@ const VerifyOTP = () => {
     setLoading(true);
 
     try {
-      const response = await api.post("/auth/api/password_reset/verify_otp/", {
-        email,
-        otp: fullOtp,
-      }, {
-        withCredentials: true,
-      });
+      const response = await api.post(
+        "/auth/api/password_reset/verify_otp/",
+        {
+          email,
+          otp: fullOtp,
+        },
+        {
+          withCredentials: true,
+        }
+      );
 
       const { reset_token } = response.data;
       toast.success("OTP verified successfully!");
@@ -123,9 +118,13 @@ const VerifyOTP = () => {
     setResending(true);
 
     try {
-      const response = await api.post("/auth/api/password_reset/resend_otp/", { email }, {
-        withCredentials: true,
-      });
+      const response = await api.post(
+        "/auth/api/password_reset/resend_otp/",
+        { email },
+        {
+          withCredentials: true,
+        }
+      );
 
       toast.success("New OTP code sent!");
       setOtpValues(["", "", "", "", "", ""]);
@@ -141,170 +140,95 @@ const VerifyOTP = () => {
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#f4f6f9",
-        px: 2,
-      }}
+    <AuthLayout
+      leftTitle="Security Check"
+      leftSubtitle="Enter the 6-digit OTP verification code sent to your email to continue."
+      badgeText="Identity Verification"
+      cardTitle="Verify Your Identity"
+      cardSubtitle={`Sent to ${email}`}
     >
-      <Card
-        sx={{
-          width: "100%",
-          maxWidth: 480,
-          borderRadius: 3,
-          boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
-          overflow: "hidden",
-        }}
-      >
-        <Box
-          sx={{
-            backgroundColor: "#153f74",
-            py: 3,
-            px: 4,
-            textAlign: "center",
-            color: "white",
-          }}
+      {errorMsg && (
+        <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />
+          <span>{errorMsg}</span>
+        </div>
+      )}
+
+      <form onSubmit={handleVerify} className="space-y-4">
+        <p className="text-xs text-slate-600 text-center font-medium">
+          Enter the 6-digit verification code:
+        </p>
+
+        {/* 6-digit OTP input boxes */}
+        <div className="flex justify-between gap-2 py-1">
+          {otpValues.map((val, idx) => (
+            <input
+              key={idx}
+              ref={(el) => (inputRefs.current[idx] = el)}
+              type="text"
+              inputMode="numeric"
+              maxLength={1}
+              value={val}
+              onChange={(e) => handleInputChange(idx, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(idx, e)}
+              onPaste={handlePaste}
+              className="h-12 w-11 sm:h-14 sm:w-12 text-center text-lg sm:text-xl font-extrabold rounded-xl border-2 border-slate-200 bg-slate-50/70 text-slate-800 outline-none transition focus:border-[#153f74] focus:bg-white focus:ring-2 focus:ring-[#153f74]/20"
+            />
+          ))}
+        </div>
+
+        {/* Countdown & Resend */}
+        <div className="flex items-center justify-between rounded-xl bg-slate-50 border border-slate-200/80 p-3 text-xs">
+          <span className="text-slate-600">
+            Resend in:{" "}
+            <strong className={timeLeft > 0 ? "text-[#153f74]" : "text-rose-600"}>
+              {formatTime(timeLeft)}
+            </strong>
+          </span>
+
+          <button
+            id="resend-otp-btn"
+            type="button"
+            disabled={timeLeft > 0 || resending}
+            onClick={handleResend}
+            className="flex items-center gap-1 font-bold text-[#153f74] hover:underline disabled:text-slate-400 disabled:no-underline cursor-pointer"
+          >
+            {resending ? (
+              <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#153f74] border-t-transparent" />
+            ) : (
+              <RotateCcw className="h-3.5 w-3.5" />
+            )}
+            <span>{resending ? "Sending..." : "Resend OTP"}</span>
+          </button>
+        </div>
+
+        <button
+          id="verify-otp-btn"
+          type="submit"
+          disabled={loading || otpValues.join("").length !== 6}
+          className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#153f74] py-3 text-sm font-bold text-white shadow-md shadow-[#153f74]/20 transition hover:bg-[#0f2e55] active:scale-[0.99] disabled:opacity-60 cursor-pointer"
         >
-          <img src={Logo} alt="TCET Logo" style={{ height: 48, marginBottom: 8 }} />
-          <Typography variant="h5" fontWeight="bold">
-            Verify OTP Code
-          </Typography>
-          <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
-            Sent to {email}
-          </Typography>
-        </Box>
-
-        <CardContent sx={{ p: 4 }}>
-          {errorMsg && (
-            <Alert severity="error" sx={{ mb: 2.5, borderRadius: 2 }}>
-              {errorMsg}
-            </Alert>
+          {loading ? (
+            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+          ) : (
+            <ShieldCheck className="h-4 w-4" />
           )}
+          <span>{loading ? "Verifying..." : "Verify OTP"}</span>
+        </button>
+      </form>
 
-          <form onSubmit={handleVerify}>
-            <Typography variant="body2" color="textSecondary" mb={2} textAlign="center">
-              Enter the 6-digit verification code:
-            </Typography>
-
-            {/* 6-digit OTP input boxes */}
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 1,
-                mb: 3,
-              }}
-            >
-              {otpValues.map((val, idx) => (
-                <input
-                  key={idx}
-                  ref={(el) => (inputRefs.current[idx] = el)}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={val}
-                  onChange={(e) => handleInputChange(idx, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(idx, e)}
-                  onPaste={handlePaste}
-                  style={{
-                    width: "48px",
-                    height: "56px",
-                    fontSize: "24px",
-                    fontWeight: "bold",
-                    textAlign: "center",
-                    borderRadius: "8px",
-                    border: "2px solid #cbd5e1",
-                    outline: "none",
-                    transition: "border-color 0.2s",
-                  }}
-                  onFocus={(e) => (e.target.style.borderColor = "#153f74")}
-                  onBlur={(e) => (e.target.style.borderColor = "#cbd5e1")}
-                />
-              ))}
-            </Box>
-
-            {/* Live Countdown Timer & Resend */}
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 3,
-                p: 1.5,
-                backgroundColor: "#f8fafc",
-                borderRadius: 2,
-              }}
-            >
-              <Typography variant="body2" color="textSecondary">
-                Resend OTP in:{" "}
-                <Box
-                  component="span"
-                  fontWeight="bold"
-                  color={timeLeft > 0 ? "#153f74" : "#ef4444"}
-                >
-                  {formatTime(timeLeft)}
-                </Box>
-              </Typography>
-
-              <Button
-                id="resend-otp-btn"
-                variant="text"
-                size="small"
-                disabled={timeLeft > 0 || resending}
-                onClick={handleResend}
-                startIcon={resending ? <CircularProgress size={14} color="inherit" /> : <RotateCcw size={16} />}
-                sx={{
-                  fontWeight: "bold",
-                  color: timeLeft === 0 ? "#153f74" : "#94a3b8",
-                }}
-              >
-                {resending ? "Sending..." : "Resend OTP"}
-              </Button>
-            </Box>
-
-            <Button
-              id="verify-otp-btn"
-              type="submit"
-              variant="contained"
-              fullWidth
-              disabled={loading || otpValues.join("").length !== 6}
-              sx={{
-                py: 1.4,
-                backgroundColor: "#153f74",
-                fontWeight: "bold",
-                fontSize: "1rem",
-                "&:hover": { backgroundColor: "#3152b8" },
-              }}
-              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <ShieldCheck size={20} />}
-            >
-              {loading ? "Verifying..." : "Verify OTP"}
-            </Button>
-          </form>
-
-          <Box mt={3} textAlign="center">
-            <Link
-              to="/forgot-password"
-              style={{
-                textDecoration: "none",
-                color: "#153f74",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                fontWeight: 500,
-                fontSize: "0.9rem",
-              }}
-            >
-              <ArrowLeft size={16} /> Change Email Address
-            </Link>
-          </Box>
-        </CardContent>
-      </Card>
-    </Box>
+      <div className="mt-6 text-center">
+        <Link
+          to="/forgot-password"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#153f74] hover:text-[#0f2e55] hover:underline transition"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          <span>Change Email Address</span>
+        </Link>
+      </div>
+    </AuthLayout>
   );
 };
 
 export default VerifyOTP;
+
