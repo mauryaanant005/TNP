@@ -22,7 +22,7 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://tcettnp.in/" />
-    <meta property="og:site_name" content="TCET TNP Official Portal" />
+    <meta property="og:site_name" content="TCET Training &amp; Placement Cell" />
     <meta property="og:title" content="TCET Training &amp; Placement Cell | Official Portal" />
     <meta property="og:description" content="Official Training &amp; Placement portal for Thakur College of Engineering and Technology (TCET). Access campus drives, internships, and recruiter details." />
     <meta property="og:image" content="https://tcettnp.in/tcet-logo.png" />
@@ -34,15 +34,31 @@
     <meta name="twitter:description" content="Official Training &amp; Placement portal for Thakur College of Engineering and Technology (TCET)." />
     <meta name="twitter:image" content="https://tcettnp.in/tcet-logo.png" />
 
-    <!-- Schema.org JSON-LD Structured Data for Google Sitelinks & Brand Entity -->
+    <!-- Schema.org JSON-LD Structured Data for Google Site Names & Sitelinks -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@graph": [
           {
+            "@type": "WebSite",
+            "@id": "https://tcettnp.in/#website",
+            "url": "https://tcettnp.in/",
+            "name": "TCET Training & Placement Cell",
+            "alternateName": [
+              "TCET Training and Placement Cell",
+              "TCET T&P Cell",
+              "TCET TNP",
+              "tcettnp.in"
+            ],
+            "publisher": {
+              "@id": "https://tcettnp.in/#organization"
+            },
+            "inLanguage": "en-US"
+          },
+          {
             "@type": "EducationalOrganization",
             "@id": "https://tcettnp.in/#organization",
-            "name": "TCET Training and Placement Cell",
+            "name": "TCET Training & Placement Cell",
             "alternateName": ["TCET TNP", "Thakur College TNP", "TCET Placement Cell", "TCET T&P"],
             "url": "https://tcettnp.in",
             "logo": {
@@ -56,17 +72,6 @@
               "name": "Thakur College of Engineering and Technology",
               "url": "https://www.tcetmumbai.in"
             }
-          },
-          {
-            "@type": "WebSite",
-            "@id": "https://tcettnp.in/#website",
-            "url": "https://tcettnp.in",
-            "name": "TCET Training & Placement Cell | Official Portal",
-            "alternateName": "TCET TNP Portal",
-            "publisher": {
-              "@id": "https://tcettnp.in/#organization"
-            },
-            "inLanguage": "en-US"
           },
           {
             "@type": "ItemList",
