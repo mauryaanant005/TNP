@@ -146,12 +146,12 @@ const ResetPassword = () => {
         <div>
           <label
             htmlFor="new-password-input"
-            className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+            className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1"
           >
             New Password
           </label>
           <div className="relative">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500">
               <Lock className="h-4 w-4" />
             </div>
             <input
@@ -162,12 +162,13 @@ const ResetPassword = () => {
               placeholder="Enter new password"
               required
               disabled={loading}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-10 pr-10 text-sm text-slate-800 placeholder-slate-400 transition focus:border-[#153f74] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#153f74]/20"
+              className="w-full rounded-xl border border-slate-300 bg-slate-50 py-2.5 pl-10 pr-10 text-sm font-medium text-slate-900 placeholder-slate-500 transition focus:border-[#153f74] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#153f74]/20"
+              style={{ backgroundColor: "#f8fafc", color: "#0f172a", borderColor: "#cbd5e1" }}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 hover:text-slate-700 cursor-pointer"
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -177,7 +178,7 @@ const ResetPassword = () => {
         {/* Password Strength Meter */}
         {password && (
           <div className="space-y-1 py-1">
-            <div className="flex justify-between text-[11px] font-semibold text-slate-500">
+            <div className="flex justify-between text-[11px] font-bold text-slate-700">
               <span>Password Strength</span>
               <span className={getStrengthColor().split(" ")[1]}>
                 {getStrengthLabel()}
@@ -196,12 +197,12 @@ const ResetPassword = () => {
         <div>
           <label
             htmlFor="confirm-password-input"
-            className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+            className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1"
           >
             Confirm Password
           </label>
           <div className="relative">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500">
               <Key className="h-4 w-4" />
             </div>
             <input
@@ -212,39 +213,43 @@ const ResetPassword = () => {
               placeholder="Confirm new password"
               required
               disabled={loading}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-10 pr-10 text-sm text-slate-800 placeholder-slate-400 transition focus:border-[#153f74] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#153f74]/20"
+              className="w-full rounded-xl border border-slate-300 bg-slate-50 py-2.5 pl-10 pr-10 text-sm font-medium text-slate-900 placeholder-slate-500 transition focus:border-[#153f74] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#153f74]/20"
+              style={{ backgroundColor: "#f8fafc", color: "#0f172a", borderColor: "#cbd5e1" }}
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 hover:text-slate-700 cursor-pointer"
             >
               {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
           {confirmPassword && confirmPassword !== password && (
-            <p className="mt-1 text-[11px] text-rose-600 font-medium">
+            <p className="mt-1 text-[11px] text-rose-600 font-bold">
               Passwords do not match
             </p>
           )}
         </div>
 
         {/* Requirements Checklist */}
-        <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
-          <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+        <div
+          className="rounded-xl border p-3"
+          style={{ backgroundColor: "#f8fafc", borderColor: "#e2e8f0" }}
+        >
+          <p className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">
             Password Requirements:
           </p>
           <div className="grid grid-cols-2 gap-1 text-[11px]">
-            <span className={`flex items-center gap-1 ${hasMinLength ? "text-emerald-700 font-semibold" : "text-slate-500"}`}>
+            <span className={`flex items-center gap-1 ${hasMinLength ? "text-emerald-700 font-bold" : "text-slate-600"}`}>
               {hasMinLength ? <Check className="h-3 w-3 text-emerald-600" /> : "•"} 8+ characters
             </span>
-            <span className={`flex items-center gap-1 ${hasUpper ? "text-emerald-700 font-semibold" : "text-slate-500"}`}>
+            <span className={`flex items-center gap-1 ${hasUpper ? "text-emerald-700 font-bold" : "text-slate-600"}`}>
               {hasUpper ? <Check className="h-3 w-3 text-emerald-600" /> : "•"} 1 Uppercase (A-Z)
             </span>
-            <span className={`flex items-center gap-1 ${hasLower ? "text-emerald-700 font-semibold" : "text-slate-500"}`}>
+            <span className={`flex items-center gap-1 ${hasLower ? "text-emerald-700 font-bold" : "text-slate-600"}`}>
               {hasLower ? <Check className="h-3 w-3 text-emerald-600" /> : "•"} 1 Lowercase (a-z)
             </span>
-            <span className={`flex items-center gap-1 ${hasNumber ? "text-emerald-700 font-semibold" : "text-slate-500"}`}>
+            <span className={`flex items-center gap-1 ${hasNumber ? "text-emerald-700 font-bold" : "text-slate-600"}`}>
               {hasNumber ? <Check className="h-3 w-3 text-emerald-600" /> : "•"} 1 Number (0-9)
             </span>
           </div>
@@ -255,6 +260,7 @@ const ResetPassword = () => {
           type="submit"
           disabled={loading || !meetsAllRequirements || password !== confirmPassword}
           className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl bg-[#153f74] py-3 text-sm font-bold text-white shadow-md shadow-[#153f74]/20 transition hover:bg-[#0f2e55] active:scale-[0.99] disabled:opacity-60 cursor-pointer"
+          style={{ backgroundColor: "#153f74", color: "#ffffff" }}
         >
           {loading ? (
             <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />

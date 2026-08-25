@@ -155,7 +155,7 @@ const VerifyOTP = () => {
       )}
 
       <form onSubmit={handleVerify} className="space-y-4">
-        <p className="text-xs text-slate-600 text-center font-medium">
+        <p className="text-xs text-slate-700 text-center font-bold">
           Enter the 6-digit verification code:
         </p>
 
@@ -172,14 +172,18 @@ const VerifyOTP = () => {
               onChange={(e) => handleInputChange(idx, e.target.value)}
               onKeyDown={(e) => handleKeyDown(idx, e)}
               onPaste={handlePaste}
-              className="h-12 w-11 sm:h-14 sm:w-12 text-center text-lg sm:text-xl font-extrabold rounded-xl border-2 border-slate-200 bg-slate-50/70 text-slate-800 outline-none transition focus:border-[#153f74] focus:bg-white focus:ring-2 focus:ring-[#153f74]/20"
+              className="h-12 w-11 sm:h-14 sm:w-12 text-center text-lg sm:text-xl font-extrabold rounded-xl border-2 border-slate-300 bg-slate-50 text-slate-900 outline-none transition focus:border-[#153f74] focus:bg-white focus:ring-2 focus:ring-[#153f74]/20"
+              style={{ backgroundColor: "#f8fafc", color: "#0f172a", borderColor: "#cbd5e1" }}
             />
           ))}
         </div>
 
         {/* Countdown & Resend */}
-        <div className="flex items-center justify-between rounded-xl bg-slate-50 border border-slate-200/80 p-3 text-xs">
-          <span className="text-slate-600">
+        <div
+          className="flex items-center justify-between rounded-xl border p-3 text-xs"
+          style={{ backgroundColor: "#f8fafc", borderColor: "#e2e8f0" }}
+        >
+          <span className="text-slate-700 font-medium">
             Resend in:{" "}
             <strong className={timeLeft > 0 ? "text-[#153f74]" : "text-rose-600"}>
               {formatTime(timeLeft)}
@@ -192,6 +196,7 @@ const VerifyOTP = () => {
             disabled={timeLeft > 0 || resending}
             onClick={handleResend}
             className="flex items-center gap-1 font-bold text-[#153f74] hover:underline disabled:text-slate-400 disabled:no-underline cursor-pointer"
+            style={{ color: timeLeft > 0 ? "#153f74" : "#dc2626" }}
           >
             {resending ? (
               <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#153f74] border-t-transparent" />
@@ -207,6 +212,7 @@ const VerifyOTP = () => {
           type="submit"
           disabled={loading || otpValues.join("").length !== 6}
           className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#153f74] py-3 text-sm font-bold text-white shadow-md shadow-[#153f74]/20 transition hover:bg-[#0f2e55] active:scale-[0.99] disabled:opacity-60 cursor-pointer"
+          style={{ backgroundColor: "#153f74", color: "#ffffff" }}
         >
           {loading ? (
             <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -220,7 +226,8 @@ const VerifyOTP = () => {
       <div className="mt-6 text-center">
         <Link
           to="/forgot-password"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#153f74] hover:text-[#0f2e55] hover:underline transition"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#153f74] hover:text-[#0f2e55] hover:underline transition"
+          style={{ color: "#153f74" }}
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           <span>Change Email Address</span>
