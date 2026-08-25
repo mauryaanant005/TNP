@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Monitor, Smartphone, ChevronDown, ChevronUp, X, ExternalLink, CheckCircle2 } from "lucide-react";
+import { Monitor, Smartphone, ChevronDown, ChevronUp, X, CheckCircle2 } from "lucide-react";
 import { useDeviceDetect } from "@/hooks/useDeviceDetect";
 
 const SESSION_STORAGE_KEY = "tcet_mobile_notice_seen";
