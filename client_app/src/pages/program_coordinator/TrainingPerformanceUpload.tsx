@@ -134,7 +134,12 @@ const TrainingPerformanceUpload: React.FC = () => {
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        let errMsg = `HTTP error! Status: ${response.status}`;
+        try {
+          const errData = await response.json();
+          errMsg = errData.error || errData.detail || JSON.stringify(errData);
+        } catch (_) {}
+        throw new Error(errMsg);
       }
 
       const data = await response.json();
@@ -143,9 +148,7 @@ const TrainingPerformanceUpload: React.FC = () => {
       setFile(null);
     } catch (err: any) {
       console.error(err);
-      if (err.response)
-        setError(err.response.data.error || JSON.stringify(err.response.data));
-      else setError("Failed to upload file. Check if backend is running.");
+      setError(err.message || "Failed to upload file. Check if backend is running.");
     } finally {
       setLoading(false);
     }

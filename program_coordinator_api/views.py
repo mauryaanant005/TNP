@@ -128,6 +128,11 @@ class UploadTrainingPerformanceView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        semester = str(semester).strip()
+        if semester.lower().startswith("sem ") and not semester.lower().startswith("semester "):
+            sem_num = semester.split()[-1]
+            semester = f"Semester {sem_num}"
+
         training_type = str(training_type).strip()
         if training_type not in TRAINING_CONFIG:
             return Response(

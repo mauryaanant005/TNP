@@ -42,7 +42,7 @@ class ROLES:
     TRAINING_DELIVERY = ("faculty", "program_coordinator")
 
     #: Owns training data across programs.
-    TRAINING_ADMIN = ("program_coordinator", "training_officer")
+    TRAINING_ADMIN = ("program_coordinator", "training_officer", "faculty")
 
     #: May pull the training template.
     TRAINING_ALL = ("faculty", "program_coordinator", "training_officer")
