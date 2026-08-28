@@ -29,7 +29,8 @@ from rest_framework.permissions import IsAuthenticated
 from base.permissions import ROLES, DepartmentScopedMixin, HasRole, scope_queryset_to_department
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from base.models import FacultyResponsibility
+from datetime import datetime
+from base.models import FacultyResponsibility, User
 from base.error_utils import safe_error_payload
 from student.models import (
     Student,
@@ -60,6 +61,18 @@ BASE_HEADERS = ["UID", "Full Name", "Branch"]
 
 def _normalize_header(h):
     return str(h).strip() if h else ""
+
+
+def _split_department_and_division(value):
+    cleaned = str(value).strip() if value else ""
+    if not cleaned:
+        return "", "A"
+    if "-" not in cleaned:
+        return cleaned, "A"
+    head, _, tail = cleaned.rpartition("-")
+    if head and 1 <= len(tail) <= 2:
+        return head, tail.upper()
+    return cleaned, "A"
 
 
 @csrf_exempt
@@ -223,21 +236,76 @@ class UploadTrainingPerformanceView(APIView):
                         }
                     )
 
-            uploader_id = request.user.id if request.user.is_authenticated else None
+            parsed_date = None
+            if date:
+                try:
+                    date_str = str(date).strip()
+                    for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%Y/%m/%d"):
+                        try:
+                            parsed_date = datetime.strptime(date_str, fmt).date()
+                            break
+                        except ValueError:
+                            pass
+                except Exception:
+                    parsed_date = None
+
+            uploader = request.user if request.user.is_authenticated else None
 
             with transaction.atomic():
                 for item in parsed_rows:
-                    student_obj, student_created = Student.objects.update_or_create(
-                        uid=item["uid"],
-                        defaults={
-                            "full_name": item["full_name"],
-                            "branch_div": item["branch_div"],
-                        },
-                    )
+                    uid = item["uid"]
+                    full_name = item["full_name"]
+                    branch_div = item["branch_div"]
+                    dept, div = _split_department_and_division(branch_div)
+
+                    student_obj = Student.objects.filter(uid=uid).first()
+                    student_created = False
+
+                    if student_obj:
+                        updated_fields = []
+                        if dept and student_obj.department != dept:
+                            student_obj.department = dept
+                            updated_fields.append("department")
+                        if div and student_obj.division != div:
+                            student_obj.division = div
+                            updated_fields.append("division")
+                        if updated_fields:
+                            student_obj.save(update_fields=updated_fields)
+
+                        if student_obj.user:
+                            if full_name and student_obj.user.full_name != full_name:
+                                student_obj.user.full_name = full_name
+                                student_obj.user.save(update_fields=["full_name"])
+                        else:
+                            clean_uid = uid.lower().replace("-", "").replace("&", "")
+                            user, _ = User.objects.get_or_create(
+                                email=f"{clean_uid}@tcet.in",
+                                defaults={"full_name": full_name, "role": "student"},
+                            )
+                            student_obj.user = user
+                            student_obj.save(update_fields=["user"])
+                    else:
+                        clean_uid = uid.lower().replace("-", "").replace("&", "")
+                        user, _ = User.objects.get_or_create(
+                            email=f"{clean_uid}@tcet.in",
+                            defaults={"full_name": full_name, "role": "student"},
+                        )
+                        student_obj = Student.objects.create(
+                            user=user,
+                            uid=uid,
+                            department=dept or "IT",
+                            division=div or "A",
+                            academic_year="TE",
+                        )
+                        student_created = True
+
                     created_student += int(student_created)
                     updated_student += int(not student_created)
 
-                    tp_defaults = {"uploaded_by_id": uploader_id, "date": date}
+                    tp_defaults = {"uploaded_by": uploader}
+                    if parsed_date:
+                        tp_defaults["date"] = parsed_date
+
                     tp_obj, created_flag = TrainingPerformance.objects.update_or_create(
                         student=student_obj,
                         training_type=training_type,
