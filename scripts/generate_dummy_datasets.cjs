@@ -589,4 +589,256 @@ const internPath = path.join(internOfficerDir, "Internship_Officer_Test_Drives.x
 XLSX.writeFile(internWb, internPath);
 console.log(`[CREATED] ${internPath} (${internRows.length} drives)`);
 
-console.log("\n--- EXCEL DATASETS GENERATION FINISHED SUCCESSFULLY ---");
+// -----------------------------------------------------------------------------
+// 5. Training Attendance Multi-Program Dataset (Training_Attendance_Dummy.xlsx)
+// Programs: ACT Technical (10), ACT Aptitude (8), SDP (6), Coding Contest (5)
+// -----------------------------------------------------------------------------
+const programConfigs = [
+  { name: "ACT Technical", sessions: 10, startDate: "2025-07-05" },
+  { name: "ACT Aptitude", sessions: 8, startDate: "2025-07-20" },
+  { name: "SDP", sessions: 6, startDate: "2025-08-10" },
+  { name: "Coding Contest", sessions: 5, startDate: "2025-08-25" },
+];
+
+const attSummaryHeaders = [
+  "UID",
+  "Full Name",
+  "Branch",
+  "Batch",
+  "Program Name",
+  "Session",
+  "Attendance Status",
+  "Late Status",
+  "Date",
+];
+
+const attSummaryRows = [];
+const studentAggRows = [];
+const batchAggMap = {};
+
+masterStudents.forEach((s) => {
+  const progPctMap = {};
+
+  programConfigs.forEach((prog) => {
+    const numSessions = prog.sessions;
+    const targetPresent = Math.max(1, Math.min(numSessions, Math.round((s.attendance / 100.0) * numSessions)));
+    let presentCount = 0;
+
+    for (let sessIdx = 1; sessIdx <= numSessions; sessIdx++) {
+      const sessName = `Session ${sessIdx}`;
+      // Deterministic hash based on student and session
+      const charSum = s.uid.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+      const seedHash = (charSum + sessIdx * 7 + numSessions * 13) % numSessions;
+      const isPresent = seedHash < targetPresent ? "Present" : "Absent";
+      const isLate = isPresent === "Present" && seedHash % 6 === 0 ? "Late" : "Not Late";
+
+      if (isPresent === "Present") presentCount++;
+
+      // Session date calculation
+      const sessDate = new Date(prog.startDate);
+      sessDate.setDate(sessDate.getDate() + (sessIdx - 1) * 3);
+      const dateStr = sessDate.toISOString().split("T")[0];
+
+      attSummaryRows.push([
+        s.uid,
+        s.fullName,
+        s.branch,
+        s.batch,
+        prog.name,
+        sessName,
+        isPresent,
+        isLate,
+        dateStr,
+      ]);
+
+      // Aggregate for batch summary
+      const aggKey = `${s.batch}__${prog.name}__${s.batch}`;
+      if (!batchAggMap[aggKey]) {
+        batchAggMap[aggKey] = {
+          batch: s.batch,
+          program: prog.name,
+          year: s.batch,
+          students: new Set(),
+          present: 0,
+          absent: 0,
+          late: 0,
+        };
+      }
+      batchAggMap[aggKey].students.add(s.uid);
+      if (isPresent === "Present") batchAggMap[aggKey].present++;
+      else batchAggMap[aggKey].absent++;
+      if (isLate === "Late") batchAggMap[aggKey].late++;
+    }
+
+    progPctMap[prog.name] = Number(((presentCount / numSessions) * 100).toFixed(1));
+  });
+
+  const overallAtt = Number(
+    (
+      (progPctMap["ACT Technical"] * 10 +
+        progPctMap["ACT Aptitude"] * 8 +
+        progPctMap["SDP"] * 6 +
+        progPctMap["Coding Contest"] * 5) /
+      29
+    ).toFixed(1)
+  );
+
+  const semStr = s.batch === "2028" ? "Semester 5" : s.batch === "2027" ? "Semester 7" : "Semester 8";
+
+  studentAggRows.push([
+    s.uid,
+    s.fullName,
+    s.branch,
+    s.batch,
+    s.academicYear,
+    semStr,
+    progPctMap["ACT Technical"],
+    progPctMap["ACT Aptitude"],
+    progPctMap["SDP"],
+    progPctMap["Coding Contest"],
+    overallAtt,
+  ]);
+});
+
+// Batch Program Summary rows
+const batchSummaryHeaders = [
+  "Batch",
+  "Program Name",
+  "Year",
+  "Total Students",
+  "Total Present",
+  "Total Absent",
+  "Total Late",
+  "Average Attendance (%)",
+];
+
+const batchSummaryRows = Object.values(batchAggMap).map((b) => {
+  const totalSessions = b.present + b.absent;
+  const avgPct = totalSessions > 0 ? Number(((b.present / totalSessions) * 100).toFixed(1)) : 0;
+  return [
+    b.batch,
+    b.program,
+    b.year,
+    b.students.size,
+    b.present,
+    b.absent,
+    b.late,
+    avgPct,
+  ];
+});
+
+// Department Coordinator format sheet (uid, semester, attendance)
+const deptAttHeaders = ["uid", "semester", "attendance"];
+const deptAttRows = masterStudents.map((s) => {
+  const semStr = s.batch === "2028" ? "Semester 5" : s.batch === "2027" ? "Semester 7" : "Semester 8";
+  return [s.uid, semStr, s.attendance];
+});
+
+// Create Training_Attendance_Dummy.xlsx workbook
+const attWb = XLSX.utils.book_new();
+
+// Sheet 1: Session Attendance
+const attWs1 = XLSX.utils.aoa_to_sheet([attSummaryHeaders, ...attSummaryRows]);
+formatSheet(attWs1, [18, 22, 14, 10, 18, 14, 18, 14, 14]);
+XLSX.utils.book_append_sheet(attWb, attWs1, "Session_Attendance");
+
+// Sheet 2: Student Aggregate Attendance
+const studentAggHeaders = [
+  "UID",
+  "Full Name",
+  "Branch",
+  "Batch",
+  "Academic Year",
+  "Semester",
+  "ACT Technical (%)",
+  "ACT Aptitude (%)",
+  "SDP (%)",
+  "Coding Contest (%)",
+  "Overall Training Att (%)",
+];
+const attWs2 = XLSX.utils.aoa_to_sheet([studentAggHeaders, ...studentAggRows]);
+formatSheet(attWs2, [18, 22, 14, 10, 14, 14, 18, 18, 12, 18, 22]);
+XLSX.utils.book_append_sheet(attWb, attWs2, "Student_Aggregate");
+
+// Sheet 3: Batch Program Summary
+const attWs3 = XLSX.utils.aoa_to_sheet([batchSummaryHeaders, ...batchSummaryRows]);
+formatSheet(attWs3, [10, 18, 10, 16, 14, 14, 14, 22]);
+XLSX.utils.book_append_sheet(attWb, attWs3, "Batch_Summary");
+
+// Sheet 4: Department Coordinator Format
+const attWs4 = XLSX.utils.aoa_to_sheet([deptAttHeaders, ...deptAttRows]);
+formatSheet(attWs4, [18, 16, 16]);
+XLSX.utils.book_append_sheet(attWb, attWs4, "Dept_Attendance_Format");
+
+const attPath = path.join(progCoordDir, "Training_Attendance_Dummy.xlsx");
+XLSX.writeFile(attWb, attPath);
+console.log(`[CREATED] ${attPath} (${attSummaryRows.length} session records across 4 sheets)`);
+
+// -----------------------------------------------------------------------------
+// 6. Generate Training_Attendance_Dataset_README.md
+// -----------------------------------------------------------------------------
+const readmeContent = `# TCET Training Attendance & Performance Dataset Documentation
+
+## Overview
+This dummy dataset provides comprehensive, mathematically consistent training attendance and assessment performance data for **25 master students** across the Training & Placement (T&P) automation portal.
+
+The students and identifiers strictly align with the existing **Technical**, **Aptitude**, **Coding**, and **Internship** dummy datasets to enable seamless cross-module student tracing and analytics.
+
+---
+
+## 1. Master Students Cohort Summary
+
+| Total Students | Batches Covered | Academic Years | Departments Covered | Total Sessions |
+| :--- | :--- | :--- | :--- | :--- |
+| **25 Students** | **2028** (18), **2027** (5), **2026** (2) | **TE** (18), **BE** (7) | IT, CMPN, COMP, AI&DS, AI&ML, EXTC, MECH | **29 Sessions / Student** (725 Total) |
+
+---
+
+## 2. Training Programs & Session Structure
+
+| Program Name | Number of Sessions | Schedule Cadence | Semester Tag | Target Focus |
+| :--- | :--- | :--- | :--- | :--- |
+| **ACT Technical** | **10 Sessions** (\`Session 1\` to \`Session 10\`) | Bi-weekly | Semester 5/7/8 | OS, DBMS, DSA, CN, OOPS |
+| **ACT Aptitude** | **8 Sessions** (\`Session 1\` to \`Session 8\`) | Weekly | Semester 5/7/8 | Arithmetic, Logical, Verbal, Probability |
+| **SDP** (Skill Dev Program) | **6 Sessions** (\`Session 1\` to \`Session 6\`) | Weekly | Semester 5/7/8 | Soft Skills, Communication & Domain Projects |
+| **Coding Contest** | **5 Sessions** (\`Session 1\` to \`Session 5\`) | Bi-weekly | Semester 5/7/8 | LeetCode / Competitive Programming |
+
+---
+
+## 3. Mathematical Consistency & Attendance Distribution
+
+The session records are derived from the student's holistic performance profile:
+* **Top Performers (90–100% attendance):** E.g., Aarav Sharma (\`24-IT-A01-28\`, 92.5%), Sneha Nair (\`22-IT-A10-26\`, 94.0%), Kabir Malhotra (\`24-AI&DSA01-28\`, 91.5%).
+* **Good Performers (80–90% attendance):** E.g., Ananya Patel (\`24-IT-A02-28\`, 88.0%), Aditya Deshmukh (\`23-IT-A07-27\`, 85.5%), Diya Kapoor (\`23-CMPNA04-27\`, 86.0%).
+* **Average Performers (70–80% attendance):** E.g., Rohan Gupta (\`24-IT-A03-28\`, 78.5%), Priya Verma (\`24-IT-A04-28\`, 81.0%), Yash Mehta (\`23-IT-B09-27\`, 80.0%).
+* **Low / KT Performers (55–70% attendance):** E.g., Neha Joshi (\`24-IT-B06-28\`, 68.0%), Aryan Chopda (\`24-AI&DSB03-28\`, 65.0%), Shruti Gaikwad (\`24-MECHA02-28\`, 64.0%).
+
+For every session and batch:
+$$\\text{Total Students} = \\text{Total Present} + \\text{Total Absent}$$
+$$\\text{Attendance \\%} = \\left( \\frac{\\text{Total Present}}{\\text{Total Sessions}} \\right) \\times 100$$
+
+---
+
+## 4. Worksheets Inside \`Training_Attendance_Dummy.xlsx\`
+
+1. **\`Session_Attendance\`**: Granular session-level log containing UID, Full Name, Branch, Batch, Program Name, Session, Status (\`Present\` / \`Absent\`), Late Status (\`Late\` / \`Not Late\`), and Date.
+2. **\`Student_Aggregate\`**: Per-student summary displaying percentage attendance across all 4 training programs and the combined training average.
+3. **\`Batch_Summary\`**: Program Coordinator summary displaying Batch, Program Name, Year, Total Students, Total Present, Total Absent, Total Late, and Average Attendance %.
+4. **\`Dept_Attendance_Format\`**: Direct import format for Department Coordinator (\`uid\`, \`semester\`, \`attendance\`).
+
+---
+
+## 5. Program Coordinator Module Verification Steps
+
+1. Navigate to **Program Coordinator** $\\rightarrow$ **Attendance & Marks** (\`/program_coordinator/attendance-and-marks\`).
+2. Select **Program Name** (e.g. \`ACT Technical\`, \`ACT Aptitude\`, \`SDP\`, \`Coding Contest\`).
+3. Observe the calculated table dynamically render batches \`2028\`, \`2027\`, and \`2026\` with session columns and exact Present/Absent/Late counts.
+4. Click **DOWNLOAD EXCEL** to export the structured attendance report.
+`;
+
+const readmePath = path.join(progCoordDir, "Training_Attendance_Dataset_README.md");
+fs.writeFileSync(readmePath, readmeContent);
+console.log(`[CREATED] ${readmePath}`);
+
+console.log("\n--- EXCEL DATASETS & ATTENDANCE GENERATION FINISHED SUCCESSFULLY ---");
+
