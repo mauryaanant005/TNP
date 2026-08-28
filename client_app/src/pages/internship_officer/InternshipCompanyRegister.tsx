@@ -1,6 +1,6 @@
 import { apiFetch } from "@/lib/api";
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   TextField,
   Checkbox,
@@ -13,9 +13,39 @@ import {
   Container,
   Paper,
   Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip,
+  CircularProgress,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
+import { Copy, ExternalLink, RefreshCw } from "lucide-react";
 import { getCookie } from "@/utils";
 import toast from "react-hot-toast";
+
+interface RegisteredCompanyItem {
+  company: {
+    id: string;
+    name: string;
+    batch?: string;
+    domain?: string;
+    min_cgpa?: number;
+    min_attendance?: number;
+    is_kt?: boolean;
+    departments?: string;
+  };
+  offers: Array<{
+    id: string;
+    position: string;
+    stipend: number;
+    type: string;
+  }>;
+}
 
 const InternshipCompanyRegister = () => {
   interface FormDataType {
@@ -47,6 +77,32 @@ const InternshipCompanyRegister = () => {
     jobOffers: [{ type: "", stipend: "", position: "" }],
     batch: "",
   });
+
+  const [registeredCompanies, setRegisteredCompanies] = useState<
+    RegisteredCompanyItem[]
+  >([]);
+  const [loadingCompanies, setLoadingCompanies] = useState(false);
+
+  const fetchRegisteredCompanies = async () => {
+    setLoadingCompanies(true);
+    try {
+      const response = await apiFetch("/api/internship/company/", {
+        credentials: "include",
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setRegisteredCompanies(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch registered companies", err);
+    } finally {
+      setLoadingCompanies(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRegisteredCompanies();
+  }, []);
 
   const departmentOptions = [
     "CS",
@@ -117,26 +173,23 @@ const InternshipCompanyRegister = () => {
     const payload = {
       company: {
         name: formData.name,
-        min_tenth_marks: parseFloat(formData.min_tenth_marks),
-        min_higher_secondary_marks: parseFloat(
-          formData.min_higher_secondary_marks
-        ),
-        min_cgpa: parseFloat(formData.min_cgpa),
-        min_attendance: parseFloat(formData.min_attendance),
+        min_tenth_marks: parseFloat(formData.min_tenth_marks) || 0,
+        min_higher_secondary_marks:
+          parseFloat(formData.min_higher_secondary_marks) || 0,
+        min_cgpa: parseFloat(formData.min_cgpa) || 0,
+        min_attendance: parseFloat(formData.min_attendance) || 0,
         is_kt: formData.is_kt,
         is_backLog: formData.is_backLog,
         domain: formData.domain,
         departments: formData.selectedDepartments.join(","),
-        batch: formData.batch, // Added batch field to payload
+        batch: formData.batch,
       },
       offers: formData.jobOffers.map((offer) => ({
         type: offer.type,
-        stipend: parseFloat(offer.stipend),
+        stipend: parseFloat(offer.stipend) || 0,
         position: offer.position,
       })),
     };
-
-
 
     try {
       const csrfToken = getCookie("csrftoken");
@@ -151,13 +204,33 @@ const InternshipCompanyRegister = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to register company");
+        let errMsg = "Failed to register company";
+        try {
+          const errData = await response.json();
+          errMsg = errData.error || errData.message || JSON.stringify(errData);
+        } catch (_) {}
+        throw new Error(errMsg);
       }
 
-      toast.success("Company registered successfully:");
-    } catch (error) {
+      toast.success("Company drive registered successfully!");
+      setFormData({
+        name: "",
+        min_tenth_marks: "",
+        min_higher_secondary_marks: "",
+        min_cgpa: "",
+        min_attendance: "",
+        is_kt: false,
+        is_backLog: false,
+        domain: "core",
+        Departments: "all",
+        selectedDepartments: [],
+        jobOffers: [{ type: "", stipend: "", position: "" }],
+        batch: "",
+      });
+      fetchRegisteredCompanies();
+    } catch (error: any) {
       console.error("Error registering company:", error);
-      alert("Error registering company. Check console for details.");
+      toast.error(error.message || "Error registering company.");
     }
   };
 
@@ -372,6 +445,166 @@ const InternshipCompanyRegister = () => {
               </Grid>
             </Grid>
           </Box>
+        </Paper>
+
+        {/* Active Registered Drives Table */}
+        <Paper elevation={3} sx={{ p: 4, mt: 5, mb: 8 }}>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={2}
+          >
+            <Box>
+              <Typography variant="h6" fontWeight="bold">
+                Registered Internship Drives (
+                {registeredCompanies.length} Active)
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                All currently active corporate internship drives and openings
+              </Typography>
+            </Box>
+            <Button
+              startIcon={<RefreshCw size={16} />}
+              variant="outlined"
+              size="small"
+              onClick={fetchRegisteredCompanies}
+              disabled={loadingCompanies}
+            >
+              Refresh
+            </Button>
+          </Box>
+
+          {loadingCompanies ? (
+            <Box display="flex" justifyContent="center" py={4}>
+              <CircularProgress size={32} />
+            </Box>
+          ) : registeredCompanies.length === 0 ? (
+            <Box textAlign="center" py={4} color="text.secondary">
+              <Typography variant="body1">
+                No internship drives registered yet.
+              </Typography>
+              <Typography variant="caption">
+                Use the form above to register and post a new company drive.
+              </Typography>
+            </Box>
+          ) : (
+            <TableContainer>
+              <Table size="small">
+                <TableHead sx={{ backgroundColor: "#f5f7fa" }}>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: "bold" }}>
+                      Company Name
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Batch</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Domain</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Min CGPA</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Min Att.</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>
+                      Departments
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>
+                      Positions & Stipend
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>
+                      Student Link
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {registeredCompanies.map((item, idx) => {
+                    const comp = item.company;
+                    const offers = item.offers || [];
+                    const driveUrl = `/student/internship/registration/${comp.id}`;
+                    return (
+                      <TableRow key={comp.id || idx} hover>
+                        <TableCell sx={{ fontWeight: "600" }}>
+                          {comp.name}
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={comp.batch || "All"}
+                            size="small"
+                            variant="outlined"
+                            color="primary"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          {comp.domain?.toUpperCase() || "CORE"}
+                        </TableCell>
+                        <TableCell>{comp.min_cgpa ?? "N/A"}</TableCell>
+                        <TableCell>
+                          {comp.min_attendance
+                            ? `${comp.min_attendance}%`
+                            : "N/A"}
+                        </TableCell>
+                        <TableCell>
+                          <Typography
+                            variant="caption"
+                            sx={{ maxWidth: 150, display: "block" }}
+                          >
+                            {comp.departments || "All"}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          {offers.length === 0 ? (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              No offers
+                            </Typography>
+                          ) : (
+                            offers.map((off, oIdx) => (
+                              <Box key={off.id || oIdx} mb={0.5}>
+                                <Chip
+                                  label={`${off.position || "Intern"} (₹${
+                                    off.stipend?.toLocaleString() || 0
+                                  }/m)`}
+                                  size="small"
+                                  color="success"
+                                  variant="outlined"
+                                />
+                              </Box>
+                            ))
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Box display="flex" gap={0.5}>
+                            <Tooltip title="Copy Student Application URL">
+                              <IconButton
+                                size="small"
+                                onClick={() => {
+                                  const fullUrl = `${window.location.origin}${driveUrl}`;
+                                  navigator.clipboard.writeText(fullUrl);
+                                  toast.success(
+                                    "Student application link copied to clipboard!"
+                                  );
+                                }}
+                              >
+                                <Copy size={16} />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Open Student Registration Form">
+                              <IconButton
+                                size="small"
+                                component="a"
+                                href={driveUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <ExternalLink size={16} />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
         </Paper>
       </Container>
     </>
