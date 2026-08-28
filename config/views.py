@@ -29,14 +29,15 @@ def serve_media(request, path):
     the api container anymore to read them off a shared volume (TCET
     hosting standard: Traefik only routes by Host header, it doesn't serve
     files). Mirrors the security headers the old Caddyfile applied: nosniff
-    everywhere, plus a forced download for anything that isn't a
-    server-validated profile image, since uploaded media has no
-    content-type restriction otherwise.
+    everywhere, plus inline preview for images/documents and download for others.
     """
     response = serve(request, path, document_root=settings.MEDIA_ROOT)
     response["X-Content-Type-Options"] = "nosniff"
-    if not path.startswith("profile_images/"):
-        response["Content-Disposition"] = "attachment"
+    ext = path.lower().split(".")[-1] if "." in path else ""
+    if ext in ("pdf", "png", "jpg", "jpeg", "webp") or path.startswith("profile_images/"):
+        response["Content-Disposition"] = f'inline; filename="{path.split("/")[-1]}"'
+    else:
+        response["Content-Disposition"] = f'attachment; filename="{path.split("/")[-1]}"'
     return response
 
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, apiFetch, toList } from "@/lib/api";
+import { api, apiFetch, getMediaUrl, toList } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -348,7 +348,7 @@ export default function StudentInternships() {
                     <TableCell>
                       {item.offer_letter ? (
                         <a
-                          href={item.offer_letter}
+                          href={getMediaUrl(item.offer_letter)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-semibold"

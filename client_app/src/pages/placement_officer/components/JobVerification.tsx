@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { api, getMediaUrl } from "@/lib/api";
 
 interface Job {
   id: number;
@@ -101,7 +101,7 @@ const JobVerification = () => {
                 <TableCell>{job.company_name}</TableCell>
                 <TableCell>
                   <a
-                    href={job.offer_letter}
+                    href={getMediaUrl(job.offer_letter)}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

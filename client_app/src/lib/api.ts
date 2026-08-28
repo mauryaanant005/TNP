@@ -33,13 +33,14 @@ export function toList<T = unknown>(data: unknown): T[] {
   return [];
 }
 
-// Builds a ws(s):// URL pointing at the API host for a given path (e.g.
-// "/ws/notifications/"). In production SERVER_URL is an absolute
-// "https://api.<domain>" origin - the API's own WebSocket route lives on
-// that same host (TCET hosting standard 11.4: Traefik can route a
-// dedicated socket.<domain> hostname to this same api container). In local
-// dev SERVER_URL is "" (same-origin via Vite's proxy), so this falls back
-// to the current page's own host.
+// Resolves a media file path (e.g. "/media/offer_letters/abc.pdf") to the full API server URL.
+export function getMediaUrl(path?: string | null): string {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  return `${SERVER_URL}${cleanPath}`;
+}
+
 export function buildWebSocketUrl(path: string): string {
   if (SERVER_URL) {
     const apiUrl = new URL(SERVER_URL);
