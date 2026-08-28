@@ -180,49 +180,77 @@ def get_all_applied_students(request, pk):
 @parser_classes([MultiPartParser, FormParser])
 def create_job_acceptance(request):
     try:
-        user = User.objects.get(email=request.user.email)
-        if not user:
-            return JsonResponse(
-                {"error": "Failed to find user"}, status=status.HTTP_404_NOT_FOUND
-            )
-        student = Student.objects.get(user=user)
-        data = request.data
+        user = request.user
+        student = Student.objects.filter(user=user).first()
         if not student:
             return JsonResponse(
-                {"error": "Failed to find student"}, status=status.HTTP_404_NOT_FOUND
+                {"error": "Student profile not found for current user."},
+                status=status.HTTP_404_NOT_FOUND,
             )
+
+        data = request.data
         start_date_str = data.get("startDate")
         end_date_str = data.get("endDate")
-        start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
-        completion_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
-        if data.get("selectOption") == "in_house":
+
+        start_date = None
+        completion_date = None
+        if start_date_str:
+            for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%Y/%m/%d"):
+                try:
+                    start_date = datetime.strptime(str(start_date_str).strip(), fmt).date()
+                    break
+                except ValueError:
+                    pass
+
+        if end_date_str:
+            for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%Y/%m/%d"):
+                try:
+                    completion_date = datetime.strptime(str(end_date_str).strip(), fmt).date()
+                    break
+                except ValueError:
+                    pass
+
+        try:
+            stipend_val = float(data.get("stipend") or 0)
+        except (ValueError, TypeError):
+            stipend_val = 0.0
+
+        select_option = data.get("selectOption") or "Corporate"
+
+        if select_option == "in_house":
             InternshipAcceptance.objects.create(
                 student=student,
-                year=data.get("year"),
-                domain_name=data.get("domain"),
+                year=data.get("year") or student.academic_year or "TE",
+                domain_name=data.get("domain") or "General",
                 start_date=start_date,
                 completion_date=completion_date,
-                company_name="Thakur College of Enginerring and Technology",
+                company_name=data.get("companyName") or "Thakur College of Engineering and Technology",
+                offer_type="in_house",
+                salary=stipend_val,
+                is_verified=False,
             )
         else:
             if not request.FILES.get("offerLetter"):
                 return JsonResponse(
-                    {"error": "Offer letter is required"},
+                    {"error": "Offer letter document is required."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             InternshipAcceptance.objects.create(
                 student=student,
-                year=data.get("year"),
-                company_name=data.get("companyName"),
+                year=data.get("year") or student.academic_year or "TE",
+                company_name=data.get("companyName") or "Corporate Company",
                 offer_letter=request.FILES.get("offerLetter"),
-                offer_type=data.get("selectOption"),
-                salary=float(data.get("stipend")),
+                offer_type=select_option,
+                salary=stipend_val,
                 is_verified=False,
-                domain_name=data.get("domain"),
+                domain_name=data.get("domain") or "General",
                 start_date=start_date,
                 completion_date=completion_date,
             )
-        return JsonResponse({"success": "Job application created"})
+        return JsonResponse(
+            {"message": "Internship offer letter uploaded successfully and submitted for verification."},
+            status=status.HTTP_201_CREATED,
+        )
     except Exception as e:
         return JsonResponse(
             safe_error_payload(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR
