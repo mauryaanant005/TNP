@@ -115,7 +115,7 @@ const Attendance = () => {
     });
 
     setSessionDates(uniqueSessions);
-    const consolidated = consolidateAttendanceByBatch(filtered, uniqueSessions);
+    const consolidated = consolidateAttendanceByBatch(filtered);
     setBranchConsolidatedData(consolidated);
   };
 
