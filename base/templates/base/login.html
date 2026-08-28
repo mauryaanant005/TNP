@@ -281,7 +281,7 @@
 
       .form-input {
         width: 100%;
-        padding: 12px 14px 12px 42px;
+        padding: 12px 48px 12px 42px;
         font-size: 0.92rem;
         font-family: inherit;
         color: #0f172a;
@@ -292,6 +292,14 @@
         transition: all 0.2s ease;
       }
 
+      /* Disable default MS Edge / IE password reveal button to prevent interference */
+      input::-ms-reveal,
+      input::-ms-clear {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+      }
+
       .form-input:focus {
         background: #ffffff;
         border-color: #153f74;
@@ -300,20 +308,23 @@
 
       .password-toggle {
         position: absolute;
-        right: 12px;
+        right: 10px;
         top: 50%;
         transform: translateY(-50%);
         background: transparent;
         border: none;
         color: #94a3b8;
         cursor: pointer;
-        padding: 6px;
+        padding: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 10;
-        border-radius: 6px;
+        z-index: 20;
+        border-radius: 8px;
         transition: color 0.15s, background-color 0.15s;
+        outline: none;
+        user-select: none;
+        -webkit-user-select: none;
       }
 
       .password-toggle:hover {
@@ -321,10 +332,15 @@
         background-color: rgba(21, 63, 116, 0.08);
       }
 
+      .password-toggle:active {
+        transform: translateY(-50%) scale(0.92);
+      }
+
       .password-toggle svg {
-        width: 18px;
-        height: 18px;
+        width: 20px;
+        height: 20px;
         pointer-events: none;
+        display: block;
       }
 
       /* Options row */
@@ -597,6 +613,7 @@
                     type="button"
                     id="togglePasswordBtn"
                     class="password-toggle"
+                    onclick="togglePassword(event)"
                     title="Toggle password visibility"
                     aria-label="Toggle password visibility"
                     tabindex="-1"
@@ -645,21 +662,39 @@
     </div>
 
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        const toggleBtn = document.getElementById('togglePasswordBtn');
+      function togglePassword(e) {
+        if (e) {
+          if (typeof e.preventDefault === 'function') e.preventDefault();
+          if (typeof e.stopPropagation === 'function') e.stopPropagation();
+        }
         const passwordInput = document.getElementById('password');
         const eyeOpen = document.getElementById('eyeOpenIcon');
         const eyeClosed = document.getElementById('eyeClosedIcon');
 
-        if (toggleBtn && passwordInput && eyeOpen && eyeClosed) {
-          toggleBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const isPassword = passwordInput.getAttribute('type') === 'password';
-            passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
-            eyeOpen.style.display = isPassword ? 'none' : 'block';
-            eyeClosed.style.display = isPassword ? 'block' : 'none';
-          });
+        if (!passwordInput) return false;
+
+        const isCurrentPassword =
+          passwordInput.getAttribute('type') === 'password' ||
+          passwordInput.type === 'password';
+
+        if (isCurrentPassword) {
+          passwordInput.setAttribute('type', 'text');
+          passwordInput.type = 'text';
+          if (eyeOpen) eyeOpen.style.display = 'none';
+          if (eyeClosed) eyeClosed.style.display = 'block';
+        } else {
+          passwordInput.setAttribute('type', 'password');
+          passwordInput.type = 'password';
+          if (eyeOpen) eyeOpen.style.display = 'block';
+          if (eyeClosed) eyeClosed.style.display = 'none';
+        }
+        return false;
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        const toggleBtn = document.getElementById('togglePasswordBtn');
+        if (toggleBtn) {
+          toggleBtn.addEventListener('click', togglePassword);
         }
       });
     </script>
