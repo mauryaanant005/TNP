@@ -394,3 +394,57 @@ def download_verified_internships(request):
         return response
     except Exception as e:
         return JsonResponse(safe_error_payload(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["POST"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([HasRole.of(*ROLES.INTERNSHIP)])
+def create_or_update_internship_notice(request, company_pk):
+    """Create or update the InternshipNotice for the given company."""
+    try:
+        company = InternshipRegistration.objects.get(pk=company_pk)
+    except InternshipRegistration.DoesNotExist:
+        return JsonResponse({"error": "Company not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    data = request.data
+    notice, created = InternshipNotice.objects.get_or_create(company=company)
+
+    notice.sr_no = data.get("srNo", notice.sr_no)
+    notice.to = data.get("to", notice.to)
+    notice.subject = data.get("subject", notice.subject)
+    notice.date = data.get("date", notice.date)
+    notice.intro = data.get("intro", notice.intro)
+    notice.eligibility_criteria = data.get("eligibility_criteria", notice.eligibility_criteria)
+    notice.about = data.get("about", notice.about)
+    notice.location = data.get("location", notice.location)
+    notice.documents_to_carry = data.get("Documents_to_Carry", notice.documents_to_carry)
+    notice.walk_in_interview = data.get("Walk_in_interview", notice.walk_in_interview)
+    notice.company_registration_link = data.get("Company_registration_Link", notice.company_registration_link)
+    notice.note = data.get("Note", notice.note)
+    notice.from_field = data.get("From", notice.from_field)
+    notice.from_designation = data.get("From_designation", notice.from_designation)
+    notice.save()
+
+    serializer = InternshipNoticeSerializer(notice)
+    http_status = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+    return JsonResponse(
+        {"message": "Notice saved.", "data": serializer.data},
+        status=http_status,
+    )
+
+
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def get_internship_notice(request, company_pk):
+    """Retrieve the InternshipNotice for the given company."""
+    try:
+        company = InternshipRegistration.objects.get(pk=company_pk)
+        notice = InternshipNotice.objects.get(company=company)
+    except InternshipRegistration.DoesNotExist:
+        return JsonResponse({"error": "Company not found."}, status=status.HTTP_404_NOT_FOUND)
+    except InternshipNotice.DoesNotExist:
+        return JsonResponse({"error": "Notice not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = InternshipNoticeSerializer(notice)
+    return JsonResponse({"data": serializer.data}, status=status.HTTP_200_OK)

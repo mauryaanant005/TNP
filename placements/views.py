@@ -36,13 +36,14 @@ from dataimport import sources as historical_sources
 from notifications.models import Notification
 from notifications.serializers import NotificationSerializer
 from placements import services
-from placements.models import CategoryRule, CompanyRegistration
+from placements.models import CategoryRule, CompanyRegistration, Notice
 from placements.pagination import StandardResultsSetPagination as ReportPagination
 from placements.serializers import (
     BasicStudentSerializer,
     FormDataSerializer,
     InterestedStudentApplicationSerializer,
     NotInterestedStudentApplicationSerializer,
+    NoticeSerializer,
     StudentDetailReportSerializer,
 )
 from placements.tasks import (
@@ -61,15 +62,68 @@ DRIVE_OR_READ = HasRole.of(*ROLES.PLACEMENT_DRIVE, read_any=True)
 REPORTS = HasRole.of(*ROLES.PLACEMENT_REPORTS)
 
 
-class ApplicantPagination(PageNumberPagination):
-    page_size = 50
-    page_size_query_param = "page_size"
-    max_page_size = 200
+# ---------------------------------------------------------------------------
+# Placement Notices  (standalone notices not tied to a CompanyRegistration)
+# ---------------------------------------------------------------------------
+
+class PlacementNoticeCreateOrUpdateView(APIView):
+    """Create or update a standalone placement notice.
+
+    POST body mirrors the Notice model fields.  If a notice with the same
+    ``subject`` + ``date`` already exists it is updated in-place (idempotent
+    for re-submissions); otherwise a new row is inserted.
+    """
+
+    permission_classes = [DRIVE]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            subject = request.data.get("subject", "").strip()
+            date = request.data.get("date")
+            if not subject or not date:
+                return Response(
+                    {"error": "subject and date are required fields."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            notice, created = Notice.objects.get_or_create(
+                subject=subject,
+                date=date,
+                defaults={"notice_type": "Placement"},
+            )
+            serializer = NoticeSerializer(notice, data=request.data, partial=not created)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(notice_type="Placement")
+
+            http_status = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+            return Response(
+                {"message": "Notice saved.", "data": serializer.data},
+                status=http_status,
+            )
+        except Exception as e:
+            logger.exception("Error saving placement notice")
+            return Response(safe_error_payload(e), status=status.HTTP_400_BAD_REQUEST)
+
+
+class PlacementNoticeDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Retrieve, update or delete a placement notice by primary key."""
+
+    serializer_class = NoticeSerializer
+    permission_classes = [DRIVE_OR_READ]
+
+    def get_object(self):
+        return get_object_or_404(Notice, pk=self.kwargs["pk"], notice_type="Placement")
 
 
 # ---------------------------------------------------------------------------
 # Companies and drives
 # ---------------------------------------------------------------------------
+
+class ApplicantPagination(PageNumberPagination):
+    page_size = 50
+    page_size_query_param = "page_size"
+    max_page_size = 200
+
 
 class CompanyListCreateView(generics.CreateAPIView):
     queryset = CompanyRegistration.objects.all()

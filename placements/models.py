@@ -34,17 +34,31 @@ class Notice(models.Model):
     subject = models.CharField(max_length=255)
     date = models.DateField()
     intro = models.TextField()
-    about = models.TextField()
-    company_registration_link = models.URLField()
+    about = models.TextField(blank=True, default="")
+    company_registration_link = models.URLField(blank=True, default="")
     note = models.TextField(blank=True, null=True)
     location = models.CharField(max_length=255)
-    deadline = models.DateField()
+    deadline = models.DateField(blank=True, null=True)
+
+    # Parity fields matching InternshipNotice / official TCET notice template
+    sr_no = models.CharField(max_length=100, blank=True, default="")
+    to = models.CharField(max_length=255, blank=True, default="")
+    eligibility_criteria = models.TextField(blank=True, default="")
+    roles = models.TextField(blank=True, default="")
+    skill_required = models.TextField(blank=True, default="")
+    documents_to_carry = models.TextField(blank=True, default="")
+    walk_in_interview = models.TextField(blank=True, default="")
+    from_field = models.CharField(max_length=255, blank=True, default="")
+    from_designation = models.CharField(max_length=255, blank=True, default="")
+    notice_type = models.CharField(max_length=50, default="Placement")
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     class Meta:
         db_table = "staff_notice"
 
     def __str__(self):
-        return self.subject
+        return f"{self.subject} ({self.notice_type})"
 
 
 class CompanyRegistration(models.Model):

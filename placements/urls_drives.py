@@ -71,4 +71,17 @@ urlpatterns = [
         name="student-detail-update",
     ),
     path("category_update/", views.UpdateStudentCategoryView.as_view(), name="bulk-category-update"),
+    # ---------------------------------------------------------------------------
+    # Placement Notice endpoints
+    # ---------------------------------------------------------------------------
+    path(
+        "placement/notice/create/",
+        views.PlacementNoticeCreateOrUpdateView.as_view(),
+        name="placement-notice-create",
+    ),
+    path(
+        "placement/notice/<int:pk>/",
+        views.PlacementNoticeDetailView.as_view(),
+        name="placement-notice-detail",
+    ),
 ]

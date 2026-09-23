@@ -1,8 +1,10 @@
 from django.urls import path
 from .views import (
     create_company_with_offers,
+    create_or_update_internship_notice,
     get_all_companies,
     get_company_with_offers,
+    get_internship_notice,
     job_application,
     create_job_acceptance,
     get_unverified_internships,
@@ -22,4 +24,7 @@ urlpatterns = [
     path("jobs/verify/selected/", verify_selected_internships),
     path("jobs/reports/", get_verified_internships),
     path("jobs/download-report/", download_verified_internships),
-]
+    # Notice endpoints
+    path("notice/create/<str:company_pk>", create_or_update_internship_notice),
+    path("notice/<str:company_pk>", get_internship_notice),
+]
