@@ -7,13 +7,23 @@ import {
   Typography,
   Grid,
   Paper,
+  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Divider,
+  Box,
 } from "@mui/material";
 import { api } from "@/lib/api";
 import Notice from "../../placement_officer/components/notice";
 import { getCookie } from "../../../utils";
-import { NoticeData } from "../../placement_officer/components/notice";
+import { NoticeData, NoticeTableRow } from "../../placement_officer/components/notice";
 import toast from "react-hot-toast";
 import { useReactToPrint } from "react-to-print";
+
+const emptyRow = (): NoticeTableRow => ({ type: "", salary: "", position: "" });
 
 const PlacementNotice = () => {
   const [formData, setFormData] = useState({
@@ -23,7 +33,6 @@ const PlacementNotice = () => {
     date: "",
     intro: "",
     eligibility_criteria: "",
-    roles: "",
     about: "",
     skill_required: "",
     Documents_to_Carry: "",
@@ -35,6 +44,9 @@ const PlacementNotice = () => {
     location: "",
   });
 
+  // Dynamic job-offer rows (Type / CTC / Position)
+  const [tableRows, setTableRows] = useState<NoticeTableRow[]>([emptyRow()]);
+
   const contentRef = useRef<HTMLDivElement>(null);
   const [noticeData, setNoticeData] = useState<NoticeData | null>(null);
   const reactPrintFn = useReactToPrint({ contentRef });
@@ -43,10 +55,34 @@ const PlacementNotice = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // --- Table row handlers ---
+  const handleRowChange = (
+    index: number,
+    field: keyof NoticeTableRow,
+    value: string
+  ) => {
+    const updated = tableRows.map((row, i) =>
+      i === index ? { ...row, [field]: value } : row
+    );
+    setTableRows(updated);
+  };
+
+  const addRow = () => setTableRows([...tableRows, emptyRow()]);
+
+  const removeRow = (index: number) => {
+    if (tableRows.length === 1) return; // keep at least one row
+    setTableRows(tableRows.filter((_, i) => i !== index));
+  };
+
   const csrfToken = getCookie("csrftoken");
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
+
+    // Filter out completely blank rows before sending
+    const validRows = tableRows.filter(
+      (r) => r.type.trim() || r.salary.trim() || r.position.trim()
+    );
 
     const payload = {
       subject: formData.subject,
@@ -59,13 +95,15 @@ const PlacementNotice = () => {
       sr_no: formData.srNo,
       to: formData.to,
       eligibility_criteria: formData.eligibility_criteria,
-      roles: formData.roles,
+      // Persist structured table data as JSON string (legacy roles field)
+      roles: JSON.stringify(validRows),
       skill_required: formData.skill_required,
       documents_to_carry: formData.Documents_to_Carry,
       walk_in_interview: formData.Walk_in_interview,
       from_field: formData.From,
       from_designation: formData.From_designation,
       notice_type: "Placement",
+      tableData: validRows,
     };
 
     api
@@ -75,7 +113,6 @@ const PlacementNotice = () => {
       })
       .then((response) => {
         const saved = response.data.data;
-        // Map backend field names back to NoticeData shape for the preview
         const preview: NoticeData = {
           srNo: saved.sr_no,
           to: saved.to,
@@ -94,7 +131,8 @@ const PlacementNotice = () => {
           From_designation: saved.from_designation,
           companyId: "",
           noticeId: String(saved.id),
-          tableData: [],
+          // Use structured tableData from response or fall back to what we sent
+          tableData: saved.table_data?.length ? saved.table_data : validRows,
           College_registration_Link: "",
           location: saved.location,
         };
@@ -115,6 +153,7 @@ const PlacementNotice = () => {
         </Typography>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
+            {/* --- Basic Fields --- */}
             <Grid item xs={12} sm={6}>
               <TextField
                 label="Sr No"
@@ -177,28 +216,6 @@ const PlacementNotice = () => {
             </Grid>
             <Grid item xs={12}>
               <TextField
-                label="Eligibility Criteria"
-                name="eligibility_criteria"
-                value={formData.eligibility_criteria}
-                onChange={handleChange}
-                multiline
-                rows={3}
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Roles"
-                name="roles"
-                value={formData.roles}
-                onChange={handleChange}
-                multiline
-                rows={2}
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
                 label="About Company"
                 name="about"
                 value={formData.about}
@@ -208,6 +225,94 @@ const PlacementNotice = () => {
                 fullWidth
               />
             </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Eligibility Criteria"
+                name="eligibility_criteria"
+                value={formData.eligibility_criteria}
+                onChange={handleChange}
+                multiline
+                rows={3}
+                fullWidth
+              />
+            </Grid>
+
+            {/* --- Job Offer Table (Type / CTC / Position) --- */}
+            <Grid item xs={12}>
+              <Divider sx={{ mb: 1 }} />
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  Job Offer Details (Type / CTC / Position)
+                </Typography>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={addRow}
+                >
+                  + Add Row
+                </Button>
+              </Box>
+              <Table size="small" sx={{ border: "1px solid #e0e0e0", borderRadius: 1 }}>
+                <TableHead sx={{ bgcolor: "#f5f5f5" }}>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 700 }}>Type</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>CTC / Stipend</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Position / Role</TableCell>
+                    <TableCell sx={{ width: 48 }} />
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {tableRows.map((row, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <TextField
+                          placeholder="e.g. Regular"
+                          value={row.type}
+                          onChange={(e) => handleRowChange(index, "type", e.target.value)}
+                          size="small"
+                          fullWidth
+                          variant="standard"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          placeholder="e.g. 6 LPA"
+                          value={row.salary}
+                          onChange={(e) => handleRowChange(index, "salary", e.target.value)}
+                          size="small"
+                          fullWidth
+                          variant="standard"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          placeholder="e.g. Software Engineer"
+                          value={row.position}
+                          onChange={(e) => handleRowChange(index, "position", e.target.value)}
+                          size="small"
+                          fullWidth
+                          variant="standard"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => removeRow(index)}
+                          disabled={tableRows.length === 1}
+                          title="Remove row"
+                        >
+                          ✕
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <Divider sx={{ mt: 1 }} />
+            </Grid>
+
+            {/* --- Remaining Fields --- */}
             <Grid item xs={12} sm={6}>
               <TextField
                 label="Skills Required"
@@ -255,7 +360,7 @@ const PlacementNotice = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="From"
+                label="From (Name)"
                 name="From"
                 value={formData.From}
                 onChange={handleChange}
@@ -272,6 +377,7 @@ const PlacementNotice = () => {
               />
             </Grid>
           </Grid>
+
           <Button
             type="submit"
             variant="contained"
@@ -293,7 +399,7 @@ const PlacementNotice = () => {
             style={{ marginTop: "20px" }}
             onClick={() => reactPrintFn()}
           >
-            Print Notice
+            Print / Save as PDF
           </Button>
         </div>
       )}

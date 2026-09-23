@@ -86,6 +86,7 @@ class PlacementNoticeCreateOrUpdateView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
+            table_data = request.data.get("tableData") or request.data.get("table_data")
             notice, created = Notice.objects.get_or_create(
                 subject=subject,
                 date=date,
@@ -95,9 +96,15 @@ class PlacementNoticeCreateOrUpdateView(APIView):
             serializer.is_valid(raise_exception=True)
             serializer.save(notice_type="Placement")
 
+            if table_data is not None and isinstance(table_data, list):
+                import json
+                notice.roles = json.dumps(table_data)
+                notice.save(update_fields=["roles"])
+
+            response_data = NoticeSerializer(notice).data
             http_status = status.HTTP_201_CREATED if created else status.HTTP_200_OK
             return Response(
-                {"message": "Notice saved.", "data": serializer.data},
+                {"message": "Notice saved.", "data": response_data},
                 status=http_status,
             )
         except Exception as e:
@@ -125,10 +132,10 @@ class ApplicantPagination(PageNumberPagination):
     max_page_size = 200
 
 
-class CompanyListCreateView(generics.CreateAPIView):
-    queryset = CompanyRegistration.objects.all()
+class CompanyListCreateView(generics.ListCreateAPIView):
+    queryset = CompanyRegistration.objects.all().order_by("-id")
     serializer_class = FormDataSerializer
-    permission_classes = [DRIVE]
+    permission_classes = [DRIVE_OR_READ]
 
 
 class CompanyDetailView(generics.RetrieveUpdateDestroyAPIView):

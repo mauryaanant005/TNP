@@ -18,9 +18,35 @@ from student.models import (
 
 
 class NoticeSerializer(serializers.ModelSerializer):
+    table_data = serializers.SerializerMethodField()
+
     class Meta:
         model = Notice
         fields = "__all__"
+
+    def get_table_data(self, obj):
+        import json
+        if obj.roles:
+            try:
+                parsed = json.loads(obj.roles)
+                if isinstance(parsed, list):
+                    return parsed
+            except Exception:
+                pass
+        if hasattr(obj, "companyregistration"):
+            offers = obj.companyregistration.job_offers.all()
+            if offers.exists():
+                return [
+                    {
+                        "type": "Regular",
+                        "salary": offer.salary or "Not specified",
+                        "position": offer.role or "Not specified",
+                    }
+                    for offer in offers
+                ]
+        if obj.roles:
+            return [{"type": "Regular", "salary": "Not specified", "position": obj.roles}]
+        return []
 
 
 class JobOfferSerializer(serializers.ModelSerializer):
