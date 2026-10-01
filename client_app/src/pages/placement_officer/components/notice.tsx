@@ -1,6 +1,7 @@
 import { forwardRef } from "react";
 import "./notice.css";
 import noticeHeader from "@/assets/tcet header.jpg";
+import noticeFooter from "@/assets/tcet footer.png";
 import { BASE_URL } from "@/constant";
 
 export interface NoticeTableRow {
@@ -288,11 +289,8 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(
             </div>
           </div>
 
-          {/* 17. Institutional Page Footer */}
-          <div className="institutional-bottom-bar">
-            <span>TCET Training &amp; Placement Cell</span>
-            <span>Official Institutional Document</span>
-          </div>
+          {/* 17. TCET Footer Image */}
+          <img src={noticeFooter} alt="Footer" className="footer-image" />
         </div>
       </div>
     );
