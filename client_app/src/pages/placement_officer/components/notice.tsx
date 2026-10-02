@@ -125,7 +125,7 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(
             {/* 4. To Section */}
             <p className="notice-row">
               <span className="notice-label">To:</span>
-              <span>{formData.to || "All Eligible Final Year Students"}</span>
+              <span>{formData.to || "All concerned Students of 2027 Batch"}</span>
             </p>
 
             {/* 5. Subject */}

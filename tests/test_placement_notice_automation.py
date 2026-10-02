@@ -175,7 +175,13 @@ class TestPlacementNoticeAutomation:
 
         assert data["company_name"] == sample_company.name
         assert data["batch"] == "2027"
-        assert "Software Engineer" in data["subject"]
+        assert "Software Engineer" not in data["subject"]
+        assert "Software Engineer" not in data["intro"]
+        assert data["subject"] == f"Campus Recruitment Drive - {sample_company.name} for 2027 Batch"
+        assert data["intro"] == (
+            f"All eligible and interested students of 2027 batch are hereby informed that "
+            f"{sample_company.name} is conducting a campus recruitment drive."
+        )
         assert "TCS" in data["subject"] or "Tata Consultancy Services" in data["subject"]
         assert "COMP" in data["to"]
         assert data["eligibility_criteria"] == sample_opportunity.eligibility_criteria
