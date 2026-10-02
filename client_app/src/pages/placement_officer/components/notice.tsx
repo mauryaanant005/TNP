@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import "./notice.css";
-import noticeHeader from "@/assets/tcet header.jpg";
+import noticeHeader from "@/assets/tcet header.png";
 import { BASE_URL } from "@/constant";
 
 export interface NoticeTableRow {
