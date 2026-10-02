@@ -58,7 +58,7 @@ const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
   onClearSelection,
 }) => {
   const [searchQuery, setSearchQuery] = useState(selectedOpportunity?.company_name || "");
-  const [selectedBatch, setSelectedBatch] = useState<string>("2027");
+  const [selectedBatch, setSelectedBatch] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<string>("All");
   const [results, setResults] = useState<OpportunityItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -150,7 +150,7 @@ const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
     setIsEditing(true);
     setResults([]);
     setHasSearched(false);
-    setSelectedBatch("2027");
+    setSelectedBatch("");
     setTypeFilter("All");
     if (onClearSelection) {
       onClearSelection();

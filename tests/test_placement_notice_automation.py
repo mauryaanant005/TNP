@@ -191,6 +191,37 @@ class TestPlacementNoticeAutomation:
         assert data["sr_no"].startswith("TCET/T&P/OFF/")
         assert data["company_registration_link"] == sample_company.website
 
+    def test_opportunity_autofill_data_different_batches(self, staff_user, sample_company):
+        """Verify autofill dynamically supports all batches (e.g. 2026) without position details in subject/intro."""
+        opp_2026 = PlacementOpportunity.objects.create(
+            company=sample_company,
+            batch="2026",
+            designation="Full Stack Developer",
+            tech_nontech="Tech",
+            placement_internship="Placement",
+            eligibility_criteria="CGPA >= 6.5",
+            eligible_departments=["COMP", "IT"],
+            skills=["React", "Django"],
+            emolument_raw="₹6 LPA",
+        )
+        client = APIClient()
+        client.force_authenticate(user=staff_user)
+
+        url = reverse("placement-opportunity-autofill", kwargs={"pk": opp_2026.id})
+        res = client.get(url)
+        assert res.status_code == status.HTTP_200_OK
+        data = res.json()
+
+        assert data["batch"] == "2026"
+        assert "Full Stack Developer" not in data["subject"]
+        assert "Full Stack Developer" not in data["intro"]
+        assert data["subject"] == f"Campus Recruitment Drive - {sample_company.name} for 2026 Batch"
+        assert data["intro"] == (
+            f"All eligible and interested students of 2026 batch are hereby informed that "
+            f"{sample_company.name} is conducting a campus recruitment drive."
+        )
+        assert "2026 Batch" in data["to"]
+
     def test_edit_isolation_guarantee(self, staff_user, sample_opportunity, sample_company):
         """CRITICAL: Editing notice fields MUST NOT mutate Company or Opportunity records."""
         client = APIClient()
