@@ -1,6 +1,6 @@
 .notice-body {
   font-size: 12px;
-  font-family: "Times New Roman", serif;
+  font-family: Arial, Helvetica, sans-serif !important;
   color: black;
 }
 
@@ -12,11 +12,66 @@
   padding: 10mm;
   box-sizing: border-box;
   page-break-after: always;
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+/* Constant Institutional Metadata Top Block */
+.constant-top-block {
+  font-family: Arial, Helvetica, sans-serif !important;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.top-doc-meta {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  font-size: 13.5px !important;
+  font-weight: bold !important;
+  color: #0f172a !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+.doc-code {
+  text-align: left;
+}
+
+.doc-revision {
+  text-align: right;
+}
+
+.top-cell-title {
+  text-align: center !important;
+  font-size: 15px !important;
+  font-weight: bold !important;
+  color: #0f172a !important;
+  margin-top: 6px !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+/* Bullet List Item Formatting (Line-by-line) */
+.notice-bullet-list {
+  margin: 4px 0 4px 20px !important;
+  padding: 0 !important;
+  list-style-type: disc !important;
+  list-style-position: outside !important;
+}
+
+.notice-bullet-item {
+  margin-bottom: 3px !important;
+  line-height: 1.4 !important;
+  text-align: left !important;
+  display: list-item !important;
+  font-family: Arial, Helvetica, sans-serif !important;
 }
 
 .header-image {
-  width: 100%;
-  /* margin-bottom: 15px; */
+  width: calc(100% + 20mm);
+  margin-left: -10mm;
+  margin-right: -10mm;
+  margin-top: -10mm;
+  margin-bottom: 12px;
+  display: block;
 }
 
 .notice-title {
@@ -25,6 +80,7 @@
   font-weight: bold;
   margin: 10px 0;
   text-transform: uppercase;
+  font-family: Arial, Helvetica, sans-serif !important;
 }
 
 .notice-meta {
@@ -102,14 +158,162 @@
   margin-top: 20px;
 }
 
+
+/* TCET Footer */
+.tcet-footer {
+  margin-top: 20px;
+  page-break-inside: avoid;
+}
+
+.tcet-footer__divider {
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #1a365d 0%, #2b6cb0 60%, #1a365d 100%);
+  margin-bottom: 8px;
+}
+
+.tcet-footer__inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 4px 2px 6px 2px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tcet-footer__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tcet-footer__name {
+  font-weight: 800;
+  font-size: 10px;
+  color: #1a365d;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.tcet-footer__institute {
+  font-weight: 400;
+  font-size: 9px;
+  color: #475569;
+  letter-spacing: 0.3px;
+}
+
+.tcet-footer__contact {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 8.5px;
+  color: #64748b;
+  text-align: right;
+}
+
 /* Print */
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 12mm 8mm 12mm;
+  }
   body {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .notice-body {
+    margin: 0 !important;
+    padding: 0 !important;
   }
   .notice-container {
-    page-break-inside: avoid;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    font-size: 9.5pt !important;
+    line-height: 1.35 !important;
+  }
+  .header-image {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    object-fit: contain !important;
+  }
+  .notice-title {
+    font-size: 13pt !important;
+    margin: 4pt 0 6pt 0 !important;
+  }
+  .notice-meta {
+    font-size: 9.5pt !important;
+    margin: 4pt 0 !important;
+  }
+  .notice-content {
+    margin-top: 4pt !important;
+  }
+  .notice-content p,
+  .notice-content li {
+    margin: 3pt 0 !important;
+    font-size: 9.5pt !important;
+    line-height: 1.35 !important;
+  }
+  .notice-table th,
+  .notice-table td {
+    padding: 3pt 5pt !important;
+    font-size: 9pt !important;
+  }
+  .notice-bottom {
+    margin-top: 8pt !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  .notice-signature {
+    margin-top: 0 !important;
+    font-size: 9.5pt !important;
+  }
+  .notice-copyto {
+    margin-top: 0 !important;
+    font-size: 9pt !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+  }
+  .footer-image {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    margin-top: 6pt !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+  }
+  .tcet-footer {
+    margin-top: 6pt !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  .tcet-footer__divider {
+    height: 1.5pt !important;
+    margin-bottom: 4pt !important;
+  }
+  .tcet-footer__name {
+    font-size: 8pt !important;
+  }
+  .tcet-footer__institute {
+    font-size: 7pt !important;
+  }
+  .tcet-footer__contact {
+    font-size: 6.5pt !important;
   }
 }
 
