@@ -59,7 +59,7 @@ const PlacementNotice: React.FC = () => {
   // --- Form State ---
   const [formData, setFormData] = useState({
     srNo: "",
-    to: "",
+    to: "All concerned Students of 2027 Batch",
     subject: "",
     date: new Date().toISOString().split("T")[0],
     intro: "",
@@ -74,7 +74,7 @@ const PlacementNotice: React.FC = () => {
     From_designation: "Dean (TP&IL)",
     location: "TCET Campus / Online",
     deadline: "",
-    batch: "",
+    batch: "2027",
   });
 
   // Dynamic job-offer rows (Type / CTC / Position)
@@ -175,7 +175,7 @@ const PlacementNotice: React.FC = () => {
         From_designation: auto.from_designation || "Dean (TP&IL)",
         location: auto.location || "TCET Campus / Online",
         deadline: "",
-        batch: auto.batch || opp.batch || "",
+        batch: auto.batch || opp.batch || "2027",
       });
 
       setTableRows(auto.table_data && auto.table_data.length > 0 ? auto.table_data : [emptyRow()]);
@@ -201,12 +201,13 @@ const PlacementNotice: React.FC = () => {
     setSelectedOpportunity(null);
     setFormData((prev) => ({
       ...prev,
+      to: "All concerned Students of 2027 Batch",
       subject: "",
       intro: "",
       about: "",
       eligibility_criteria: "",
       Company_registration_Link: "",
-      batch: "",
+      batch: "2027",
     }));
     setTableRows([emptyRow()]);
     setSkillTags([]);
@@ -276,7 +277,7 @@ const PlacementNotice: React.FC = () => {
     setTableRows([emptyRow()]);
     setFormData({
       srNo: "",
-      to: "",
+      to: "All concerned Students of 2027 Batch",
       subject: "",
       date: new Date().toISOString().split("T")[0],
       intro: "",
@@ -291,7 +292,7 @@ const PlacementNotice: React.FC = () => {
       From_designation: "Dean (TP&IL)",
       location: "TCET Campus / Online",
       deadline: "",
-      batch: "",
+      batch: "2027",
     });
 
     api
