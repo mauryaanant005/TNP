@@ -175,8 +175,9 @@ class TestPlacementNoticeAutomation:
 
         assert data["company_name"] == sample_company.name
         assert data["batch"] == "2027"
-        assert "Software Engineer" in data["subject"]
+        # Subject is batch-format: designation lives in table_data, not the subject line
         assert "TCS" in data["subject"] or "Tata Consultancy Services" in data["subject"]
+        assert "2027 Batch" in data["subject"]
         assert "COMP" in data["to"]
         assert data["eligibility_criteria"] == sample_opportunity.eligibility_criteria
         assert len(data["table_data"]) == 1

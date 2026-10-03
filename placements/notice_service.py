@@ -11,7 +11,7 @@ import json
 import logging
 import re
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -405,7 +405,21 @@ def get_opportunity_autofill_data(opportunity_id: int) -> Dict[str, Any]:
     # Departments text
     dept_list = opp.eligible_departments or []
     depts_formatted = ", ".join(dept_list) if isinstance(dept_list, list) else str(dept_list)
-    to_text = f"All concerned Students of {opp.batch} Batch ({depts_formatted})" if depts_formatted else f"All concerned Students of {opp.batch} Batch"
+    batch_val = (opp.batch or "").strip()
+    if batch_val:
+        to_text = f"All concerned Students of {batch_val} Batch ({depts_formatted})" if depts_formatted else f"All concerned Students of {batch_val} Batch"
+        subject = f"Campus Recruitment Drive - {company.name} for {batch_val} Batch"
+        intro = (
+            f"All eligible and interested students of {batch_val} batch are hereby informed that "
+            f"{company.name} is conducting a campus recruitment drive."
+        )
+    else:
+        to_text = f"All concerned Students ({depts_formatted})" if depts_formatted else "All concerned Students"
+        subject = f"Campus Recruitment Drive - {company.name}"
+        intro = (
+            f"All eligible and interested students are hereby informed that "
+            f"{company.name} is conducting a campus recruitment drive."
+        )
 
     # Compensation / salary
     salary_str = opp.emolument_raw.strip() if opp.emolument_raw else ""
@@ -427,13 +441,6 @@ def get_opportunity_autofill_data(opportunity_id: int) -> Dict[str, Any]:
     # Skills list
     skills_list = opp.skills if isinstance(opp.skills, list) else [opp.skills] if opp.skills else []
     skills_str = ", ".join(skills_list) if isinstance(skills_list, list) else str(skills_list)
-
-    # Subject and Intro
-    subject = f"Campus Recruitment Drive - {company.name} for {opp.batch} Batch ({opp.designation})"
-    intro = (
-        f"All eligible and interested students of {opp.batch} batch are hereby informed that "
-        f"{company.name} is conducting a campus recruitment drive for the position of {opp.designation}."
-    )
 
     # Roles & Responsibilities extraction and normalization
     roles_bullets = extract_roles_responsibilities(opp)
