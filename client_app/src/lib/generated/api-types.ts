@@ -2194,7 +2194,8 @@ export interface components {
             gender?: string;
             dob?: string | null;
             contact?: string;
-            personal_email?: (string) | null;
+            /** Format: email */
+            personal_email?: string | null;
             /** Format: double */
             tenth_grade?: number;
             /** Format: double */
@@ -2257,7 +2258,8 @@ export interface components {
             gender?: string;
             dob?: string | null;
             contact?: string;
-            personal_email?: (string) | null;
+            /** Format: email */
+            personal_email?: string | null;
             /** Format: double */
             tenth_grade?: number;
             /** Format: double */
@@ -2365,6 +2367,7 @@ export interface components {
             date: string;
             intro: string;
             about?: string;
+            /** Format: uri */
             company_registration_link?: string;
             note?: string | null;
             location: string;
@@ -2403,6 +2406,7 @@ export interface components {
             date: string;
             intro: string;
             about?: string;
+            /** Format: uri */
             company_registration_link?: string;
             note?: string | null;
             location: string;
@@ -2630,6 +2634,7 @@ export interface components {
             date?: string;
             intro?: string;
             about?: string;
+            /** Format: uri */
             company_registration_link?: string;
             note?: string | null;
             location?: string;
@@ -2668,7 +2673,8 @@ export interface components {
             gender?: string;
             dob?: string | null;
             contact?: string;
-            personal_email?: (string) | null;
+            /** Format: email */
+            personal_email?: string | null;
             /** Format: double */
             tenth_grade?: number;
             /** Format: double */
@@ -2732,7 +2738,8 @@ export interface components {
             gender?: string;
             dob?: string | null;
             contact?: string;
-            personal_email?: (string) | null;
+            /** Format: email */
+            personal_email?: string | null;
             /** Format: double */
             tenth_grade?: number;
             /** Format: double */
@@ -2795,7 +2802,8 @@ export interface components {
             gender?: string;
             dob?: string | null;
             contact?: string;
-            personal_email?: (string) | null;
+            /** Format: email */
+            personal_email?: string | null;
             /** Format: double */
             tenth_grade?: number;
             /** Format: double */

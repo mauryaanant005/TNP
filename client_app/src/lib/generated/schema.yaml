@@ -2402,13 +2402,10 @@ components:
           type: string
           maxLength: 15
         personal_email:
+          type: string
+          format: email
           nullable: true
-          oneOf:
-          - type: string
-            format: email
-            maxLength: 254
-          - type: string
-            maxLength: 0
+          maxLength: 254
         tenth_grade:
           type: number
           format: double
@@ -2531,13 +2528,10 @@ components:
           type: string
           maxLength: 15
         personal_email:
+          type: string
+          format: email
           nullable: true
-          oneOf:
-          - type: string
-            format: email
-            maxLength: 254
-          - type: string
-            maxLength: 0
+          maxLength: 254
         tenth_grade:
           type: number
           format: double
@@ -2861,12 +2855,9 @@ components:
         about:
           type: string
         company_registration_link:
-          oneOf:
-          - type: string
-            format: uri
-            maxLength: 200
-          - type: string
-            maxLength: 0
+          type: string
+          format: uri
+          maxLength: 200
         note:
           type: string
           nullable: true
@@ -2965,12 +2956,9 @@ components:
         about:
           type: string
         company_registration_link:
-          oneOf:
-          - type: string
-            format: uri
-            maxLength: 200
-          - type: string
-            maxLength: 0
+          type: string
+          format: uri
+          maxLength: 200
         note:
           type: string
           nullable: true
@@ -3390,12 +3378,9 @@ components:
         about:
           type: string
         company_registration_link:
-          oneOf:
-          - type: string
-            format: uri
-            maxLength: 200
-          - type: string
-            maxLength: 0
+          type: string
+          format: uri
+          maxLength: 200
         note:
           type: string
           nullable: true
@@ -3497,13 +3482,10 @@ components:
           minLength: 1
           maxLength: 15
         personal_email:
+          type: string
+          format: email
           nullable: true
-          oneOf:
-          - type: string
-            format: email
-            maxLength: 254
-          - type: string
-            maxLength: 0
+          maxLength: 254
         tenth_grade:
           type: number
           format: double
@@ -3638,13 +3620,10 @@ components:
           type: string
           maxLength: 15
         personal_email:
+          type: string
+          format: email
           nullable: true
-          oneOf:
-          - type: string
-            format: email
-            maxLength: 254
-          - type: string
-            maxLength: 0
+          maxLength: 254
         tenth_grade:
           type: number
           format: double
@@ -3814,13 +3793,10 @@ components:
           minLength: 1
           maxLength: 15
         personal_email:
+          type: string
+          format: email
           nullable: true
-          oneOf:
-          - type: string
-            format: email
-            maxLength: 254
-          - type: string
-            maxLength: 0
+          maxLength: 254
         tenth_grade:
           type: number
           format: double
