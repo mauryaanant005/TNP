@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, useMemo } from "react";
 import "./notice.css";
 import noticeHeader from "@/assets/tcet header.png";
 import noticeFooter from "@/assets/tcet footer.png";
@@ -17,6 +17,7 @@ export interface NoticeData {
   intro?: string;
   eligibility_criteria?: string;
   roles?: string;
+  roles_responsibilities?: string | string[];
   about?: string;
   skill_required?: string;
   Documents_to_Carry?: string;
@@ -37,6 +38,42 @@ interface NoticeProps {
   formData: NoticeData;
   isPlacement?: boolean;
 }
+
+const MISSING_RESPONSIBILITY_SET = new Set([
+  "NA",
+  "N/A",
+  "NONE",
+  "NULL",
+  "-",
+  "N.A.",
+  "NOT APPLICABLE",
+  "NOT SPECIFIED",
+  "N / A",
+]);
+
+const parseResponsibilityBullets = (data?: string | string[]): string[] => {
+  if (!data) return [];
+  const entries: string[] = Array.isArray(data) ? data : [data];
+  const bullets: string[] = [];
+
+  for (const entry of entries) {
+    if (!entry || typeof entry !== "string") continue;
+    const lines = entry.split(/\r?\n/);
+    for (const rawLine of lines) {
+      const trimmed = rawLine.trim();
+      if (!trimmed) continue;
+      // Strip leading bullet symbols (•, -, *, etc.) and numbers like "1. ", "1) "
+      const clean = trimmed
+        .replace(/^[•\-\*\s]+/, "")
+        .replace(/^\d+[\.\)]\s*/, "")
+        .trim();
+      if (!clean) continue;
+      if (MISSING_RESPONSIBILITY_SET.has(clean.toUpperCase())) continue;
+      bullets.push(clean);
+    }
+  }
+  return bullets;
+};
 
 const formatNoticeDate = (dateStr?: string): string => {
   if (!dateStr) {
@@ -107,6 +144,10 @@ const renderBulletList = (text?: string) => {
 
 const Notice = forwardRef<HTMLDivElement, NoticeProps>(
   ({ formData, isPlacement = true }, ref) => {
+    const rolesBullets = useMemo(
+      () => parseResponsibilityBullets(formData.roles_responsibilities),
+      [formData.roles_responsibilities]
+    );
     // Determine rows for Placement Details Table with guaranteed fallback values
     const rows: NoticeTableRow[] =
       formData.tableData && formData.tableData.length > 0
@@ -219,6 +260,20 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(
                 <span className="notice-label">Location:</span>
                 <span>{formData.location}</span>
               </p>
+            )}
+
+            {/* Conditional Roles & Responsibilities Section (Immediately below Location) */}
+            {rolesBullets.length > 0 && (
+              <div className="notice-row roles-responsibilities-row">
+                <span className="notice-label">Roles &amp; Responsibilities:</span>
+                <ul className="notice-bullet-list">
+                  {rolesBullets.map((bullet, idx) => (
+                    <li key={idx} className="notice-bullet-item">
+                      {bullet}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
 
             {/* 10. Placement Details Table */}

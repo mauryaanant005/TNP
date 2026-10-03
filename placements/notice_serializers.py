@@ -50,6 +50,7 @@ class NoticeAuditLogSerializer(serializers.ModelSerializer):
 
 class NoticeDetailSerializer(serializers.ModelSerializer):
     table_data = serializers.SerializerMethodField()
+    roles_responsibilities = serializers.SerializerMethodField()
     company_name = serializers.CharField(source="company.name", read_only=True, default="")
     company_website = serializers.CharField(source="company.website", read_only=True, default="")
     opportunity_designation = serializers.CharField(source="opportunity.designation", read_only=True, default="")
@@ -70,6 +71,7 @@ class NoticeDetailSerializer(serializers.ModelSerializer):
             "about",
             "eligibility_criteria",
             "roles",
+            "roles_responsibilities",
             "table_data",
             "skill_required",
             "documents_to_carry",
@@ -111,6 +113,11 @@ class NoticeDetailSerializer(serializers.ModelSerializer):
                 pass
         return []
 
+    def get_roles_responsibilities(self, obj):
+        if obj.custom_data and isinstance(obj.custom_data, dict):
+            return obj.custom_data.get("roles_responsibilities", "")
+        return ""
+
     def get_latest_version(self, obj):
         version = obj.versions.filter(is_current=True).first()
         if version:
@@ -130,6 +137,7 @@ class NoticeDraftSaveSerializer(serializers.Serializer):
     intro = serializers.CharField(required=False, allow_blank=True)
     about = serializers.CharField(required=False, allow_blank=True)
     eligibility_criteria = serializers.CharField(required=False, allow_blank=True)
+    roles_responsibilities = serializers.CharField(required=False, allow_blank=True, default="")
     skill_required = serializers.CharField(required=False, allow_blank=True)
     documents_to_carry = serializers.CharField(required=False, allow_blank=True)
     walk_in_interview = serializers.CharField(required=False, allow_blank=True)
@@ -156,6 +164,7 @@ class NoticePublishSerializer(serializers.Serializer):
     intro = serializers.CharField(required=True)
     about = serializers.CharField(required=False, allow_blank=True)
     eligibility_criteria = serializers.CharField(required=True)
+    roles_responsibilities = serializers.CharField(required=False, allow_blank=True, default="")
     skill_required = serializers.CharField(required=False, allow_blank=True)
     documents_to_carry = serializers.CharField(required=False, allow_blank=True)
     walk_in_interview = serializers.CharField(required=False, allow_blank=True)

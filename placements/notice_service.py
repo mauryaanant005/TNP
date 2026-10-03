@@ -331,6 +331,62 @@ def search_placement_opportunities(
     return results
 
 
+MISSING_RESPONSIBILITY_VALUES: Set[str] = {
+    "NA", "N/A", "NONE", "NULL", "-", "N.A.", "NOT APPLICABLE", "NOT SPECIFIED", "N / A"
+}
+
+
+def extract_roles_responsibilities(opp: PlacementOpportunity) -> List[str]:
+    """Extract and normalize role responsibility bullets from placement opportunity data.
+    
+    Priority:
+    1. Dedicated job_profiles on PlacementOpportunity (from Job Profile 1-5 columns in XLSX)
+    2. Linked CompanyRegistration job_offers skills / responsibilities
+    
+    Rules:
+    - Omit missing/placeholder values like NA, N/A, -
+    - Do not treat designation as responsibilities
+    - Strip existing bullet markers (1., -, *, •) to avoid duplicate bullet symbols
+    - Return clean, distinct list of meaningful bullet strings
+    """
+    raw_entries: List[Any] = []
+    if opp.job_profiles:
+        if isinstance(opp.job_profiles, list):
+            raw_entries.extend(opp.job_profiles)
+        elif isinstance(opp.job_profiles, str):
+            raw_entries.append(opp.job_profiles)
+
+    if not raw_entries and opp.company_registration:
+        for offer in opp.company_registration.job_offers.all():
+            if offer.skills and offer.skills.strip():
+                raw_entries.append(offer.skills)
+
+    cleaned_bullets: List[str] = []
+    seen: Set[str] = set()
+
+    for entry in raw_entries:
+        if not entry or not isinstance(entry, str):
+            continue
+        lines = entry.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+        for line in lines:
+            line_str = line.strip()
+            # Strip bullets, numbered prefixes like "1. ", "• ", "- "
+            clean = re.sub(r"^[•\-\*\s]+", "", line_str)
+            clean = re.sub(r"^\d+[\.\)]\s*", "", clean).strip()
+            if not clean:
+                continue
+            if clean.upper() in MISSING_RESPONSIBILITY_VALUES:
+                continue
+            # Rule 9: Do not invent responsibilities from designation alone
+            if opp.designation and clean.lower() == opp.designation.strip().lower():
+                continue
+            if clean.lower() not in seen:
+                seen.add(clean.lower())
+                cleaned_bullets.append(clean)
+
+    return cleaned_bullets
+
+
 def get_opportunity_autofill_data(opportunity_id: int) -> Dict[str, Any]:
     """Retrieve opportunity and generate notice draft autofill defaults.
     
@@ -379,6 +435,10 @@ def get_opportunity_autofill_data(opportunity_id: int) -> Dict[str, Any]:
         f"{company.name} is conducting a campus recruitment drive for the position of {opp.designation}."
     )
 
+    # Roles & Responsibilities extraction and normalization
+    roles_bullets = extract_roles_responsibilities(opp)
+    roles_resp_str = "\n".join(f"• {b}" for b in roles_bullets) if roles_bullets else ""
+
     return {
         "opportunity_id": opp.id,
         "company_id": company.id,
@@ -394,6 +454,8 @@ def get_opportunity_autofill_data(opportunity_id: int) -> Dict[str, Any]:
         "eligibility_criteria": opp.eligibility_criteria or "As per company criteria",
         "roles": json.dumps(table_rows, ensure_ascii=False),
         "table_data": table_rows,
+        "roles_responsibilities": roles_resp_str,
+        "roles_responsibilities_list": roles_bullets,
         "skill_required": skills_str,
         "documents_to_carry": "1. Updated Resume (2 copies)\n2. College ID Card & Government ID\n3. Marksheets (10th, 12th/Diploma, All semesters)\n4. Passport size photographs (2 copies)",
         "walk_in_interview": opp.selection_process or "Online Assessment followed by Technical and HR Interviews.",
@@ -420,6 +482,7 @@ DIFF_FIELD_LABELS = {
     "intro": "Introduction",
     "about": "About Company",
     "eligibility_criteria": "Eligibility Criteria",
+    "roles_responsibilities": "Roles & Responsibilities",
     "skill_required": "Skills Required",
     "documents_to_carry": "Documents to Carry",
     "walk_in_interview": "Selection Process / Interview",
@@ -548,6 +611,7 @@ def save_notice_draft(user, draft_id: Optional[int], data: Dict[str, Any], ip_ad
         "college_registration_link": data.get("college_registration_link", ""),
         "table_data": table_data,
         "skills_list": data.get("skills_list", []),
+        "roles_responsibilities": sanitize_text(data.get("roles_responsibilities", "")),
     }
 
     notice.save()
@@ -587,6 +651,7 @@ def create_notice_snapshot(notice: Notice, table_data: Optional[List[Dict[str, A
         "intro": notice.intro,
         "about": notice.about,
         "eligibility_criteria": notice.eligibility_criteria,
+        "roles_responsibilities": (notice.custom_data or {}).get("roles_responsibilities", ""),
         "roles": notice.roles,
         "table_data": table_data,
         "skill_required": notice.skill_required,

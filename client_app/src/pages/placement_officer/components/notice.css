@@ -219,19 +219,100 @@
   color: #1e40af;
 }
 
+/* Institutional Footer Container (Copy To on Left, Signature on Right) */
+.notice-footer-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 14px;
+  gap: 24px;
+  page-break-inside: avoid;
+}
+
+/* Copy to Section (Structured Institutional) */
+.notice-copyto-block {
+  margin-top: 0;
+  padding-top: 0;
+  page-break-inside: avoid;
+}
+
+.copyto-header {
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: underline;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.copyto-grid {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  font-size: 12.5px;
+}
+
+.copyto-col-items {
+  flex: 0 0 auto;
+}
+
+.copyto-list {
+  list-style-type: disc;
+  margin: 0 0 0 18px;
+  padding: 0;
+  line-height: 1.5;
+  color: #1e293b;
+}
+
+.copyto-col-annotations {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding-left: 6px;
+}
+
+.annotation-tier {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #475569;
+  font-style: italic;
+  font-size: 12px;
+}
+
+.brace-symbol {
+  font-size: 28px;
+  line-height: 1;
+  color: #64748b;
+  font-weight: 300;
+  font-family: "Times New Roman", Times, serif;
+}
+
+.brace-symbol-large {
+  font-size: 48px;
+  line-height: 1;
+  color: #64748b;
+  font-weight: 300;
+  font-family: "Times New Roman", Times, serif;
+}
+
+.annotation-label {
+  white-space: nowrap;
+}
+
 /* Signature Block */
 .fromto-signature-block {
-  margin-top: 32px;
-  margin-bottom: 20px;
+  margin-top: 0;
+  margin-bottom: 0;
   text-align: right;
   page-break-inside: avoid;
   padding-right: 8px;
+  flex: 0 0 auto;
 }
 
 .fromto-signature-block .sig-sd {
   font-weight: 600;
   font-size: 14px;
-  margin: 0 0 24px 0;
+  margin: 0 0 12px 0;
   color: #0f172a;
 }
 
@@ -249,75 +330,16 @@
   font-weight: 500;
 }
 
-/* Copy to Section (Structured Institutional) */
-.notice-copyto-block {
-  margin-top: 24px;
-  padding-top: 12px;
-  /* border-top removed */
+/* Institutional Bottom Bar */
+.institutional-bottom-bar {
+  margin-top: 14px;
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #64748b;
   page-break-inside: avoid;
-}
-
-.copyto-header {
-  font-weight: 700;
-  font-size: 13px;
-  text-decoration: underline;
-  color: #0f172a;
-  margin-bottom: 8px;
-}
-
-.copyto-grid {
-  display: flex;
-  align-items: stretch;
-  gap: 24px;
-  font-size: 12.5px;
-}
-
-.copyto-col-items {
-  flex: 0 0 auto;
-}
-
-.copyto-list {
-  list-style-type: disc;
-  margin: 0 0 0 20px;
-  padding: 0;
-  line-height: 1.6;
-  color: #1e293b;
-}
-
-.copyto-col-annotations {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  padding-left: 8px;
-}
-
-.annotation-tier {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: #475569;
-  font-style: italic;
-  font-size: 12.5px;
-}
-
-.brace-symbol {
-  font-size: 32px;
-  line-height: 1;
-  color: #64748b;
-  font-weight: 300;
-  font-family: "Times New Roman", Times, serif;
-}
-
-.brace-symbol-large {
-  font-size: 54px;
-  line-height: 1;
-  color: #64748b;
-  font-weight: 300;
-  font-family: "Times New Roman", Times, serif;
-}
-
-.annotation-label {
-  white-space: nowrap;
 }
 
 /* TCET Footer (Official Institutional Document Footer) */
@@ -558,34 +580,21 @@
     font-size: 7.5pt !important;
   }
 
-  /* Signature block */
-  .fromto-signature-block {
+  /* Institutional Footer Container */
+  .notice-footer-container {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-end !important;
     margin-top: 4pt !important;
-    margin-bottom: 0 !important;
+    gap: 12px !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    padding-right: 4px !important;
-  }
-
-  .fromto-signature-block .sig-sd {
-    margin: 0 0 6pt 0 !important;
-    font-size: 8.5pt !important;
-  }
-
-  .fromto-signature-block .sig-name {
-    font-size: 8.5pt !important;
-    margin: 0 0 1pt 0 !important;
-  }
-
-  .fromto-signature-block .sig-designation {
-    font-size: 8pt !important;
-    margin: 0 !important;
   }
 
   /* Copy To */
   .notice-copyto-block {
-    margin-top: 3pt !important;
-    padding-top: 2pt !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     page-break-before: avoid !important;
@@ -598,14 +607,14 @@
   }
 
   .copyto-grid {
-    gap: 14px !important;
+    gap: 10px !important;
     font-size: 8pt !important;
   }
 
   .copyto-list {
     line-height: 1.15 !important;
     font-size: 8pt !important;
-    margin-left: 16px !important;
+    margin-left: 14px !important;
   }
 
   .copyto-col-annotations {
@@ -629,20 +638,50 @@
     white-space: nowrap !important;
   }
 
-  /*
-   * Footer:
-   * Keep the footer fixed at the bottom of the printed A4 page.
-   */
+  /* Signature block */
+  .fromto-signature-block {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    padding-right: 4px !important;
+  }
+
+  .fromto-signature-block .sig-sd {
+    margin: 0 0 4pt 0 !important;
+    font-size: 8.5pt !important;
+  }
+
+  .fromto-signature-block .sig-name {
+    font-size: 8.5pt !important;
+    margin: 0 0 1pt 0 !important;
+  }
+
+  .fromto-signature-block .sig-designation {
+    font-size: 8pt !important;
+    margin: 0 !important;
+  }
+
+  /* Institutional Bottom Bar */
+  .institutional-bottom-bar {
+    margin-top: 4pt !important;
+    padding-top: 2pt !important;
+    border-top: 1px solid #cbd5e1 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    font-size: 7pt !important;
+    color: #475569 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Footer image in normal document flow */
   .footer-image {
     display: block !important;
-    position: fixed !important;
-    left: 12mm !important;
-    bottom: 5mm !important;
-    width: calc(100% - 24mm) !important;
-    max-width: calc(100% - 24mm) !important;
+    width: 100% !important;
+    max-width: 100% !important;
     height: auto !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    margin-top: 4pt !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
