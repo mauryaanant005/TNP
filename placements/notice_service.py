@@ -349,21 +349,7 @@ def get_opportunity_autofill_data(opportunity_id: int) -> Dict[str, Any]:
     # Departments text
     dept_list = opp.eligible_departments or []
     depts_formatted = ", ".join(dept_list) if isinstance(dept_list, list) else str(dept_list)
-    batch_val = (opp.batch or "").strip()
-    if batch_val:
-        to_text = f"All concerned Students of {batch_val} Batch ({depts_formatted})" if depts_formatted else f"All concerned Students of {batch_val} Batch"
-        subject = f"Campus Recruitment Drive - {company.name} for {batch_val} Batch"
-        intro = (
-            f"All eligible and interested students of {batch_val} batch are hereby informed that "
-            f"{company.name} is conducting a campus recruitment drive."
-        )
-    else:
-        to_text = f"All concerned Students ({depts_formatted})" if depts_formatted else "All concerned Students"
-        subject = f"Campus Recruitment Drive - {company.name}"
-        intro = (
-            f"All eligible and interested students are hereby informed that "
-            f"{company.name} is conducting a campus recruitment drive."
-        )
+    to_text = f"All concerned Students of {opp.batch} Batch ({depts_formatted})" if depts_formatted else f"All concerned Students of {opp.batch} Batch"
 
     # Compensation / salary
     salary_str = opp.emolument_raw.strip() if opp.emolument_raw else ""
@@ -386,12 +372,19 @@ def get_opportunity_autofill_data(opportunity_id: int) -> Dict[str, Any]:
     skills_list = opp.skills if isinstance(opp.skills, list) else [opp.skills] if opp.skills else []
     skills_str = ", ".join(skills_list) if isinstance(skills_list, list) else str(skills_list)
 
+    # Subject and Intro
+    subject = f"Campus Recruitment Drive - {company.name} for {opp.batch} Batch ({opp.designation})"
+    intro = (
+        f"All eligible and interested students of {opp.batch} batch are hereby informed that "
+        f"{company.name} is conducting a campus recruitment drive for the position of {opp.designation}."
+    )
+
     return {
         "opportunity_id": opp.id,
         "company_id": company.id,
         "company_name": company.name,
         "company_website": company.website,
-        "batch": batch_val,
+        "batch": opp.batch,
         "sr_no": serial_no,
         "date": today_str,
         "to": to_text,
@@ -529,9 +522,6 @@ def save_notice_draft(user, draft_id: Optional[int], data: Dict[str, Any], ip_ad
         except Company.DoesNotExist:
             pass
 
-    if not notice.batch:
-        notice.batch = (data.get("batch") or "").strip()
-
     # Populate communication fields (strictly sanitized)
     notice.subject = sanitize_text(data.get("subject", "").strip() or "Untitled Notice")
     notice.date = data.get("date") or date.today().isoformat()
@@ -543,8 +533,7 @@ def save_notice_draft(user, draft_id: Optional[int], data: Dict[str, Any], ip_ad
     notice.deadline = data.get("deadline") or None
 
     notice.sr_no = data.get("sr_no", "").strip() or generate_next_serial_number("Placement")
-    default_to = f"All concerned Students of {notice.batch} Batch" if notice.batch else "All concerned Students"
-    notice.to = sanitize_text(data.get("to", "").strip()) or default_to
+    notice.to = sanitize_text(data.get("to", "").strip())
     notice.eligibility_criteria = sanitize_text(data.get("eligibility_criteria", "").strip())
     notice.roles = json.dumps(table_data, ensure_ascii=False) if table_data else (data.get("roles", "") or "")
     notice.skill_required = sanitize_text(data.get("skill_required", "").strip())
