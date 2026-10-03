@@ -181,228 +181,256 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(
     return (
       <div className="notice-document-wrapper">
         <div className="main-notice" ref={ref}>
-          {/* 1. Official TCET Letterhead Header */}
-          <div className="notice-header-container">
-            <img
-              src={noticeHeader}
-              alt="Thakur College of Engineering & Technology"
-              className="header-image"
-            />
-          </div>
-
-          <div className="notice-body-content">
-            {/* Constant Institutional Metadata Top Block */}
-            <div className="constant-top-block">
-            <div className="top-doc-meta">
-              <span className="doc-code">TCET/FRM/MP-04/11</span>
-              <span className="doc-revision">Revision: B</span>
-            </div>
-            <div className="top-cell-title">Training and Placement Cell</div>
-          </div>
-
-          {/* 2. Notice Title */}
-          <h2 className="content-header">NOTICE</h2>
-
-          {/* 3. Notice Metadata (Serial No. & Date) */}
-          <div className="flex-container metadata-row">
-            <p className="metadata-item">
-              <span className="notice-label">Sr. No:</span>
-              <span className="metadata-val">{serialNumber}</span>
-            </p>
-            <p className="metadata-item">
-              <span className="notice-label">Date:</span>
-              <span className="metadata-val">{formattedDate}</span>
-            </p>
-          </div>
-
-          {/* Main Notice Body */}
-          <div className="main-body text-black">
-            {/* 4. To Section */}
-            <p className="notice-row">
-              <span className="notice-label">To:</span>
-              <span>{formData.to || "All Eligible Final Year Students"}</span>
-            </p>
-
-            {/* 5. Subject (Both label and content underlined) */}
-            <p className="notice-row subject-row">
-              <u className="subject-underline">
-                <span className="notice-label">Subject:</span>{" "}
-                <span className="subject-text">{formData.subject}</span>
-              </u>
-            </p>
-
-            {/* 6. Introduction */}
-            {formData.intro && (
-              <p className="notice-row">
-                <span className="notice-label">Intro:</span>
-                <span>{formData.intro}</span>
-              </p>
-            )}
-
-            {/* 7. Eligibility Criteria */}
-            {formData.eligibility_criteria && (
-              <p className="notice-row">
-                <span className="notice-label">Eligibility Criteria:</span>
-                <div>{renderBulletList(formData.eligibility_criteria)}</div>
-              </p>
-            )}
-
-            {/* 8. About Company */}
-            {formData.about && formData.about.trim() && (
-              <p className="notice-row">
-                <span className="notice-label">About Company:</span>
-                <span>{formData.about}</span>
-              </p>
-            )}
-
-            {/* 9. Location */}
-            {formData.location && (
-              <p className="notice-row">
-                <span className="notice-label">Location:</span>
-                <span>{formData.location}</span>
-              </p>
-            )}
-
-            {/* Conditional Roles & Responsibilities Section (Immediately below Location) */}
-            {rolesBullets.length > 0 && (
-              <div className="notice-row roles-responsibilities-row">
-                <span className="notice-label">Roles &amp; Responsibilities:</span>
-                <ul className="notice-bullet-list">
-                  {rolesBullets.map((bullet, idx) => (
-                    <li key={idx} className="notice-bullet-item">
-                      {bullet}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* 10. Placement Details Table */}
-            <div className="table-wrapper">
-              <table className="placement-details-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: "25%" }}>Type</th>
-                    <th style={{ width: "30%" }}>CTC</th>
-                    <th style={{ width: "45%" }}>Position</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row, index) => (
-                    <tr key={index}>
-                      <td>{row.type}</td>
-                      <td>{row.salary}</td>
-                      <td>{row.position}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Skills Required if present */}
-            {formData.skill_required && formData.skill_required.trim() && (
-              <p className="notice-row">
-                <span className="notice-label">Skills Required:</span>
-                <div>{renderBulletList(formData.skill_required)}</div>
-              </p>
-            )}
-
-            {/* 11. Documents to Carry */}
-            <p className="notice-row">
-              <span className="notice-label">Documents to Carry:</span>
-              <div>
-                {renderBulletList(
-                  formData.Documents_to_Carry ||
-                    "Updated Resume (2 hard copies), College ID Card, Govt Photo ID Proof, and Marksheets from 10th onwards."
-                )}
-              </div>
-            </p>
-
-            {/* 12. Selection Process (Replaces Walk-in Interview) */}
-            <p className="notice-row">
-              <span className="notice-label">Selection Process:</span>
-              <div>
-                {renderBulletList(
-                  formData.Walk_in_interview ||
-                    "Schedule and venue details will be communicated via official T&P cell notification."
-                )}
-              </div>
-            </p>
-
-            {/* 13. Deadline to Register */}
-            <p className="notice-row">
-              <span className="notice-label">Deadline to Register:</span>
-              <span>{formatDeadlineSentence(formData.deadline)}</span>
-            </p>
-
-            {/* 14. Company Registration Link (College Registration Link removed) */}
-            {formData.Company_registration_Link &&
-              formData.Company_registration_Link.trim() && (
-                <p className="notice-row">
-                  <span className="notice-label">Registration Link:</span>
-                  <a
-                    href={formData.Company_registration_Link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="notice-link"
-                  >
-                    {formData.Company_registration_Link}
-                  </a>
-                </p>
-              )}
-
-            {/* 15. Important Note */}
-            {formData.Note && formData.Note.trim() && (
-              <p className="notice-row note-row">
-                <span className="notice-label">Note:</span>
-                <span>{formData.Note}</span>
-              </p>
-            )}
-          </div>
-
-          {/* 16 & 17. Institutional Footer Area: Copy To (Left) & Signature (Right) */}
-          <div className="notice-footer-container">
-            {/* Copy To Section (Structured Institutional Layout) */}
-            <div className="notice-copyto-block">
-              <div className="copyto-header">Copy to:</div>
-              <div className="copyto-grid">
-                <div className="copyto-col-items">
-                  <ul className="copyto-list">
-                    <li>Principal</li>
-                    <li>Vice Principal</li>
-                    <li>All Deans</li>
-                    <li>All HODs</li>
-                    <li>Website</li>
-                    <li>Notice Board of TCET</li>
-                  </ul>
-                </div>
-                <div className="copyto-col-annotations">
-                  <div className="annotation-tier tier-top">
-                    <span className="brace-symbol">&#125;</span>
-                    <span className="annotation-label">For kind information please</span>
+          {/* Multi-page table layout for printing with repeating header & page safety reservation */}
+          <table className="notice-page-table">
+            <thead className="notice-page-thead">
+              <tr>
+                <td>
+                  {/* 1. Official TCET Letterhead Header (repeats on every page in print) */}
+                  <div className="notice-header-container">
+                    <img
+                      src={noticeHeader}
+                      alt="Thakur College of Engineering & Technology"
+                      className="header-image"
+                    />
                   </div>
-                  <div className="annotation-tier tier-bottom">
-                    <span className="brace-symbol-large">&#125;</span>
-                    <span className="annotation-label">For necessary communication</span>
+                  {/* 15mm Top Spacing between header and body content */}
+                  <div className="notice-header-spacer" />
+                </td>
+              </tr>
+            </thead>
+
+            <tfoot className="notice-page-tfoot">
+              <tr>
+                <td>
+                  {/* Height reservation for fixed bottom footer on every page */}
+                  <div className="notice-footer-spacer" />
+                </td>
+              </tr>
+            </tfoot>
+
+            <tbody className="notice-page-tbody">
+              <tr>
+                <td>
+                  <div className="notice-body-content">
+                    {/* Constant Institutional Metadata Top Block */}
+                    <div className="constant-top-block">
+                      <div className="top-doc-meta">
+                        <span className="doc-code">TCET/FRM/MP-04/11</span>
+                        <span className="doc-revision">Revision: B</span>
+                      </div>
+                      <div className="top-cell-title">Training and Placement Cell</div>
+                    </div>
+
+                    {/* 2. Notice Title */}
+                    <h2 className="content-header">NOTICE</h2>
+
+                    {/* 3. Notice Metadata (Serial No. & Date) */}
+                    <div className="flex-container metadata-row">
+                      <p className="metadata-item">
+                        <span className="notice-label">Sr. No:</span>
+                        <span className="metadata-val">{serialNumber}</span>
+                      </p>
+                      <p className="metadata-item">
+                        <span className="notice-label">Date:</span>
+                        <span className="metadata-val">{formattedDate}</span>
+                      </p>
+                    </div>
+
+                    {/* Main Notice Body */}
+                    <div className="main-body text-black">
+                      {/* 4. To Section */}
+                      <p className="notice-row">
+                        <span className="notice-label">To:</span>
+                        <span>{formData.to || "All Eligible Final Year Students"}</span>
+                      </p>
+
+                      {/* 5. Subject (Both label and content underlined) */}
+                      <p className="notice-row subject-row">
+                        <u className="subject-underline">
+                          <span className="notice-label">Subject:</span>{" "}
+                          <span className="subject-text">{formData.subject}</span>
+                        </u>
+                      </p>
+
+                      {/* 6. Introduction */}
+                      {formData.intro && (
+                        <p className="notice-row">
+                          <span className="notice-label">Intro:</span>
+                          <span>{formData.intro}</span>
+                        </p>
+                      )}
+
+                      {/* 7. Eligibility Criteria */}
+                      {formData.eligibility_criteria && (
+                        <p className="notice-row">
+                          <span className="notice-label">Eligibility Criteria:</span>
+                          <div>{renderBulletList(formData.eligibility_criteria)}</div>
+                        </p>
+                      )}
+
+                      {/* 8. About Company */}
+                      {formData.about && formData.about.trim() && (
+                        <p className="notice-row">
+                          <span className="notice-label">About Company:</span>
+                          <span>{formData.about}</span>
+                        </p>
+                      )}
+
+                      {/* 9. Location */}
+                      {formData.location && (
+                        <p className="notice-row">
+                          <span className="notice-label">Location:</span>
+                          <span>{formData.location}</span>
+                        </p>
+                      )}
+
+                      {/* Conditional Roles & Responsibilities Section (Immediately below Location) */}
+                      {rolesBullets.length > 0 && (
+                        <div className="notice-row roles-responsibilities-row">
+                          <span className="notice-label">Roles &amp; Responsibilities:</span>
+                          <ul className="notice-bullet-list">
+                            {rolesBullets.map((bullet, idx) => (
+                              <li key={idx} className="notice-bullet-item">
+                                {bullet}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* 10. Placement Details Table */}
+                      <div className="table-wrapper">
+                        <table className="placement-details-table">
+                          <thead>
+                            <tr>
+                              <th style={{ width: "25%" }}>Type</th>
+                              <th style={{ width: "30%" }}>CTC</th>
+                              <th style={{ width: "45%" }}>Position</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {rows.map((row, index) => (
+                              <tr key={index}>
+                                <td>{row.type}</td>
+                                <td>{row.salary}</td>
+                                <td>{row.position}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Skills Required if present */}
+                      {formData.skill_required && formData.skill_required.trim() && (
+                        <p className="notice-row">
+                          <span className="notice-label">Skills Required:</span>
+                          <div>{renderBulletList(formData.skill_required)}</div>
+                        </p>
+                      )}
+
+                      {/* 11. Documents to Carry */}
+                      <p className="notice-row">
+                        <span className="notice-label">Documents to Carry:</span>
+                        <div>
+                          {renderBulletList(
+                            formData.Documents_to_Carry ||
+                              "Updated Resume (2 hard copies), College ID Card, Govt Photo ID Proof, and Marksheets from 10th onwards."
+                          )}
+                        </div>
+                      </p>
+
+                      {/* 12. Selection Process (Replaces Walk-in Interview) */}
+                      <p className="notice-row">
+                        <span className="notice-label">Selection Process:</span>
+                        <div>
+                          {renderBulletList(
+                            formData.Walk_in_interview ||
+                              "Schedule and venue details will be communicated via official T&P cell notification."
+                          )}
+                        </div>
+                      </p>
+
+                      {/* 13. Deadline to Register */}
+                      <p className="notice-row">
+                        <span className="notice-label">Deadline to Register:</span>
+                        <span>{formatDeadlineSentence(formData.deadline)}</span>
+                      </p>
+
+                      {/* 14. Company Registration Link (College Registration Link removed) */}
+                      {formData.Company_registration_Link &&
+                        formData.Company_registration_Link.trim() && (
+                          <p className="notice-row">
+                            <span className="notice-label">Registration Link:</span>
+                            <a
+                              href={formData.Company_registration_Link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="notice-link"
+                            >
+                              {formData.Company_registration_Link}
+                            </a>
+                          </p>
+                        )}
+
+                      {/* 15. Important Note */}
+                      {formData.Note && formData.Note.trim() && (
+                        <p className="notice-row note-row">
+                          <span className="notice-label">Note:</span>
+                          <span>{formData.Note}</span>
+                        </p>
+                      )}
+                    </div>
+
+                    {/* 16 & 17. Institutional Footer Area: Copy To (Left) & Signature (Right) */}
+                    <div className="notice-footer-container">
+                      {/* Copy To Section (Structured Institutional Layout) */}
+                      <div className="notice-copyto-block">
+                        <div className="copyto-header">Copy to:</div>
+                        <div className="copyto-grid">
+                          <div className="copyto-col-items">
+                            <ul className="copyto-list">
+                              <li>Principal</li>
+                              <li>Vice Principal</li>
+                              <li>All Deans</li>
+                              <li>All HODs</li>
+                              <li>Website</li>
+                              <li>Notice Board of TCET</li>
+                            </ul>
+                          </div>
+                          <div className="copyto-col-annotations">
+                            <div className="annotation-tier tier-top">
+                              <span className="brace-symbol">&#125;</span>
+                              <span className="annotation-label">For kind information please</span>
+                            </div>
+                            <div className="annotation-tier tier-bottom">
+                              <span className="brace-symbol-large">&#125;</span>
+                              <span className="annotation-label">For necessary communication</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Signature / Issuing Authority Block */}
+                      <div className="fromto-signature-block">
+                        <p className="sig-sd">Sd/-</p>
+                        <p className="sig-name">{formData.From || "(Dr. Zahir Aalam)"}</p>
+                        <p className="sig-designation">
+                          {formData.From_designation ||
+                            "Training and Placement Officer (TPO), TCET"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-            {/* Signature / Issuing Authority Block */}
-            <div className="fromto-signature-block">
-              <p className="sig-sd">Sd/-</p>
-              <p className="sig-name">{formData.From || "(Dr. Zahir Aalam)"}</p>
-              <p className="sig-designation">
-                {formData.From_designation ||
-                  "Training and Placement Officer (TPO), TCET"}
-              </p>
-            </div>
+          {/* 18. TCET Institutional Footer Image (Anchored to bottom on every page in print) */}
+          <div className="notice-footer-fixed">
+            <img src={noticeFooter} alt="Footer" className="footer-image" />
           </div>
-        </div>
-
-          {/* 18. TCET Footer Image */}
-          <img src={noticeFooter} alt="Footer" className="footer-image" />
         </div>
       </div>
     );
