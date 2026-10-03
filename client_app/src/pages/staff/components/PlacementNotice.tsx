@@ -1102,7 +1102,7 @@ const PlacementNotice: React.FC = () => {
             boxSizing: "border-box",
           }}
         >
-          <Box sx={{ width: "100%", maxWidth: "960px" }}>
+          <Box sx={{ width: "100%", maxWidth: "850px" }}>
             <Notice formData={livePreviewData} ref={contentRef} isPlacement={true} />
           </Box>
         </Box>

@@ -1,7 +1,9 @@
 /* ==========================================================================
-   TCET Official Notice Document Styles (Screen & Print / PDF)
+   TCET Official Notice Document Styles
+   One authoritative stylesheet — screen preview == print preview == PDF
    ========================================================================== */
 
+/* ── Outer viewer wrapper (screen only, never printed) ──────────────────── */
 .notice-document-wrapper {
   display: flex;
   justify-content: center;
@@ -11,21 +13,53 @@
   font-family: Arial, Helvetica, sans-serif !important;
 }
 
+/* ── The A4 notice page ─────────────────────────────────────────────────── */
+/*
+ * On screen   : renders as a centred white card up to 210mm wide.
+ * On print/PDF: @page gives us an A4 sheet with zero browser margin;
+ *               .main-notice then fills it exactly.
+ *
+ * Layout: flex column so .notice-body-content can grow (flex:1) and
+ * the footer is naturally pushed to the bottom of the page regardless
+ * of how much body content there is.
+ */
 .main-notice {
   font-family: Arial, Helvetica, sans-serif !important;
-  width: 100%;
-  max-width: 960px;
-  background: #ffffff;
-  padding: 28px 36px 24px 36px;
-  margin: 0 auto;
-  color: #111827;
-  line-height: 1.5;
+
+  /* A4 portrait dimensions — matches the @page size in print */
+  width: 210mm;
+  min-height: 297mm;
   box-sizing: border-box;
+
+  /* Internal spacing matches the screen design */
+  padding: 0 12mm 10mm 12mm;
+
+  background: #ffffff;
+  color: #111827;
+
+  /* Flex column: body grows, footer stays at bottom */
+  display: flex;
+  flex-direction: column;
+
+  /* Screen chrome */
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
   border-radius: 4px;
+  margin: 0 auto;
+  line-height: 1.5;
 }
 
-/* Constant Institutional Metadata Top Block */
+/* ── Section that grows to fill remaining space ─────────────────────────── */
+/*
+ * Everything between the header and the footer/signature block lives here.
+ * flex:1 ensures it expands so the notice always fills the A4 height.
+ */
+.notice-body-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Constant Institutional Metadata Top Block ──────────────────────────── */
 .constant-top-block {
   font-family: Arial, Helvetica, sans-serif !important;
   margin-top: 4px;
@@ -42,13 +76,8 @@
   font-family: Arial, Helvetica, sans-serif !important;
 }
 
-.doc-code {
-  text-align: left;
-}
-
-.doc-revision {
-  text-align: right;
-}
+.doc-code { text-align: left; }
+.doc-revision { text-align: right; }
 
 .top-cell-title {
   text-align: center !important;
@@ -59,7 +88,7 @@
   font-family: Arial, Helvetica, sans-serif !important;
 }
 
-/* Bullet List Item Formatting (Line-by-line) */
+/* ── Bullet List Formatting ─────────────────────────────────────────────── */
 .notice-bullet-list {
   margin: 4px 0 4px 20px !important;
   padding: 0 !important;
@@ -75,16 +104,20 @@
   font-family: Arial, Helvetica, sans-serif !important;
 }
 
-/* Header & Official Letterhead */
+/* ── Header & Official Letterhead ───────────────────────────────────────── */
+/*
+ * The header image bleeds to the page edge (no side padding at top).
+ * We pull it out of the 12mm side padding with a negative margin trick.
+ */
 .notice-header-container {
-  width: calc(100% + 72px);
-  margin-left: -36px;
-  margin-right: -36px;
-  margin-top: -28px;
-  padding: 8px 16px 0 16px;
+  width: calc(100% + 24mm); /* cancel the 12mm L+R padding */
+  margin-left: -12mm;
+  margin-right: -12mm;
+  margin-top: 0;
+  padding: 0;
   box-sizing: border-box;
   text-align: center;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   overflow: hidden;
 }
 
@@ -96,11 +129,9 @@
 }
 
 /* Hide the extra divider below the official header */
-.header-divider {
-  display: none !important;
-}
+.header-divider { display: none !important; }
 
-/* Document Title */
+/* ── Document Title ─────────────────────────────────────────────────────── */
 .content-header {
   text-align: center;
   margin: 8px 0 14px 0;
@@ -112,13 +143,13 @@
   font-family: Arial, Helvetica, sans-serif !important;
 }
 
-/* Subject + subject content underline */
+/* ── Subject underline ──────────────────────────────────────────────────── */
 .subject-underline,
 .notice-row\.subject-row {
   text-decoration: underline !important;
 }
 
-/* Metadata Row (Serial No. and Date) */
+/* ── Metadata Row (Serial No. and Date) ─────────────────────────────────── */
 .metadata-row {
   display: flex;
   justify-content: space-between;
@@ -141,7 +172,7 @@
   font-weight: 500;
 }
 
-/* Main Body Rows */
+/* ── Main Body Rows ─────────────────────────────────────────────────────── */
 .main-body {
   font-size: 13.5px;
   color: #1e293b;
@@ -164,7 +195,7 @@
   color: #0f172a;
 }
 
-/* Note */
+/* ── Note ───────────────────────────────────────────────────────────────── */
 .note-row {
   margin-top: 12px;
   padding: 8px 12px;
@@ -173,7 +204,7 @@
   border-radius: 2px;
 }
 
-/* Placement Details Table */
+/* ── Placement Details Table ────────────────────────────────────────────── */
 .table-wrapper {
   margin: 14px 0;
   width: 100%;
@@ -208,28 +239,31 @@
   background-color: #f8fafc;
 }
 
-/* Hyperlinks */
+/* ── Hyperlinks ─────────────────────────────────────────────────────────── */
 .notice-link {
   color: #1d4ed8;
   text-decoration: underline;
   word-break: break-all;
 }
+.notice-link:hover { color: #1e40af; }
 
-.notice-link:hover {
-  color: #1e40af;
-}
-
-/* Institutional Footer Container (Copy To on Left, Signature on Right) */
+/* ── Signature + Copy To footer area ───────────────────────────────────── */
+/*
+ * This sits at the bottom of .notice-body-content (which is flex:1).
+ * It does NOT use position:absolute — it's in normal flow, naturally
+ * at the bottom because the body content above fills remaining space.
+ */
 .notice-footer-container {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-top: 14px;
+  margin-top: auto;
+  padding-top: 14px;
   gap: 24px;
   page-break-inside: avoid;
 }
 
-/* Copy to Section (Structured Institutional) */
+/* ── Copy To section ────────────────────────────────────────────────────── */
 .notice-copyto-block {
   margin-top: 0;
   padding-top: 0;
@@ -251,9 +285,7 @@
   font-size: 12.5px;
 }
 
-.copyto-col-items {
-  flex: 0 0 auto;
-}
+.copyto-col-items { flex: 0 0 auto; }
 
 .copyto-list {
   list-style-type: disc;
@@ -295,11 +327,9 @@
   font-family: "Times New Roman", Times, serif;
 }
 
-.annotation-label {
-  white-space: nowrap;
-}
+.annotation-label { white-space: nowrap; }
 
-/* Signature Block */
+/* ── Signature Block ────────────────────────────────────────────────────── */
 .fromto-signature-block {
   margin-top: 0;
   margin-bottom: 0;
@@ -330,7 +360,7 @@
   font-weight: 500;
 }
 
-/* Institutional Bottom Bar */
+/* ── Institutional Bottom Bar ───────────────────────────────────────────── */
 .institutional-bottom-bar {
   margin-top: 14px;
   padding-top: 8px;
@@ -342,9 +372,9 @@
   page-break-inside: avoid;
 }
 
-/* TCET Footer (Official Institutional Document Footer) */
+/* ── TCET Institutional Footer ──────────────────────────────────────────── */
 .tcet-footer {
-  margin-top: 28px;
+  margin-top: 16px;
   page-break-inside: avoid;
 }
 
@@ -400,16 +430,35 @@
   letter-spacing: 0.2px;
 }
 
+/* ── Footer image (tcet footer.png) ─────────────────────────────────────── */
+.footer-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 16px;
+  page-break-inside: avoid;
+}
+
 /* ==========================================================================
-   Print & PDF Specifications (A4 Optimized — ONE PAGE)
+   PRINT / PDF — Strip UI chrome only.
+   Do NOT redefine layout, font sizes, spacing, or colours.
+   The screen styles above are already the correct A4 specification.
    ========================================================================== */
 
 @media print {
+  /*
+   * @page — zero browser margins.
+   * All spacing is owned by .main-notice padding (set above in mm).
+   * This prevents the browser from adding its own top/bottom/side whitespace
+   * that would shift content and misplace the footer.
+   */
   @page {
     size: A4 portrait;
-    margin: 5mm 12mm 5mm 12mm;
+    margin: 0;
   }
 
+  /* Reset browser body margins */
+  html,
   body {
     margin: 0 !important;
     padding: 0 !important;
@@ -418,310 +467,85 @@
     print-color-adjust: exact !important;
   }
 
+  /* Viewer wrapper — invisible in print, no extra space */
   .notice-document-wrapper {
+    display: block !important;
     padding: 0 !important;
     margin: 0 !important;
+    background: transparent !important;
   }
 
   /*
-   * Keep the notice inside the A4 printable area.
-   * Do not force the document into a full-height flex layout.
+   * The notice page itself.
+   * Remove screen-only chrome (shadow, border-radius).
+   * Keep the exact same width/min-height/padding/flex layout.
+   * Do NOT touch font-size, line-height, or spacing here.
    */
   .main-notice {
     box-shadow: none !important;
     border-radius: 0 !important;
-    padding: 0 !important;
     margin: 0 !important;
-    max-width: 100% !important;
-    width: 100% !important;
-    min-height: 0 !important;
-    height: auto !important;
-    display: block !important;
-    font-size: 9.5pt !important;
-    line-height: 1.25 !important;
-    font-family: Arial, Helvetica, sans-serif !important;
+    /* width/min-height/padding/display/flex-direction come from above */
   }
 
-  /* Header: full printable width, no horizontal bleed */
-  .notice-header-container {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-    box-sizing: border-box !important;
-    margin-bottom: 3pt !important;
-  }
-
-  .header-image {
-    display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    height: auto !important;
-    object-fit: contain !important;
-    margin: 0 auto !important;
-  }
-
-  /* Ensure the divider remains hidden in print */
-  .header-divider {
-    display: none !important;
-  }
-
-  /* Constant top metadata */
-  .constant-top-block {
-    margin-top: 2pt !important;
-    margin-bottom: 3pt !important;
-    font-family: Arial, Helvetica, sans-serif !important;
-  }
-
-  .top-doc-meta {
-    font-size: 9pt !important;
-    line-height: 1.1 !important;
-  }
-
-  .top-cell-title {
-    font-size: 10pt !important;
-    margin-top: 2pt !important;
-  }
-
-  /* NOTICE title */
-  .content-header {
-    font-size: 12pt !important;
-    margin: 3pt 0 4pt 0 !important;
-    letter-spacing: 2px !important;
-    font-family: Arial, Helvetica, sans-serif !important;
-  }
-
-  /* Serial / Date row */
-  .metadata-row {
-    font-size: 8.5pt !important;
-    margin-bottom: 4pt !important;
-    padding-bottom: 2pt !important;
-    border-bottom: none !important;
-  }
-
-  /* Body text */
-  .main-body {
-    font-size: 8.5pt !important;
-    line-height: 1.25 !important;
-    font-family: Arial, Helvetica, sans-serif !important;
-  }
-
-  .notice-row {
-    margin-bottom: 2pt !important;
-    line-height: 1.25 !important;
-    font-family: Arial, Helvetica, sans-serif !important;
-  }
-
-  .notice-label {
-    font-family: Arial, Helvetica, sans-serif !important;
-  }
-
-  .subject-text {
-    font-family: Arial, Helvetica, sans-serif !important;
-  }
-
-  /* Subject + its content remain underlined in print */
-  .subject-underline,
-  .notice-row\.subject-row {
-    text-decoration: underline !important;
-  }
-
-  /* Bullet lists */
-  .notice-bullet-list {
-    margin: 2pt 0 2pt 16pt !important;
-    padding: 0 !important;
-    list-style-type: disc !important;
-    list-style-position: outside !important;
-  }
-
-  .notice-bullet-item {
-    margin-bottom: 1pt !important;
-    line-height: 1.2 !important;
-    display: list-item !important;
-    font-size: 8.5pt !important;
-    font-family: Arial, Helvetica, sans-serif !important;
-  }
-
-  /* Note */
+  /* Preserve background colours for note box, table headers, footer divider */
   .note-row {
     background-color: #f8fafc !important;
-    border-left: 2.5pt solid #3b82f6 !important;
-    padding: 3pt 5pt !important;
-    margin-top: 3pt !important;
-    font-family: Arial, Helvetica, sans-serif !important;
-  }
-
-  /* Table */
-  .table-wrapper {
-    margin: 4pt 0 !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-    width: 100% !important;
-    overflow: visible !important;
-  }
-
-  .placement-details-table {
-    width: 100% !important;
-    font-size: 8pt !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-    font-family: Arial, Helvetica, sans-serif !important;
-  }
-
-  .placement-details-table th,
-  .placement-details-table td {
-    padding: 2pt 5pt !important;
+    border-left: 3px solid #3b82f6 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .placement-details-table th {
     background-color: #f1f5f9 !important;
-    color: #000000 !important;
-    font-size: 7.5pt !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
-  /* Institutional Footer Container */
-  .notice-footer-container {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: flex-end !important;
-    margin-top: 4pt !important;
-    gap: 12px !important;
+  .placement-details-table tr:nth-child(even) td {
+    background-color: #f8fafc !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .tcet-footer__divider {
+    background: linear-gradient(90deg, #1a365d 0%, #2b6cb0 60%, #1a365d 100%) !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Prevent page breaks inside critical blocks */
+  .notice-footer-container,
+  .notice-copyto-block,
+  .fromto-signature-block,
+  .tcet-footer,
+  .table-wrapper,
+  .placement-details-table {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
 
-  /* Copy To */
-  .notice-copyto-block {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-    page-break-before: avoid !important;
-    break-before: avoid !important;
+  /* Prevent the table from overflowing the print area */
+  .table-wrapper {
+    overflow: visible !important;
+    width: 100% !important;
   }
 
-  .copyto-header {
-    font-size: 8pt !important;
-    margin-bottom: 2pt !important;
+  .placement-details-table {
+    width: 100% !important;
   }
 
-  .copyto-grid {
-    gap: 10px !important;
-    font-size: 8pt !important;
+  /* Ensure header image spans full width */
+  .header-image {
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
-  .copyto-list {
-    line-height: 1.15 !important;
-    font-size: 8pt !important;
-    margin-left: 14px !important;
-  }
-
-  .copyto-col-annotations {
-    padding-left: 4px !important;
-  }
-
-  .annotation-tier {
-    gap: 6px !important;
-    font-size: 7.5pt !important;
-  }
-
-  .brace-symbol {
-    font-size: 18px !important;
-  }
-
-  .brace-symbol-large {
-    font-size: 30px !important;
-  }
-
-  .annotation-label {
-    white-space: nowrap !important;
-  }
-
-  /* Signature block */
-  .fromto-signature-block {
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-    padding-right: 4px !important;
-  }
-
-  .fromto-signature-block .sig-sd {
-    margin: 0 0 4pt 0 !important;
-    font-size: 8.5pt !important;
-  }
-
-  .fromto-signature-block .sig-name {
-    font-size: 8.5pt !important;
-    margin: 0 0 1pt 0 !important;
-  }
-
-  .fromto-signature-block .sig-designation {
-    font-size: 8pt !important;
-    margin: 0 !important;
-  }
-
-  /* Institutional Bottom Bar */
-  .institutional-bottom-bar {
-    margin-top: 4pt !important;
-    padding-top: 2pt !important;
-    border-top: 1px solid #cbd5e1 !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    font-size: 7pt !important;
-    color: #475569 !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-  }
-
-  /* Footer image in normal document flow */
+  /* Footer image */
   .footer-image {
     display: block !important;
     width: 100% !important;
     max-width: 100% !important;
     height: auto !important;
-    margin-top: 4pt !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-  }
-
-  /* CSS footer fallback */
-  .tcet-footer {
-    margin-top: 5pt !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-    page-break-before: avoid !important;
-    break-before: avoid !important;
-  }
-
-  .tcet-footer__divider {
-    height: 1.5pt !important;
-    margin-bottom: 3pt !important;
-  }
-
-  .tcet-footer__inner {
-    padding: 2pt 2pt 3pt 2pt !important;
-  }
-
-  .tcet-footer__name {
-    font-size: 7pt !important;
-  }
-
-  .tcet-footer__institute {
-    font-size: 6.5pt !important;
-  }
-
-  .tcet-footer__contact {
-    font-size: 6pt !important;
-  }
-
-  /* Explicitly prevent accidental horizontal overflow */
-  html,
-  body,
-  .notice-document-wrapper,
-  .main-notice {
-    max-width: 100% !important;
-    overflow-x: hidden !important;
   }
 }

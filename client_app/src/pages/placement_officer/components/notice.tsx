@@ -190,8 +190,9 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(
             />
           </div>
 
-          {/* Constant Institutional Metadata Top Block */}
-          <div className="constant-top-block">
+          <div className="notice-body-content">
+            {/* Constant Institutional Metadata Top Block */}
+            <div className="constant-top-block">
             <div className="top-doc-meta">
               <span className="doc-code">TCET/FRM/MP-04/11</span>
               <span className="doc-revision">Revision: B</span>
@@ -359,42 +360,46 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(
             )}
           </div>
 
-          {/* 16. Signature / Issuing Authority Block */}
-          <div className="fromto-signature-block">
-            <p className="sig-sd">Sd/-</p>
-            <p className="sig-name">{formData.From || "(Dr. Zahir Aalam)"}</p>
-            <p className="sig-designation">
-              {formData.From_designation ||
-                "Training and Placement Officer (TPO), TCET"}
-            </p>
-          </div>
-
-          {/* 17. Copy To Section (Structured Institutional Layout) */}
-          <div className="notice-copyto-block">
-            <div className="copyto-header">Copy to:</div>
-            <div className="copyto-grid">
-              <div className="copyto-col-items">
-                <ul className="copyto-list">
-                  <li>Principal</li>
-                  <li>Vice Principal</li>
-                  <li>All Deans</li>
-                  <li>All HODs</li>
-                  <li>Website</li>
-                  <li>Notice Board of TCET</li>
-                </ul>
-              </div>
-              <div className="copyto-col-annotations">
-                <div className="annotation-tier tier-top">
-                  <span className="brace-symbol">&#125;</span>
-                  <span className="annotation-label">For kind information please</span>
+          {/* 16 & 17. Institutional Footer Area: Copy To (Left) & Signature (Right) */}
+          <div className="notice-footer-container">
+            {/* Copy To Section (Structured Institutional Layout) */}
+            <div className="notice-copyto-block">
+              <div className="copyto-header">Copy to:</div>
+              <div className="copyto-grid">
+                <div className="copyto-col-items">
+                  <ul className="copyto-list">
+                    <li>Principal</li>
+                    <li>Vice Principal</li>
+                    <li>All Deans</li>
+                    <li>All HODs</li>
+                    <li>Website</li>
+                    <li>Notice Board of TCET</li>
+                  </ul>
                 </div>
-                <div className="annotation-tier tier-bottom">
-                  <span className="brace-symbol-large">&#125;</span>
-                  <span className="annotation-label">For necessary communication</span>
+                <div className="copyto-col-annotations">
+                  <div className="annotation-tier tier-top">
+                    <span className="brace-symbol">&#125;</span>
+                    <span className="annotation-label">For kind information please</span>
+                  </div>
+                  <div className="annotation-tier tier-bottom">
+                    <span className="brace-symbol-large">&#125;</span>
+                    <span className="annotation-label">For necessary communication</span>
+                  </div>
                 </div>
               </div>
             </div>
+
+            {/* Signature / Issuing Authority Block */}
+            <div className="fromto-signature-block">
+              <p className="sig-sd">Sd/-</p>
+              <p className="sig-name">{formData.From || "(Dr. Zahir Aalam)"}</p>
+              <p className="sig-designation">
+                {formData.From_designation ||
+                  "Training and Placement Officer (TPO), TCET"}
+              </p>
+            </div>
           </div>
+        </div>
 
           {/* 18. TCET Footer Image */}
           <img src={noticeFooter} alt="Footer" className="footer-image" />
