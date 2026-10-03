@@ -201,7 +201,6 @@ const PlacementNotice: React.FC = () => {
     setSelectedOpportunity(null);
     setFormData((prev) => ({
       ...prev,
-      to: "",
       subject: "",
       intro: "",
       about: "",
