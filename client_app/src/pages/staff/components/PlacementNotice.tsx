@@ -75,6 +75,7 @@ const PlacementNotice: React.FC = () => {
     location: "TCET Campus / Online",
     deadline: "",
     batch: "",
+    roles_responsibilities: "",
   });
 
   // Dynamic job-offer rows (Type / CTC / Position)
@@ -176,6 +177,7 @@ const PlacementNotice: React.FC = () => {
         location: auto.location || "TCET Campus / Online",
         deadline: "",
         batch: auto.batch || opp.batch || "",
+        roles_responsibilities: auto.roles_responsibilities || "",
       });
 
       setTableRows(auto.table_data && auto.table_data.length > 0 ? auto.table_data : [emptyRow()]);
@@ -201,12 +203,14 @@ const PlacementNotice: React.FC = () => {
     setSelectedOpportunity(null);
     setFormData((prev) => ({
       ...prev,
+      to: "",
       subject: "",
       intro: "",
       about: "",
       eligibility_criteria: "",
       Company_registration_Link: "",
       batch: "",
+      roles_responsibilities: "",
     }));
     setTableRows([emptyRow()]);
     setSkillTags([]);
@@ -242,6 +246,7 @@ const PlacementNotice: React.FC = () => {
         location: n.location || "",
         deadline: n.deadline || "",
         batch: n.batch || "",
+        roles_responsibilities: n.custom_data?.roles_responsibilities || "",
       });
 
       if (n.table_data && n.table_data.length > 0) {
@@ -292,6 +297,7 @@ const PlacementNotice: React.FC = () => {
       location: "TCET Campus / Online",
       deadline: "",
       batch: "",
+      roles_responsibilities: "",
     });
 
     api
@@ -334,6 +340,7 @@ const PlacementNotice: React.FC = () => {
       deadline: formData.deadline || null,
       sr_no: formData.srNo,
       table_data: validRows,
+      roles_responsibilities: formData.roles_responsibilities || "",
     };
 
     setLoading(true);
@@ -513,6 +520,7 @@ const PlacementNotice: React.FC = () => {
       location: formData.location,
       deadline: formData.deadline,
       noticeId: noticeId ? String(noticeId) : "Draft",
+      roles_responsibilities: formData.roles_responsibilities || "",
     };
   }, [formData, tableRows, skillTags, noticeId]);
 
