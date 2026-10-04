@@ -65,7 +65,6 @@ const PlacementNotice: React.FC = () => {
     intro: "",
     about: "",
     eligibility_criteria: "",
-    Documents_to_Carry: "1. Updated Resume (2 copies)\n2. College ID Card & Government ID\n3. Marksheets (10th, 12th/Diploma, All semesters)\n4. Passport size photographs (2 copies)",
     Walk_in_interview: "Online Assessment followed by Technical and HR Interviews.",
     Company_registration_Link: "",
     College_registration_Link: "",
@@ -167,7 +166,6 @@ const PlacementNotice: React.FC = () => {
         intro: auto.intro || "",
         about: auto.about || "",
         eligibility_criteria: auto.eligibility_criteria || "",
-        Documents_to_Carry: auto.documents_to_carry || "1. Updated Resume (2 copies)\n2. College ID Card & Government ID\n3. Marksheets (10th, 12th/Diploma, All semesters)\n4. Passport size photographs (2 copies)",
         Walk_in_interview: auto.walk_in_interview || "Online Assessment followed by Technical and HR Interviews.",
         Company_registration_Link: auto.company_registration_link || opp.company_website || "",
         College_registration_Link: "",
@@ -236,7 +234,6 @@ const PlacementNotice: React.FC = () => {
         intro: n.intro || "",
         about: n.about || "",
         eligibility_criteria: n.eligibility_criteria || "",
-        Documents_to_Carry: n.documents_to_carry || "",
         Walk_in_interview: n.walk_in_interview || "",
         Company_registration_Link: n.company_registration_link || "",
         College_registration_Link: n.custom_data?.college_registration_link || "",
@@ -246,7 +243,7 @@ const PlacementNotice: React.FC = () => {
         location: n.location || "",
         deadline: n.deadline || "",
         batch: n.batch || "",
-        roles_responsibilities: n.custom_data?.roles_responsibilities || "",
+        roles_responsibilities: n.roles_responsibilities || n.custom_data?.roles_responsibilities || "",
       });
 
       if (n.table_data && n.table_data.length > 0) {
@@ -287,7 +284,6 @@ const PlacementNotice: React.FC = () => {
       intro: "",
       about: "",
       eligibility_criteria: "",
-      Documents_to_Carry: "1. Updated Resume (2 copies)\n2. College ID Card & Government ID\n3. Marksheets (10th, 12th/Diploma, All semesters)\n4. Passport size photographs (2 copies)",
       Walk_in_interview: "Online Assessment followed by Technical and HR Interviews.",
       Company_registration_Link: "",
       College_registration_Link: "",
@@ -329,7 +325,6 @@ const PlacementNotice: React.FC = () => {
       about: formData.about,
       eligibility_criteria: formData.eligibility_criteria,
       skill_required: skillTags.join(", "),
-      documents_to_carry: formData.Documents_to_Carry,
       walk_in_interview: formData.Walk_in_interview,
       company_registration_link: formData.Company_registration_Link,
       college_registration_link: formData.College_registration_Link,
@@ -400,7 +395,6 @@ const PlacementNotice: React.FC = () => {
             about: formData.about,
             eligibility_criteria: formData.eligibility_criteria,
             skill_required: skillTags.join(", "),
-            documents_to_carry: formData.Documents_to_Carry,
             walk_in_interview: formData.Walk_in_interview,
             company_registration_link: formData.Company_registration_Link,
             note: formData.Note,
@@ -410,6 +404,7 @@ const PlacementNotice: React.FC = () => {
             deadline: formData.deadline || null,
             sr_no: formData.srNo,
             table_data: validRows,
+            roles_responsibilities: formData.roles_responsibilities || "",
           },
           { headers: { "X-CSRFToken": csrfToken || "" } }
         );
@@ -429,7 +424,6 @@ const PlacementNotice: React.FC = () => {
       about: formData.about,
       eligibility_criteria: formData.eligibility_criteria,
       skill_required: skillTags.join(", "),
-      documents_to_carry: formData.Documents_to_Carry,
       walk_in_interview: formData.Walk_in_interview,
       company_registration_link: formData.Company_registration_Link,
       note: formData.Note,
@@ -439,6 +433,7 @@ const PlacementNotice: React.FC = () => {
       deadline: formData.deadline || null,
       sr_no: formData.srNo,
       table_data: validRows,
+      roles_responsibilities: formData.roles_responsibilities || "",
     };
 
     setLoading(true);
@@ -511,7 +506,6 @@ const PlacementNotice: React.FC = () => {
       roles: JSON.stringify(validRows),
       tableData: validRows.length > 0 ? validRows : [emptyRow()],
       skill_required: skillTags.join(", "),
-      Documents_to_Carry: formData.Documents_to_Carry,
       Walk_in_interview: formData.Walk_in_interview,
       Company_registration_Link: formData.Company_registration_Link,
       Note: formData.Note,
@@ -927,14 +921,15 @@ const PlacementNotice: React.FC = () => {
               </Grid>
               <Grid item xs={12}>
                 <TextField
-                  label="Documents to Carry"
-                  name="Documents_to_Carry"
-                  value={formData.Documents_to_Carry}
+                  label="Roles & Responsibilities"
+                  name="roles_responsibilities"
+                  value={formData.roles_responsibilities}
                   onChange={handleChange}
                   fullWidth
                   multiline
                   rows={3}
                   size="small"
+                  placeholder="Enter company-specific roles & responsibilities (leave empty if not specified)"
                 />
               </Grid>
               <Grid item xs={12}>
@@ -1123,7 +1118,7 @@ const PlacementNotice: React.FC = () => {
             intro: snap.intro || prev.intro,
             about: snap.about || prev.about,
             eligibility_criteria: snap.eligibility_criteria || prev.eligibility_criteria,
-            Documents_to_Carry: snap.documents_to_carry || prev.Documents_to_Carry,
+            roles_responsibilities: snap.roles_responsibilities ?? snap.custom_data?.roles_responsibilities ?? prev.roles_responsibilities,
             Walk_in_interview: snap.walk_in_interview || prev.Walk_in_interview,
             Company_registration_Link: snap.company_registration_link || prev.Company_registration_Link,
             Note: snap.note || prev.Note,

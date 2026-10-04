@@ -162,7 +162,7 @@ const downloadWordDocument = async (noticeData: any, _isPlacement = true) => {
                         new Paragraph({ text: "", spacing: { after: 200 } }),
                         
                         ...[
-                            ["Documents to Carry", noticeData.Documents_to_Carry],
+                            ...(noticeData.roles_responsibilities ? [["Roles & Responsibilities", Array.isArray(noticeData.roles_responsibilities) ? noticeData.roles_responsibilities.join("\n") : noticeData.roles_responsibilities]] : []),
                             ["Selection Process", noticeData.Walk_in_interview],
                             ["Deadline to Register", formatDeadlineSentence(noticeData.deadline)],
                             ...(noticeData.Company_registration_Link ? [["Registration Link", noticeData.Company_registration_Link]] : []),

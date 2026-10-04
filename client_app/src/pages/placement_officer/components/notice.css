@@ -558,9 +558,9 @@
     margin: 0 !important;
   }
 
-  /* Exactly 15mm top spacing between header and body on EVERY page */
+  /* Compact, professional top spacing between header and body on EVERY page */
   .notice-header-spacer {
-    height: 15mm !important;
+    height: 8px !important;
     display: block !important;
   }
 

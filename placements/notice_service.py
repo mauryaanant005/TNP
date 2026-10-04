@@ -361,6 +361,19 @@ def extract_roles_responsibilities(opp: PlacementOpportunity) -> List[str]:
             if offer.skills and offer.skills.strip():
                 raw_entries.append(offer.skills)
 
+    if not raw_entries and not opp.company_registration and opp.company and opp.batch:
+        try:
+            reg = CompanyRegistration.objects.filter(
+                name__iexact=opp.company.name.strip(),
+                batch=opp.batch.strip(),
+            ).first()
+            if reg:
+                for offer in reg.job_offers.all():
+                    if offer.skills and offer.skills.strip():
+                        raw_entries.append(offer.skills)
+        except Exception:
+            pass
+
     cleaned_bullets: List[str] = []
     seen: Set[str] = set()
 
@@ -464,7 +477,7 @@ def get_opportunity_autofill_data(opportunity_id: int) -> Dict[str, Any]:
         "roles_responsibilities": roles_resp_str,
         "roles_responsibilities_list": roles_bullets,
         "skill_required": skills_str,
-        "documents_to_carry": "1. Updated Resume (2 copies)\n2. College ID Card & Government ID\n3. Marksheets (10th, 12th/Diploma, All semesters)\n4. Passport size photographs (2 copies)",
+        "documents_to_carry": "",
         "walk_in_interview": opp.selection_process or "Online Assessment followed by Technical and HR Interviews.",
         "company_registration_link": company.website or "",
         "note": "Students must report on time in formal attire. Late entries will not be permitted.",
@@ -737,6 +750,11 @@ def publish_notice_service(
             table_data = data.get("table_data") or data.get("tableData")
             if table_data is not None:
                 notice.roles = json.dumps(table_data, ensure_ascii=False)
+
+            if "roles_responsibilities" in data:
+                custom = dict(notice.custom_data or {})
+                custom["roles_responsibilities"] = sanitize_text(data["roles_responsibilities"])
+                notice.custom_data = custom
 
         # Pre-publish validation
         if not notice.subject:

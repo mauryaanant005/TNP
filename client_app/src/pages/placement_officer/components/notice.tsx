@@ -20,7 +20,6 @@ export interface NoticeData {
   roles_responsibilities?: string | string[];
   about?: string;
   skill_required?: string;
-  Documents_to_Carry?: string;
   Walk_in_interview?: string;
   Company_registration_Link?: string;
   Note?: string;
@@ -285,20 +284,6 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(
                         </p>
                       )}
 
-                      {/* Conditional Roles & Responsibilities Section (Immediately below Location) */}
-                      {rolesBullets.length > 0 && (
-                        <div className="notice-row roles-responsibilities-row">
-                          <span className="notice-label">Roles &amp; Responsibilities:</span>
-                          <ul className="notice-bullet-list">
-                            {rolesBullets.map((bullet, idx) => (
-                              <li key={idx} className="notice-bullet-item">
-                                {bullet}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
                       {/* 10. Placement Details Table */}
                       <div className="table-wrapper">
                         <table className="placement-details-table">
@@ -329,16 +314,19 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(
                         </p>
                       )}
 
-                      {/* 11. Documents to Carry */}
-                      <p className="notice-row">
-                        <span className="notice-label">Documents to Carry:</span>
-                        <div>
-                          {renderBulletList(
-                            formData.Documents_to_Carry ||
-                              "Updated Resume (2 hard copies), College ID Card, Govt Photo ID Proof, and Marksheets from 10th onwards."
-                          )}
+                      {/* 11. Roles & Responsibilities (Replaces Documents to Carry) */}
+                      {rolesBullets.length > 0 && (
+                        <div className="notice-row roles-responsibilities-row">
+                          <span className="notice-label">Roles &amp; Responsibilities:</span>
+                          <ul className="notice-bullet-list">
+                            {rolesBullets.map((bullet, idx) => (
+                              <li key={idx} className="notice-bullet-item">
+                                {bullet}
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                      </p>
+                      )}
 
                       {/* 12. Selection Process (Replaces Walk-in Interview) */}
                       <p className="notice-row">
