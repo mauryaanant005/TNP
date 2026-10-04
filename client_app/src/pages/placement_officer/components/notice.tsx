@@ -370,10 +370,13 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(
                       )}
                     </div>
 
-                    {/* 16 & 17. Institutional Footer Area: Copy To (Left) & Signature (Right) */}
-                    <div className="notice-footer-container">
+                    {/* Flexible Vertical Spacer (consumes available vertical space dynamically) */}
+                    <div className="notice-flexible-spacer" />
+
+                    {/* 16 & 17. Atomic Institutional Bottom Block: Copy To (Left) & Signature (Right) */}
+                    <div className="notice-bottom-section notice-footer-container">
                       {/* Copy To Section (Structured Institutional Layout) */}
-                      <div className="notice-copyto-block">
+                      <div className="notice-copyto-block copy-to-section">
                         <div className="copyto-header">Copy to:</div>
                         <div className="copyto-grid">
                           <div className="copyto-col-items">
@@ -400,7 +403,7 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(
                       </div>
 
                       {/* Signature / Issuing Authority Block */}
-                      <div className="fromto-signature-block">
+                      <div className="fromto-signature-block signature-section">
                         <p className="sig-sd">Sd/-</p>
                         <p className="sig-name">{formData.From || "(Dr. Zahir Aalam)"}</p>
                         <p className="sig-designation">

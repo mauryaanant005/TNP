@@ -54,13 +54,20 @@
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-  flex: 1;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
   border: none;
 }
 
-.notice-page-thead td,
-.notice-page-tfoot td,
-.notice-page-tbody td {
+.notice-page-thead {
+  display: block;
+  flex: 0 0 auto;
+}
+
+.notice-page-thead > tr,
+.notice-page-thead > tr > td {
+  display: block;
   padding: 0;
   border: none;
 }
@@ -80,10 +87,38 @@
   width: 100%;
 }
 
+.notice-page-tbody {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+}
+
+.notice-page-tbody > tr,
+.notice-page-tbody > tr > td {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  padding: 0;
+  border: none;
+}
+
 /* ── Body content area inside table row ─────────────────────────────────── */
 .notice-body-content {
   padding: 0 12mm;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+}
+
+.main-body {
+  flex: 0 0 auto;
+}
+
+/* ── Flexible vertical spacer: consumes available space dynamically ───── */
+.notice-flexible-spacer {
+  flex: 1 1 auto;
+  min-height: 12px;
 }
 
 /* ── Constant Institutional Metadata Top Block ──────────────────────────── */
@@ -271,21 +306,23 @@
 }
 .notice-link:hover { color: #1e40af; }
 
-/* ── Signature + Copy To footer area ───────────────────────────────────── */
+/* ── Atomic Bottom Section: Signature + Copy To ────────────────────────── */
 /*
- * This sits at the bottom of .notice-body-content (which is flex:1).
- * It does NOT use position:absolute — it's in normal flow, naturally
- * at the bottom because the body content above fills remaining space.
+ * This entire .notice-bottom-section behaves as one indivisible atomic block
+ * for layout and pagination. It uses margin-top: auto to consume available
+ * vertical space and sit naturally downward near the institutional footer.
  */
+.notice-bottom-section,
 .notice-footer-container {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-top: 10px;
-  padding-top: 0;
+  margin-top: auto;
+  padding-top: 14px;
+  padding-bottom: 6px;
   gap: 16px;
-  page-break-inside: avoid;
-  break-inside: avoid;
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
 }
 
 /* ── Copy To section ────────────────────────────────────────────────────── */
@@ -293,22 +330,23 @@
   margin-top: 0;
   padding-top: 0;
   page-break-inside: avoid;
+  break-inside: avoid;
 }
 
 .copyto-header {
   font-weight: 700;
-  font-size: 11px;
+  font-size: 11.5px;
   text-decoration: underline;
   color: #0f172a;
   margin-bottom: 2px;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .copyto-grid {
   display: flex;
   align-items: stretch;
-  gap: 8px;
-  font-size: 10px;
+  gap: 10px;
+  font-size: 11px;
 }
 
 .copyto-col-items { flex: 0 0 auto; }
@@ -317,12 +355,12 @@
   list-style-type: disc;
   margin: 0 0 0 14px;
   padding: 0;
-  line-height: 1.25;
+  line-height: 1.35;
   color: #1e293b;
 }
 
 .copyto-list li {
-  margin-bottom: 1px;
+  margin-bottom: 1.5px;
 }
 
 .copyto-col-annotations {
@@ -342,7 +380,7 @@
 }
 
 .brace-symbol {
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1;
   color: #64748b;
   font-weight: 300;
@@ -350,7 +388,7 @@
 }
 
 .brace-symbol-large {
-  font-size: 28px;
+  font-size: 32px;
   line-height: 1;
   color: #64748b;
   font-weight: 300;
@@ -365,26 +403,27 @@
   margin-bottom: 0;
   text-align: right;
   page-break-inside: avoid;
+  break-inside: avoid;
   padding-right: 4px;
   flex: 0 0 auto;
 }
 
 .fromto-signature-block .sig-sd {
   font-weight: 600;
-  font-size: 11px;
+  font-size: 12px;
   margin: 0 0 4px 0;
   color: #0f172a;
 }
 
 .fromto-signature-block .sig-name {
   font-weight: 700;
-  font-size: 12px;
-  margin: 0 0 1px 0;
+  font-size: 12.5px;
+  margin: 0 0 2px 0;
   color: #0f172a;
 }
 
 .fromto-signature-block .sig-designation {
-  font-size: 10px;
+  font-size: 10.5px;
   margin: 0;
   color: #334155;
   font-weight: 500;
@@ -533,6 +572,7 @@
     border-collapse: collapse !important;
     table-layout: fixed !important;
     border: none !important;
+    display: table !important;
   }
 
   /* Repeating header on top of EVERY page */
@@ -540,13 +580,44 @@
     display: table-header-group !important;
   }
 
+  .notice-page-thead > tr {
+    display: table-row !important;
+  }
+
+  .notice-page-thead > tr > td {
+    display: table-cell !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+
   /* Height reservation on bottom of EVERY page */
   .notice-page-tfoot {
     display: table-footer-group !important;
   }
 
+  .notice-page-tfoot > tr {
+    display: table-row !important;
+  }
+
+  .notice-page-tfoot > tr > td {
+    display: table-cell !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+
   .notice-page-tbody {
     display: table-row-group !important;
+  }
+
+  .notice-page-tbody > tr {
+    display: table-row !important;
+  }
+
+  .notice-page-tbody > tr > td {
+    display: table-cell !important;
+    vertical-align: top !important;
+    padding: 0 !important;
+    border: none !important;
   }
 
   .notice-header-container {
@@ -571,38 +642,60 @@
 
   /* Reserved height at bottom so body never overlaps the fixed institutional footer */
   .notice-footer-spacer {
-    height: 25mm !important;
+    height: 24mm !important;
     display: block !important;
   }
 
+  /*
+   * Usable printable height calculation:
+   * 297mm (Page) - 42.94mm (Header) - 24mm (Footer reservation) = 230mm.
+   * On single-page notices, min-height allows flex column to dynamically
+   * push .notice-bottom-section down towards the footer.
+   */
   .notice-body-content {
     padding: 0 12mm !important;
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: calc(297mm - 43mm - 25mm) !important;
     box-sizing: border-box !important;
   }
 
+  .main-body {
+    flex: 0 0 auto !important;
+  }
+
+  .notice-flexible-spacer {
+    flex: 1 1 auto !important;
+    min-height: 8px !important;
+  }
+
+  .notice-bottom-section,
   .notice-footer-container {
-    margin-top: 8px !important;
-    padding-top: 0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-end !important;
+    margin-top: auto !important;
+    padding-top: 10px !important;
+    padding-bottom: 2px !important;
     gap: 16px !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
 
   .copyto-header {
-    font-size: 10.5px !important;
+    font-size: 11.5px !important;
     margin-bottom: 2px !important;
-    line-height: 1.2 !important;
+    line-height: 1.25 !important;
   }
 
   .copyto-grid {
-    gap: 8px !important;
-    font-size: 10px !important;
+    gap: 10px !important;
+    font-size: 11px !important;
   }
 
   .copyto-list {
     margin: 0 0 0 14px !important;
-    line-height: 1.22 !important;
+    line-height: 1.32 !important;
   }
 
   .copyto-list li {
@@ -610,16 +703,16 @@
   }
 
   .annotation-tier {
-    font-size: 9px !important;
-    gap: 3px !important;
+    font-size: 9.5px !important;
+    gap: 4px !important;
   }
 
   .brace-symbol {
-    font-size: 18px !important;
+    font-size: 20px !important;
   }
 
   .brace-symbol-large {
-    font-size: 28px !important;
+    font-size: 32px !important;
   }
 
   .fromto-signature-block {
@@ -627,45 +720,44 @@
   }
 
   .fromto-signature-block .sig-sd {
-    font-size: 11px !important;
+    font-size: 12px !important;
     margin: 0 0 3px 0 !important;
   }
 
   .fromto-signature-block .sig-name {
-    font-size: 11.5px !important;
-    margin: 0 0 1px 0 !important;
+    font-size: 12.5px !important;
   }
 
   .fromto-signature-block .sig-designation {
-    font-size: 10px !important;
+    font-size: 10.5px !important;
   }
 
   .notice-row {
-    margin-bottom: 5px !important;
-    line-height: 1.38 !important;
+    margin-bottom: 6px !important;
+    line-height: 1.45 !important;
   }
 
   .table-wrapper {
-    margin: 6px 0 !important;
+    margin: 8px 0 !important;
   }
 
   .placement-details-table th,
   .placement-details-table td {
-    padding: 4px 8px !important;
+    padding: 5px 10px !important;
   }
 
   .metadata-row {
-    margin-bottom: 6px !important;
+    margin-bottom: 8px !important;
   }
 
   .content-header {
-    margin: 4px 0 6px 0 !important;
-    font-size: 19px !important;
+    margin: 6px 0 8px 0 !important;
+    font-size: 20px !important;
   }
 
   .note-row {
-    margin-top: 6px !important;
-    padding: 5px 8px !important;
+    margin-top: 8px !important;
+    padding: 6px 10px !important;
     page-break-after: avoid !important;
     break-after: avoid !important;
   }
