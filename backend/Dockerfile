@@ -74,4 +74,4 @@ ENTRYPOINT ["/app/entrypoint.sh"]
 # server (per the hosting standard); the Uvicorn worker class lets it serve
 # both HTTP and WebSocket traffic on the same port, which IT routes to via
 # both api.<domain> and socket.<domain> (hosting standard section 11.4).
-CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "config.asgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "config.asgi:application", "--bind", "0.0.0.0:8000", "--workers", "5", "--timeout", "120"]

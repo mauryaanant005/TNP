@@ -1,5 +1,6 @@
 import json
 import logging
+from django.core.cache import cache
 from base.error_utils import safe_error_payload
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -38,6 +39,11 @@ class StudentTrainingPerformanceAPIView(APIView):
     permission_classes = [HasRole.of(*ROLES.STUDENT)]
 
     def get(self, request):
+        cache_key = f"training_perf_{request.user.id}"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return Response(cached_data, status=status.HTTP_200_OK)
+
         try:
             # Get current logged-in student's UID
             student = get_object_or_404(Student, user=request.user)
@@ -73,6 +79,7 @@ class StudentTrainingPerformanceAPIView(APIView):
                     "date": perf.date,
                 })
 
+            cache.set(cache_key, data, 60)
             return Response(data, status=status.HTTP_200_OK)
 
         except Http404:
@@ -108,6 +115,11 @@ class SessionAttendanceAPIView(APIView):
     permission_classes = [HasRole.of(*ROLES.STUDENT)]
 
     def get(self, request):
+        cache_key = f"session_attendance_{request.user.id}"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return Response(cached_data)
+
         try:
             student = Student.objects.get(user=request.user)
             attendance_data = AttendanceData.objects.filter(
@@ -117,6 +129,7 @@ class SessionAttendanceAPIView(APIView):
             serializer = SessionAttendanceSerializer(
                 attendance_data, many=True
             )  # Serialize data
+            cache.set(cache_key, serializer.data, 60)
             return Response(serializer.data)  # Return JSON response
         except Student.DoesNotExist:
             return Response({"error": "Student not found"}, status=404)
@@ -126,6 +139,16 @@ class StudentProfileView(RetrieveAPIView):
     serializer_class = StudentSerializer
 
     permission_classes = [HasRole.of(*ROLES.STUDENT)]
+
+    def get(self, request, *args, **kwargs):
+        cache_key = f"student_profile_{request.user.id}"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return Response(cached_data)
+        
+        response = super().get(request, *args, **kwargs)
+        cache.set(cache_key, response.data, 60)
+        return response
 
     def get_object(self):
         user = self.request.user
@@ -303,6 +326,11 @@ class PlacementCompanyAPIView(APIView):
 class PlacementCard(APIView):
     permission_classes = [HasRole.of(*ROLES.STUDENT)]
     def get(self, request, *args, **kwargs):
+        cache_key = f"placement_card_{request.user.id}"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return Response(cached_data)
+
         try:
             student = get_object_or_404(Student, user=request.user)
         except Student.DoesNotExist:
@@ -398,12 +426,24 @@ class PlacementCard(APIView):
             "academic_year": student.academic_year,
         }
 
+        cache.set(cache_key, response_data, 60)
         return Response(response_data, status=status.HTTP_200_OK)
 
 
 class StudentInternshipListView(ListAPIView):
     permission_classes = [HasRole.of(*ROLES.STUDENT)]
     serializer_class = InternshipAcceptanceSerializer
+
+    def get(self, request, *args, **kwargs):
+        page = request.query_params.get("page", 1)
+        cache_key = f"student_internships_{request.user.id}_page_{page}"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return Response(cached_data)
+        
+        response = super().get(request, *args, **kwargs)
+        cache.set(cache_key, response.data, 60)
+        return response
 
     def get_queryset(self):
         try:

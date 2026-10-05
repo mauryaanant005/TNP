@@ -260,6 +260,7 @@ else:
             "HOST": os.getenv("DATABASE_HOST", "mysql"),
             "PORT": os.getenv("DATABASE_PORT", "3306"),
             "OPTIONS": _db_options,
+            "CONN_MAX_AGE": int(os.getenv("DATABASE_CONN_MAX_AGE", "60")),
         }
     }
 
