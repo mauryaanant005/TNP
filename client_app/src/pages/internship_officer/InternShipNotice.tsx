@@ -28,7 +28,6 @@ const InternshipNotice = () => {
     roles: "",
     about: "",
     skill_required: "",
-    Documents_to_Carry: "",
     Walk_in_interview: "",
     Company_registration_Link: "",
     Note: "",
@@ -222,15 +221,7 @@ const InternshipNotice = () => {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Documents to Carry"
-                name="Documents_to_Carry"
-                value={formData.Documents_to_Carry}
-                onChange={handleChange}
-                fullWidth
-              />
-            </Grid>
+
             <Grid item xs={12}>
               <TextField
                 label="Walk-in Interview Details"

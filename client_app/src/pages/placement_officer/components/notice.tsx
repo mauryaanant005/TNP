@@ -193,8 +193,6 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(
                       className="header-image"
                     />
                   </div>
-                  {/* 15mm Top Spacing between header and body content */}
-                  <div className="notice-header-spacer" />
                 </td>
               </tr>
             </thead>
