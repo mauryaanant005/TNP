@@ -6,8 +6,8 @@ import { MessageCircle, Users, BarChart3, Calendar, Upload, AlertCircle} from "l
 import { logout, redirectToProfile } from "@/utils";
 import { SERVER_URL } from "@/constant";
 import LogoIcon from "@/assets/img/logo.png";
-import ProfileUserIcon from "@/assets/img/user_profile.png";
-import LogoutUserIcon from "@/assets/img/logout.png";
+import ProfileUserIcon from "@/assets/img/user_profile_new.png";
+import LogoutUserIcon from "@/assets/img/logout_new.png";
 
 const Sidebar = () => {
   const handleLogout = async () => {
@@ -239,19 +239,33 @@ const ActionButton = styled(IconButton)<any>({
 });
 
 const ProfileIcon = styled("img")({
-  width: "40px",
-  height: "40px",
-  borderRadius: "10px",
-  objectFit: "cover",
+  width: "36px",
+  height: "36px",
+  maxWidth: "36px",
+  maxHeight: "36px",
+  borderRadius: "8px",
+  objectFit: "contain",
   transition: "all 0.2s ease",
+  cursor: "pointer",
+  "&:hover": {
+    boxShadow: "0px 0px 8px rgba(0, 0, 0, 0.2)",
+    transform: "scale(1.05)",
+  },
 });
 
 const LogoutIcon = styled("img")({
-  width: "40px",
-  height: "40px",
-  borderRadius: "10px",
-  objectFit: "cover",
+  width: "36px",
+  height: "36px",
+  maxWidth: "36px",
+  maxHeight: "36px",
+  borderRadius: "8px",
+  objectFit: "contain",
   transition: "all 0.2s ease",
+  cursor: "pointer",
+  "&:hover": {
+    boxShadow: "0px 0px 8px rgba(0, 0, 0, 0.2)",
+    transform: "scale(1.05)",
+  },
 });
 
 export default Sidebar;

@@ -25,11 +25,9 @@ import {
   Copy,
   History,
   ShieldCheck,
-  FolderOpen,
   Printer,
   Plus,
   Trash2,
-  CheckCircle2,
   AlertTriangle,
   RotateCcw,
 } from "lucide-react";
@@ -532,117 +530,15 @@ const PlacementNotice: React.FC = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 3, px: { xs: 1, sm: 2, md: 3 }, width: "100%", maxWidth: "100%", boxSizing: "border-box" }}>
-      {/* Top Workspace Header & Actions Bar */}
-      <Paper
-        elevation={0}
-        sx={{
-          p: 2.5,
-          mb: 3,
-          borderRadius: 3,
-          border: "1px solid #e2e8f0",
-          background: "#ffffff",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 2,
-        }}
-      >
-        <Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a" }}>
-              Placement Notice Studio
-            </Typography>
-            {noticeStatus === "PUBLISHED" ? (
-              <Chip
-                icon={<CheckCircle2 size={14} />}
-                label={`Published (v${versionCount})`}
-                color="success"
-                size="small"
-                sx={{ fontWeight: 700 }}
-              />
-            ) : noticeStatus === "DRAFT" ? (
-              <Chip
-                label={`Draft Saved (#${noticeId})`}
-                size="small"
-                sx={{ bgcolor: "#fef3c7", color: "#92400e", fontWeight: 700 }}
-              />
-            ) : (
-              <Chip label="New Notice Draft" size="small" sx={{ bgcolor: "#f1f5f9", fontWeight: 600 }} />
-            )}
-            {isDirty && (
-              <Chip label="Unsaved Changes" size="small" color="warning" variant="outlined" sx={{ height: 22 }} />
-            )}
-          </Box>
-          <Typography variant="caption" sx={{ color: "#64748b" }}>
-            Automated Staff Placement Workflow • 4-Layer Domain Isolation • Immutable Versioning
-          </Typography>
-        </Box>
-
-        {/* Global Action Bar */}
-        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
-          <Button
-            size="small"
-            variant="outlined"
-            startIcon={<FolderOpen size={16} />}
-            onClick={() => setDraftsOpen(true)}
-            sx={{ textTransform: "none", borderRadius: 2 }}
-          >
-            Saved Drafts
-          </Button>
-
-          {noticeId && (
-            <>
-              <Button
-                size="small"
-                variant="outlined"
-                startIcon={<History size={16} />}
-                onClick={() => setHistoryOpen(true)}
-                sx={{ textTransform: "none", borderRadius: 2 }}
-              >
-                Version History {versionCount > 1 && `(${versionCount})`}
-              </Button>
-              <Button
-                size="small"
-                variant="outlined"
-                startIcon={<ShieldCheck size={16} />}
-                onClick={() => setAuditOpen(true)}
-                sx={{ textTransform: "none", borderRadius: 2 }}
-              >
-                Audit Trail
-              </Button>
-              <Button
-                size="small"
-                variant="outlined"
-                color="secondary"
-                startIcon={<Copy size={16} />}
-                onClick={handleCloneAsNew}
-                disabled={loading}
-                sx={{ textTransform: "none", borderRadius: 2 }}
-              >
-                Clone as New
-              </Button>
-            </>
-          )}
-
-          <Button
-            size="small"
-            variant="text"
-            startIcon={<RotateCcw size={16} />}
-            onClick={handleResetNewNotice}
-            sx={{ textTransform: "none" }}
-          >
-            Reset Form
-          </Button>
-        </Box>
-      </Paper>
-
       {/* Step 1: Intelligent Opportunity Search */}
       <OpportunitySearchCard
         onSelectOpportunity={handleSelectOpportunity}
         selectedOpportunity={selectedOpportunity}
         selectedOppId={selectedOpportunity?.id}
         onClearSelection={handleClearOpportunity}
+        noticeStatus={noticeStatus}
+        isDirty={isDirty}
+        onOpenDrafts={() => setDraftsOpen(true)}
       />
 
       {/* Step 2: Placement Notice Form Editor */}
@@ -662,7 +558,6 @@ const PlacementNotice: React.FC = () => {
                   onChange={handleChange}
                   fullWidth
                   size="small"
-                  helperText="Generated institutional sequence"
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -755,7 +650,6 @@ const PlacementNotice: React.FC = () => {
                   multiline
                   rows={3}
                   size="small"
-                  helperText="Snapshot saved immutably with this notice"
                 />
               </Grid>
             </Grid>
@@ -994,27 +888,70 @@ const PlacementNotice: React.FC = () => {
             )}
 
             {/* Bottom Form Action Buttons */}
-            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", pt: 2, borderTop: "1px solid #f1f5f9" }}>
-              <Button
-                variant="outlined"
-                color="primary"
-                startIcon={loading ? <CircularProgress size={16} /> : <Save size={16} />}
-                onClick={handleSaveDraft}
-                disabled={loading}
-                sx={{ textTransform: "none", borderRadius: 2, px: 3, fontWeight: 600 }}
-              >
-                Save Draft
-              </Button>
-
+            <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center", pt: 2.5, borderTop: "1px solid #f1f5f9" }}>
               <Button
                 variant="contained"
                 color={noticeStatus === "PUBLISHED" ? "secondary" : "primary"}
                 startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <Send size={16} />}
                 onClick={handlePublish}
                 disabled={loading}
-                sx={{ textTransform: "none", borderRadius: 2, px: 3.5, fontWeight: 700 }}
+                sx={{ textTransform: "none", borderRadius: 2, px: 3, fontWeight: 700 }}
               >
                 {noticeStatus === "PUBLISHED" ? `Update Notice (Create v${versionCount + 1})` : "Publish Notice (v1)"}
+              </Button>
+
+              <Button
+                variant="outlined"
+                color="primary"
+                startIcon={loading ? <CircularProgress size={16} /> : <Save size={16} />}
+                onClick={handleSaveDraft}
+                disabled={loading}
+                sx={{ textTransform: "none", borderRadius: 2, px: 2.5, fontWeight: 600 }}
+              >
+                Save Draft
+              </Button>
+
+              {noticeId && (
+                <>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<History size={16} />}
+                    onClick={() => setHistoryOpen(true)}
+                    sx={{ textTransform: "none", borderRadius: 2 }}
+                  >
+                    Version History {versionCount > 1 && `(${versionCount})`}
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<ShieldCheck size={16} />}
+                    onClick={() => setAuditOpen(true)}
+                    sx={{ textTransform: "none", borderRadius: 2 }}
+                  >
+                    Audit Trail
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="secondary"
+                    startIcon={<Copy size={16} />}
+                    onClick={handleCloneAsNew}
+                    disabled={loading}
+                    sx={{ textTransform: "none", borderRadius: 2 }}
+                  >
+                    Clone as New
+                  </Button>
+                </>
+              )}
+
+              <Button
+                variant="text"
+                startIcon={<RotateCcw size={16} />}
+                onClick={handleResetNewNotice}
+                sx={{ textTransform: "none" }}
+              >
+                Reset Form
               </Button>
 
               <Button

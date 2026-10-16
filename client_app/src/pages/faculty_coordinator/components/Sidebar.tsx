@@ -5,8 +5,8 @@ import { useAtomValue } from "jotai";
 import { logout, redirectToProfile } from "@/utils";
 import Logo from "@/assets/img/logo.png";
 import MessageIcon from "@/assets/img/Training_Programme_Statistics.png";
-import LogoutIcon from "@/assets/img/logout.png";
-import ProfileIcon from "@/assets/img/user_profile.png";
+import LogoutIcon from "@/assets/img/logout_new.png";
+import ProfileIcon from "@/assets/img/user_profile_new.png";
 const Sidebar = () => {
   const auth = useAtomValue(authAtom);
   return (
@@ -39,16 +39,18 @@ const Sidebar = () => {
       <div className="footer"></div>
       <div className="bottom-menu">
         <button
-          className="profile-icon bg-transparent hover:bg-transparent"
+          className="sidebar-action-button profile-icon bg-transparent hover:bg-transparent"
           onClick={redirectToProfile}
+          aria-label="Profile"
         >
-          <img src={ProfileIcon} alt="Profile" />
+          <img src={ProfileIcon} alt="Profile" className="sidebar-action-icon" />
         </button>
         <button
-          className="logout-icon bg-transparent hover:bg-transparent"
+          className="sidebar-action-button logout-icon bg-transparent hover:bg-transparent"
           onClick={logout}
+          aria-label="Logout"
         >
-          <img src={LogoutIcon} alt="Logout" />
+          <img src={LogoutIcon} alt="Logout" className="sidebar-action-icon" />
         </button>
       </div>
     </aside>

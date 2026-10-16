@@ -5,8 +5,8 @@ import { styled } from "@mui/system";
 import { logout, redirectToProfile } from "@/utils";
 import { SERVER_URL } from "@/constant";
 import LogoIcon from "@/assets/img/logo.png";
-import UserProfileIcon from "@/assets/img/user_profile.png";
-import UserLogoutIcon from "@/assets/img/logout.png";
+import UserProfileIcon from "@/assets/img/user_profile_new.png";
+import UserLogoutIcon from "@/assets/img/logout_new.png";
 import { Send } from "lucide-react";
 import ImageIcon from "@/assets/img/image.png";
 import StudentIcon from "@/assets/img/student.png";
@@ -127,20 +127,36 @@ const BottomMenu = styled(Box)({
 });
 
 const ProfileIcon = styled("img")({
-  width: "50px",
-  borderRadius: "12px",
+  width: "36px",
+  height: "36px",
+  maxWidth: "36px",
+  maxHeight: "36px",
+  objectFit: "contain",
+  display: "block",
+  flexShrink: 0,
+  borderRadius: "8px",
   cursor: "pointer",
+  transition: "all 0.2s ease",
   "&:hover": {
     boxShadow: "0px 0px 8px rgba(0, 0, 0, 0.2)",
+    transform: "scale(1.05)",
   },
 });
 
 const LogoutIcon = styled("img")({
-  width: "50px",
-  borderRadius: "12px",
+  width: "36px",
+  height: "36px",
+  maxWidth: "36px",
+  maxHeight: "36px",
+  objectFit: "contain",
+  display: "block",
+  flexShrink: 0,
+  borderRadius: "8px",
   cursor: "pointer",
+  transition: "all 0.2s ease",
   "&:hover": {
     boxShadow: "0px 0px 8px rgba(0, 0, 0, 0.2)",
+    transform: "scale(1.05)",
   },
 });
 

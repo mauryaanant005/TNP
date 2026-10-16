@@ -60,16 +60,45 @@
 .bottom-menu {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
+.sidebar-action-button,
+.profile-icon,
+.logout-icon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 12px;
+}
+
+.sidebar-action-icon,
 .profile-icon img,
 .logout-icon img {
-  width: 50px;
-  border-radius: 12px;
+  width: 52px;
+  height: 52px;
+  max-width: 52px;
+  max-height: 52px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+  border-radius: 8px;
   cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.sidebar-action-button:hover .sidebar-action-icon,
+.profile-icon:hover img,
+.logout-icon:hover img,
 .profile-icon img:hover,
 .logout-icon img:hover {
   box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.2);
+  transform: scale(1.06);
 }
