@@ -25,7 +25,6 @@ import {
   Copy,
   History,
   ShieldCheck,
-  FolderOpen,
   Printer,
   Plus,
   Trash2,
@@ -891,6 +890,17 @@ const PlacementNotice: React.FC = () => {
             {/* Bottom Form Action Buttons */}
             <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center", pt: 2.5, borderTop: "1px solid #f1f5f9" }}>
               <Button
+                variant="contained"
+                color={noticeStatus === "PUBLISHED" ? "secondary" : "primary"}
+                startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <Send size={16} />}
+                onClick={handlePublish}
+                disabled={loading}
+                sx={{ textTransform: "none", borderRadius: 2, px: 3, fontWeight: 700 }}
+              >
+                {noticeStatus === "PUBLISHED" ? `Update Notice (Create v${versionCount + 1})` : "Publish Notice (v1)"}
+              </Button>
+
+              <Button
                 variant="outlined"
                 color="primary"
                 startIcon={loading ? <CircularProgress size={16} /> : <Save size={16} />}
@@ -900,6 +910,40 @@ const PlacementNotice: React.FC = () => {
               >
                 Save Draft
               </Button>
+
+              {noticeId && (
+                <>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<History size={16} />}
+                    onClick={() => setHistoryOpen(true)}
+                    sx={{ textTransform: "none", borderRadius: 2 }}
+                  >
+                    Version History {versionCount > 1 && `(${versionCount})`}
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<ShieldCheck size={16} />}
+                    onClick={() => setAuditOpen(true)}
+                    sx={{ textTransform: "none", borderRadius: 2 }}
+                  >
+                    Audit Trail
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="secondary"
+                    startIcon={<Copy size={16} />}
+                    onClick={handleCloneAsNew}
+                    disabled={loading}
+                    sx={{ textTransform: "none", borderRadius: 2 }}
+                  >
+                    Clone as New
+                  </Button>
+                </>
+              )}
 
               <Button
                 variant="text"
