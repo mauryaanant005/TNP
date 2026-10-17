@@ -550,6 +550,28 @@ UNFOLD = {
                     },
                 ],
             },
+            {
+                "title": _("Training & Attendance"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Attendance Data"),
+                        "icon": "checklist",
+                        "link": reverse_lazy("admin:program_coordinator_api_attendancedata_changelist"),
+                    },
+                    {
+                        "title": _("Batch Attendance"),
+                        "icon": "groups",
+                        "link": reverse_lazy("admin:program_coordinator_api_batchattendance_changelist"),
+                    },
+                    {
+                        "title": _("Attendance Records"),
+                        "icon": "calendar_month",
+                        "link": reverse_lazy("admin:program_coordinator_api_attendancerecord_changelist"),
+                    },
+                ],
+            },
         ],
     },
 }
