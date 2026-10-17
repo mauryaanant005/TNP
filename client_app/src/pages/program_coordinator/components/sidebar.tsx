@@ -2,14 +2,17 @@ import React from "react";
 import { Link, useLocation } from "react-router";
 import { Box, Typography, IconButton, Divider } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { MessageCircle, Users, BarChart3, Calendar, Upload, AlertCircle} from "lucide-react";
+import { MessageCircle, Users, BarChart3, Calendar, Upload, AlertCircle, ArrowLeft, Building2 } from "lucide-react";
 import { logout, redirectToProfile } from "@/utils";
 import { SERVER_URL } from "@/constant";
+import { useAtomValue } from "jotai";
+import { authAtom } from "@/authAtom";
 import LogoIcon from "@/assets/img/logo.png";
 import ProfileUserIcon from "@/assets/img/user_profile_new.png";
 import LogoutUserIcon from "@/assets/img/logout_new.png";
 
 const Sidebar = () => {
+  const auth = useAtomValue(authAtom);
   const handleLogout = async () => {
     await logout();
     window.location.href = `${SERVER_URL}/auth/login/`;
@@ -80,6 +83,30 @@ const Sidebar = () => {
         </LogoContainer>
 
         <Divider sx={{ margin: "24px 0", opacity: 0.6 }} />
+
+        <Box sx={{ mb: 1 }}>
+          <MenuItemLink to="/faculty_coordinator" sx={{ color: "#0f766e", "&:hover": { color: "#0d9488", backgroundColor: "#f0fdfa" } }}>
+            <Box sx={{ marginRight: "12px", display: "flex", alignItems: "center" }}>
+              <ArrowLeft size={18} />
+            </Box>
+            <Typography sx={{ fontSize: "0.85rem", fontWeight: 600 }}>
+              Session Attendance
+            </Typography>
+          </MenuItemLink>
+
+          {auth?.department && (
+            <MenuItemLink to="/department_coordinator" sx={{ color: "#4338ca", "&:hover": { color: "#4f46e5", backgroundColor: "#eef2ff" } }}>
+              <Box sx={{ marginRight: "12px", display: "flex", alignItems: "center" }}>
+                <Building2 size={18} />
+              </Box>
+              <Typography sx={{ fontSize: "0.85rem", fontWeight: 600 }}>
+                Department Portal
+              </Typography>
+            </MenuItemLink>
+          )}
+        </Box>
+
+        <Divider sx={{ margin: "8px 0 16px 0", opacity: 0.6 }} />
 
         <Menu>
           {menuItems.map((item) => (

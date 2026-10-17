@@ -1,9 +1,10 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import Sidebar from "./components/sidebar";
 import { useAtomValue } from "jotai";
 import { authAtom } from "@/authAtom";
 import { Outlet, useNavigate } from "react-router";
 import { useEffect } from "react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -60,10 +61,10 @@ const ProgramCoordinatorLayout = () => {
             sx={{
               background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
               color: "#fff",
-              padding: { xs: "1.5rem 2rem", md: "2rem 3rem" },
+              padding: { xs: "1.25rem 1.5rem", md: "1.75rem 2.5rem" },
               borderRadius: "16px",
               boxShadow: "0 10px 30px rgba(102, 126, 234, 0.3)",
-              marginBottom: "2.5rem",
+              marginBottom: "2rem",
               position: "relative",
               overflow: "hidden",
               "&::before": {
@@ -79,6 +80,68 @@ const ProgramCoordinatorLayout = () => {
               }
             }}
           >
+            {/* Top Navigation / Back buttons */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 1.5,
+                mb: 2,
+                position: "relative",
+                zIndex: 2,
+              }}
+            >
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => navigate("/faculty_coordinator")}
+                sx={{
+                  color: "#fff",
+                  borderColor: "rgba(255, 255, 255, 0.4)",
+                  backgroundColor: "rgba(255, 255, 255, 0.15)",
+                  backdropFilter: "blur(4px)",
+                  borderRadius: "8px",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  fontSize: "0.85rem",
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 255, 255, 0.25)",
+                    borderColor: "#fff",
+                  },
+                }}
+                startIcon={<ArrowLeft size={16} />}
+              >
+                Session Attendance
+              </Button>
+
+              {authUser?.department && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => navigate("/department_coordinator")}
+                  sx={{
+                    color: "#fff",
+                    borderColor: "rgba(255, 255, 255, 0.4)",
+                    backgroundColor: "rgba(255, 255, 255, 0.15)",
+                    backdropFilter: "blur(4px)",
+                    borderRadius: "8px",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    fontSize: "0.85rem",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.25)",
+                      borderColor: "#fff",
+                    },
+                  }}
+                  endIcon={<ArrowRight size={16} />}
+                >
+                  Department Portal
+                </Button>
+              )}
+            </Box>
+
             <Typography
               variant="h3"
               sx={{
@@ -86,7 +149,7 @@ const ProgramCoordinatorLayout = () => {
                 letterSpacing: "0.5px",
                 textAlign: "center",
                 fontFamily: "'Inter', 'Roboto', sans-serif",
-                fontSize: { xs: "1.75rem", md: "2.5rem" },
+                fontSize: { xs: "1.75rem", md: "2.25rem" },
                 position: "relative",
                 zIndex: 1
               }}

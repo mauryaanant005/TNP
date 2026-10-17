@@ -1,10 +1,14 @@
 import { NavLink } from "react-router"; // Import Link for routing
 import "../../placement_officer/components/sidebar.css";
 import { logout, redirectToProfile } from "@/utils";
+import { useAtomValue } from "jotai";
+import { authAtom } from "@/authAtom";
 import Logo from "@/assets/img/logo.png";
 import ProfileIcon from "@/assets/img/user_profile_new.png";
 import LogoutIcon from "@/assets/img/logout_new.png";
+
 const Sidebar = () => {
+  const auth = useAtomValue(authAtom);
   return (
     <aside className="sidebar">
       <div className="logo-container">
@@ -12,6 +16,15 @@ const Sidebar = () => {
         <h1 className="title">TCET - TNP</h1>
       </div>
       <ul className="menu">
+        <NavLink to="/faculty_coordinator" className="menu-item" style={{ color: "#0f766e" }}>
+          <p>← Session Attendance</p>
+        </NavLink>
+        {auth?.program && (
+          <NavLink to="/program_coordinator" className="menu-item" style={{ color: "#4338ca" }}>
+            <p>Program Portal</p>
+          </NavLink>
+        )}
+        <hr style={{ margin: "8px 0", borderColor: "#e2e8f0" }} />
         <NavLink to="/department_coordinator" className="menu-item">
           <p>Students Data</p>
         </NavLink>
