@@ -434,8 +434,28 @@ class Command(BaseCommand):
             action="store_true",
             help="Clear existing dummy attendance data before seeding",
         )
+        parser.add_argument(
+            "--clear-only",
+            action="store_true",
+            help="Delete all dummy training attendance data without re-seeding",
+        )
 
     def handle(self, *args, **options):
+        if options.get("clear_only"):
+            self.stdout.write("Removing dummy training attendance data...")
+            with transaction.atomic():
+                uids = [s["uid"] for s in MASTER_STUDENTS]
+                del_att, _ = AttendanceData.objects.filter(uid__in=uids).delete()
+                del_p1, _ = Program1.objects.filter(UID__in=uids).delete()
+                del_batch, _ = BatchAttendance.objects.filter(batch__in=["2026", "2027", "2028"]).delete()
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Successfully removed dummy data: {del_att} AttendanceData records, "
+                    f"{del_p1} Program1 records, {del_batch} BatchAttendance records."
+                )
+            )
+            return
+
         self.stdout.write("Seeding Training Attendance Data for Master Students...")
 
         now = timezone.now()
