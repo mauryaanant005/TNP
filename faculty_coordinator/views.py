@@ -134,8 +134,9 @@ def reset_attendance(request):
         if not programs:
             return JsonResponse({"message": "No assigned program to reset"}, status=200)
         placeholders = ", ".join(["%s"] * len(programs))
-        query = f"DELETE FROM attendance_attendancerecord WHERE program_name IN ({placeholders})"
-        execute_query(query, programs, fetch_all=False)
+        execute_query(f"DELETE FROM attendance_attendancerecord WHERE program_name IN ({placeholders})", programs, fetch_all=False)
+        execute_query(f"DELETE FROM attendance_data WHERE program_name IN ({placeholders})", programs, fetch_all=False)
+        execute_query(f"DELETE FROM batch_attendance WHERE program_name IN ({placeholders})", programs, fetch_all=False)
         return JsonResponse(
             {"message": "Attendance table reset successfully"}, status=200
         )
