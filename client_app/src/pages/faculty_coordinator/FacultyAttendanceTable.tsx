@@ -70,11 +70,21 @@ function TablePage() {
         );
         const uniqueBatches = Array.from(
           new Set(
-            programData.flatMap((item: DataItem) =>
-              JSON.parse(item.student_data || "[]").map(
-                (student: Student) => student.student_data[2]
-              )
-            )
+            programData.flatMap((item: DataItem) => {
+              let parsedStudents: any[] = [];
+              try {
+                if (typeof item.student_data === "string") {
+                  parsedStudents = JSON.parse(item.student_data);
+                } else if (Array.isArray(item.student_data)) {
+                  parsedStudents = item.student_data;
+                }
+              } catch (e) {
+                console.error("Error parsing student_data:", e);
+              }
+              return (parsedStudents || [])
+                .map((student: Student) => student?.student_data?.[2])
+                .filter(Boolean);
+            })
           )
         ) as string[];
         setPhase(programData[0]?.phase || false);
@@ -258,38 +268,74 @@ function TablePage() {
   const filteredData = data.filter((item) => item.program_name === program);
 
   const filteredSessionData = filteredData.flatMap((item) => {
-    let dates: string[] = [];
+    let dates: any[] = [];
     try {
-      dates = JSON.parse(item.dates);
+      if (typeof item.dates === "string") {
+        const parsed = JSON.parse(item.dates);
+        dates = typeof parsed === "string" ? JSON.parse(parsed) : parsed;
+      } else if (Array.isArray(item.dates)) {
+        dates = item.dates;
+      }
     } catch (error) {
       console.error("Error parsing dates:", error);
+      if (typeof item.dates === "string" && item.dates.trim()) {
+        dates = [item.dates.trim()];
+      }
     }
+
+    const numSessions = Number(item.num_sessions) || 1;
+
+    if (!Array.isArray(dates) || dates.length === 0) {
+      return Array.from({ length: numSessions }, (_, i) => {
+        const sessionLabel = `Session ${i + 1}`;
+        return sessionLabel === dateSession ? item : null;
+      });
+    }
+
     return dates
-      .flatMap((date: string) =>
-        Array.from({ length: item.num_sessions }, (_, i) => {
-          const sessionLabel = `${date} - Session ${i + 1}`;
+      .flatMap((dateEntry: any) => {
+        const dateStr =
+          typeof dateEntry === "object" && dateEntry !== null
+            ? dateEntry.date || dateEntry.day || String(dateEntry)
+            : String(dateEntry || "").trim();
+        const labelPrefix = dateStr ? `${dateStr} - ` : "";
+
+        return Array.from({ length: numSessions }, (_, i) => {
+          const sessionLabel = `${labelPrefix}Session ${i + 1}`;
           return sessionLabel === dateSession ? item : null;
-        })
-      )
+        });
+      })
       .filter(Boolean);
   });
 
-  const filteredByBatch: Student[] = (
-    selectedBatch
-      ? filteredSessionData.flatMap((row) =>
-          JSON.parse(row?.student_data || "[]")
-            .filter(
-              (student: Student) =>
-                student.student_data[2] === selectedBatch && row?.year === year
-            )
-            .map((student: Student) => ({ ...student, year: row?.year || "" }))
-        )
-      : filteredSessionData.flatMap((row) =>
-          JSON.parse(row?.student_data || "[]")
-            .filter((_student: Student) => row?.year === year)
-            .map((student: Student) => ({ ...student, year: row?.year || "" }))
-        )
-  ).sort((a, b) => a.student_data[1].localeCompare(b.student_data[1])); // Sort by name
+  const filteredByBatch: Student[] = filteredSessionData
+    .flatMap((row) => {
+      let studentsList: any[] = [];
+      try {
+        if (typeof row?.student_data === "string") {
+          studentsList = JSON.parse(row.student_data);
+        } else if (Array.isArray(row?.student_data)) {
+          studentsList = row.student_data;
+        }
+      } catch (e) {
+        console.error("Error parsing row student_data:", e);
+      }
+      return (studentsList || [])
+        .filter((student: Student) => {
+          const batchMatch = selectedBatch
+            ? student?.student_data?.[2] === selectedBatch
+            : true;
+          const yearMatch = !year || !row?.year || row?.year === year;
+          return batchMatch && yearMatch;
+        })
+        .map((student: Student) => ({
+          ...student,
+          year: row?.year || year || "",
+        }));
+    })
+    .sort((a, b) =>
+      (a?.student_data?.[1] || "").localeCompare(b?.student_data?.[1] || "")
+    );
 
   const paginatedStudents = filteredByBatch.slice(
     page * rowsPerPage,

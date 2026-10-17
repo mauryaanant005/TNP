@@ -201,14 +201,27 @@ function Session() {
       return;
     }
 
+    let currentDates = formData.dates;
+    if (currentDates.length === 0) {
+      const today = new Date().toISOString().split("T")[0];
+      currentDates = Array.from({ length: formData.numDays || 1 }, (_, i) => ({
+        day: `Day ${i + 1}`,
+        date: today,
+      }));
+    }
+
     const updatedTableData = formData.tableData.map((row) => ({
       ...row,
-      sessions: formData.dates.map(() =>
+      sessions: currentDates.map(() =>
         Array.from({ length: formData.numSessions }, () => "")
       ),
     }));
 
-    setFormData((prevData) => ({ ...prevData, tableData: updatedTableData }));
+    setFormData((prevData) => ({
+      ...prevData,
+      dates: currentDates,
+      tableData: updatedTableData,
+    }));
     setPage(0); // Reset to first page when generating new table
   };
 
@@ -251,8 +264,8 @@ function Session() {
       return;
     }
 
-    if (dates.some((date) => !date.date)) {
-      setErrorMessage("Please enter dates for all days.");
+    if (dates.length === 0 || dates.some((date) => !date.date)) {
+      setErrorMessage("Please enter dates for all days before submitting.");
       return;
     }
 

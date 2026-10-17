@@ -170,43 +170,48 @@ function FacultyHome() {
   const filteredPhaseData = selectedPhase
     ? filteredYearData.filter((item) => item.phase === selectedPhase)
     : filteredYearData;
-  const dateSessionOptions = filteredPhaseData.flatMap((item) => {
-    let dates = [];
+  const dateSessionOptions = filteredPhaseData.flatMap((item, itemIdx) => {
+    let dates: any[] = [];
     try {
-      if (item.dates && typeof item.dates === "string") {
-        dates = JSON.parse(item.dates);
+      if (typeof item.dates === "string") {
+        const parsed = JSON.parse(item.dates);
+        dates = typeof parsed === "string" ? JSON.parse(parsed) : parsed;
       } else if (Array.isArray(item.dates)) {
         dates = item.dates;
       }
     } catch (error) {
       console.error("Error parsing dates:", error);
+      if (typeof item.dates === "string" && item.dates.trim()) {
+        dates = [item.dates.trim()];
+      }
     }
 
+    const numSessions = Number(item.num_sessions) || 1;
+
+    // Fallback if no dates were explicitly assigned to this record
     if (!Array.isArray(dates) || dates.length === 0) {
-      return [];
+      return Array.from({ length: numSessions }, (_, i) => {
+        const sessionKey = `Session ${i + 1}`;
+        return { key: `${sessionKey}-${itemIdx}-${i}`, value: sessionKey };
+      });
     }
 
-    // 1. Normalize Current Date (remove time component)
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
+    return dates.flatMap((dateEntry, dateIdx) => {
+      const dateStr =
+        typeof dateEntry === "object" && dateEntry !== null
+          ? dateEntry.date || dateEntry.day || String(dateEntry)
+          : String(dateEntry || "").trim();
 
-    return dates.flatMap((date, index) =>
-      Array.from({ length: item.num_sessions }, (_, i) => {
-        const sessionDate = new Date(date);
+      const labelPrefix = dateStr ? `${dateStr} - ` : "";
 
-        // 2. Adjust for session number and Normalize Time
-        sessionDate.setDate(sessionDate.getDate() + i);
-        sessionDate.setHours(0, 0, 0, 0);
-
-        // 3. CORRECTED LOGIC
-        // Matches your comment: "Only include future or present sessions"
-        if (sessionDate >= currentDate) {
-          const sessionKey = `${date} - Session ${i + 1}`;
-          return { key: `${sessionKey}-${index}`, value: sessionKey };
-        }
-        return null;
-      }).filter(Boolean)
-    );
+      return Array.from({ length: numSessions }, (_, i) => {
+        const sessionKey = `${labelPrefix}Session ${i + 1}`;
+        return {
+          key: `${sessionKey}-${itemIdx}-${dateIdx}-${i}`,
+          value: sessionKey,
+        };
+      });
+    });
   });
 
   return (
