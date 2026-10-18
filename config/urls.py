@@ -33,6 +33,8 @@ admin.site.site_url = getattr(settings, "CLIENT_URL", "http://localhost:5173")
 # django.conf.urls.static.static() here anymore (that helper is a no-op
 # outside DEBUG=True anyway, so it never actually served anything in
 # production; see views.serve_media for the real media-serving route).
+from placements.duty_chart_views import DutyChartInitialDataAPIView
+
 urlpatterns = [
     path("", views.root_redirect, name="root_redirect"),
     # Browsers request this at the origin root regardless of the <link
@@ -71,5 +73,6 @@ urlpatterns = [
         name="user_profile_update_password",
     ),
     path("api/staff/", include("placements.urls_drives")),
+    path("api/get-duty-chart", DutyChartInitialDataAPIView.as_view(), name="get-duty-chart"),
     re_path(r"^media/(?P<path>.*)$", views.serve_media, name="serve_media"),
 ]
