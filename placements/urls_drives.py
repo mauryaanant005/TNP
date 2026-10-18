@@ -111,5 +111,11 @@ urlpatterns = [
     path("bulk-import/session/<uuid:session_id>/confirm/", views.bulk_views.ConfirmImportView.as_view(), name="bulk-import-session-confirm"),
     path("bulk-import/session/<uuid:session_id>/status/", views.bulk_views.ImportSessionStatusView.as_view(), name="bulk-import-session-status"),
     path("bulk-import/session/<uuid:session_id>/cancel/", views.bulk_views.CancelImportSessionView.as_view(), name="bulk-import-session-cancel"),
+    # ---------------------------------------------------------------------------
+    # Duty Chart Automation endpoints (Staff & Placement Officer Workflow)
+    # ---------------------------------------------------------------------------
+    path("duty-chart/initial-data/", views.duty_chart_views.DutyChartInitialDataAPIView.as_view(), name="duty-chart-initial-data"),
+    path("duty-chart/drafts/", views.duty_chart_views.DutyChartDraftListCreateAPIView.as_view(), name="duty-chart-drafts"),
+    path("duty-chart/drafts/<int:pk>/", views.duty_chart_views.DutyChartDetailAPIView.as_view(), name="duty-chart-draft-detail"),
 ]
 

@@ -12,12 +12,14 @@ import CategoryRuleForm from "../pages/placement_officer/CategoryRuleForm";
 import CategoryRuleList from "../pages/placement_officer/CategoryRuleList";
 import StudentByCategory from "../pages/placement_officer/StudentByCategory";
 import UploadHistoricalData from "../pages/placement_officer/UploadHistoricalData";
+import DutyChartPage from "../pages/staff/DutyChartPage";
 
 const PlacementRoutes = () => {
   return (
     <Route element={<RequireRole allowed={ROLE_GROUPS.PLACEMENT_REPORTS} />}>
       <Route path="/placement_officer" element={<PlacementLayout />}>
         <Route index element={<PlacementDashboard />} />
+        <Route path="duty-chart" element={<DutyChartPage />} />
         <Route path="branch-wise-report" element={<BranchWiseReport />} />
         <Route path="student-performance" element={<StudentStatusReport />} />
         <Route

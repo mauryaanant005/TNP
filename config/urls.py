@@ -33,6 +33,7 @@ admin.site.site_url = getattr(settings, "CLIENT_URL", "http://localhost:5173")
 # django.conf.urls.static.static() here anymore (that helper is a no-op
 # outside DEBUG=True anyway, so it never actually served anything in
 # production; see views.serve_media for the real media-serving route).
+
 urlpatterns = [
     path("", views.root_redirect, name="root_redirect"),
     # Browsers request this at the origin root regardless of the <link
