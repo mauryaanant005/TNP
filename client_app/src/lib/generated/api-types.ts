@@ -1384,6 +1384,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/staff/duty-chart/drafts/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Save or list Duty Chart drafts. */
+        get: operations["staff_duty_chart_drafts_retrieve"];
+        put?: never;
+        /** @description Save or list Duty Chart drafts. */
+        post: operations["staff_duty_chart_drafts_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/staff/duty-chart/drafts/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Retrieve or delete a specific Duty Chart record. */
+        get: operations["staff_duty_chart_drafts_retrieve_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/staff/duty-chart/initial-data/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Provides initial data for Duty Chart.
+         *
+         *     All variable content fields are blank by default.
+         *     Only genuine institutional sequence and current date are provided.
+         */
+        get: operations["staff_duty_chart_initial_data_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/staff/historical-import/status/{task_id}/": {
         parameters: {
             query?: never;
@@ -4341,6 +4398,80 @@ export interface operations {
         };
     };
     staff_company_bulk_update_progress_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    staff_duty_chart_drafts_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    staff_duty_chart_drafts_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    staff_duty_chart_drafts_retrieve_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    staff_duty_chart_initial_data_retrieve: {
         parameters: {
             query?: never;
             header?: never;

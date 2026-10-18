@@ -1318,6 +1318,63 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/staff/duty-chart/drafts/:
+    get:
+      operationId: staff_duty_chart_drafts_retrieve
+      description: Save or list Duty Chart drafts.
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: staff_duty_chart_drafts_create
+      description: Save or list Duty Chart drafts.
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/staff/duty-chart/drafts/{id}/:
+    get:
+      operationId: staff_duty_chart_drafts_retrieve_2
+      description: Retrieve or delete a specific Duty Chart record.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/staff/duty-chart/initial-data/:
+    get:
+      operationId: staff_duty_chart_initial_data_retrieve
+      description: |-
+        Provides initial data for Duty Chart.
+
+        All variable content fields are blank by default.
+        Only genuine institutional sequence and current date are provided.
+      tags:
+      - staff
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
   /api/staff/historical-import/status/{task_id}/:
     get:
       operationId: staff_historical_import_status_retrieve
