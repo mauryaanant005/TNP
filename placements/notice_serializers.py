@@ -152,6 +152,7 @@ class NoticeDraftSaveSerializer(serializers.Serializer):
     opportunity_id = serializers.IntegerField(required=False, allow_null=True)
     company_id = serializers.IntegerField(required=False, allow_null=True)
     batch = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    notice_type = serializers.CharField(max_length=50, required=False, allow_blank=True, default="Placement")
     table_data = serializers.ListField(child=serializers.DictField(), required=False)
     skills_list = serializers.ListField(child=serializers.CharField(), required=False)
 
@@ -176,4 +177,5 @@ class NoticePublishSerializer(serializers.Serializer):
     location = serializers.CharField(max_length=255, required=False, allow_blank=True)
     deadline = serializers.DateField(required=False, allow_null=True)
     sr_no = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    notice_type = serializers.CharField(max_length=50, required=False, allow_blank=True, default="Placement")
     table_data = serializers.ListField(child=serializers.DictField(), required=False)

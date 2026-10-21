@@ -56,6 +56,7 @@ const PlacementNotice: React.FC = () => {
 
   // --- Form State ---
   const [formData, setFormData] = useState({
+    company_name: "",
     srNo: "",
     to: "",
     subject: "",
@@ -108,6 +109,21 @@ const PlacementNotice: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleCompanyNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsDirty(true);
+    const newName = e.target.value;
+    const batchPart = formData.batch ? ` for ${formData.batch} Batch` : "";
+    setFormData((prev) => ({
+      ...prev,
+      company_name: newName,
+      subject: newName ? `Campus Recruitment Drive - ${newName}${batchPart}` : prev.subject,
+      intro: newName
+        ? `All eligible and interested students are hereby informed that ${newName} is conducting a campus recruitment drive.`
+        : prev.intro,
+      about: newName ? `${newName} is a leading organization in its industry.` : prev.about,
+    }));
+  };
+
   // --- Table Row Handlers ---
   const handleRowChange = (index: number, field: keyof NoticeTableRow, value: string) => {
     setIsDirty(true);
@@ -154,13 +170,15 @@ const PlacementNotice: React.FC = () => {
     try {
       const res = await api.get(`/api/staff/placement/opportunities/${opp.id}/autofill/`);
       const auto = res.data;
+      const compName = auto.company_name || opp.company_name || "";
 
       // Cleanly replace previously auto-filled values without leaking prior company data
       setFormData({
+        company_name: compName,
         srNo: auto.sr_no || "",
         date: auto.date || new Date().toISOString().split("T")[0],
         to: auto.to || "",
-        subject: auto.subject || "",
+        subject: auto.subject || (compName ? `Campus Recruitment Drive - ${compName}` : ""),
         intro: auto.intro || "",
         about: auto.about || "",
         eligibility_criteria: auto.eligibility_criteria || "",
@@ -199,6 +217,7 @@ const PlacementNotice: React.FC = () => {
     setSelectedOpportunity(null);
     setFormData((prev) => ({
       ...prev,
+      company_name: "",
       to: "",
       subject: "",
       intro: "",
@@ -224,7 +243,10 @@ const PlacementNotice: React.FC = () => {
       setNoticeStatus(n.status);
       setVersionCount(n.version_count || 1);
 
+      const compName = n.company_name || n.company?.name || "";
+
       setFormData({
+        company_name: compName,
         srNo: n.sr_no || "",
         to: n.to || "",
         subject: n.subject || "",
@@ -275,6 +297,7 @@ const PlacementNotice: React.FC = () => {
     setSkillTags([]);
     setTableRows([emptyRow()]);
     setFormData({
+      company_name: "",
       srNo: "",
       to: "",
       subject: "",
@@ -572,7 +595,19 @@ const PlacementNotice: React.FC = () => {
               InputLabelProps={{ shrink: true }}
             />
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Company Name"
+              name="company_name"
+              value={formData.company_name}
+              onChange={handleCompanyNameChange}
+              fullWidth
+              size="small"
+              placeholder="e.g. Tata Consultancy Services"
+              helperText="Auto-fills Subject, Intro & About"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
             <TextField
               label="Recipient (To)"
               name="to"

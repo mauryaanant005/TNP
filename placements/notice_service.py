@@ -45,19 +45,45 @@ def sanitize_text(value: Optional[str]) -> str:
 def generate_next_serial_number(notice_type: str = "Placement", target_date: Optional[date] = None) -> str:
     """Generate the next unique institutional Notice serial number safely.
     
-    Format: TCET/T&P/OFF/{YEAR}/PL-{SEQ:03d}
+    Placement Format:  TCET/T&P/OFF/{YEAR}/PL-{SEQ:03d}
+    Internship Format: TCET/T&P/INT/{YEAR}/INT-{SEQ:03d}
     """
     year = (target_date or date.today()).year
-    prefix = f"TCET/T&P/OFF/{year}/PL-"
-    
-    # Query highest sequence number for this year/type
-    existing_notices = Notice.objects.filter(
-        notice_type="Placement",
-        sr_no__startswith=prefix
-    ).values_list("sr_no", flat=True)
-    
+    is_internship = str(notice_type).strip().lower() in ("internship", "int")
+
+    if is_internship:
+        dept_code = "INT"
+        type_code = "INT"
+        query_type = "Internship"
+        prefix = f"TCET/T&P/{dept_code}/{year}/{type_code}-"
+        pattern = re.compile(rf"^TCET/T&P/{dept_code}/{year}/(?:INT|PL)-(\d+)$")
+    else:
+        dept_code = "OFF"
+        type_code = "PL"
+        query_type = "Placement"
+        prefix = f"TCET/T&P/{dept_code}/{year}/{type_code}-"
+        pattern = re.compile(rf"^TCET/T&P/{dept_code}/{year}/PL-(\d+)$")
+
+    existing_notices = list(
+        Notice.objects.filter(
+            notice_type=query_type,
+            sr_no__startswith=f"TCET/T&P/{dept_code}/{year}/"
+        ).values_list("sr_no", flat=True)
+    )
+
+    if is_internship:
+        try:
+            from internship_api.models import InternshipNotice
+            int_notices = list(
+                InternshipNotice.objects.filter(
+                    sr_no__startswith=f"TCET/T&P/{dept_code}/{year}/"
+                ).values_list("sr_no", flat=True)
+            )
+            existing_notices.extend(int_notices)
+        except Exception:
+            pass
+
     max_seq = 0
-    pattern = re.compile(rf"^TCET/T&P/OFF/{year}/PL-(\d+)$")
     for sr in existing_notices:
         match = pattern.match(sr.strip())
         if match:
@@ -67,7 +93,7 @@ def generate_next_serial_number(notice_type: str = "Placement", target_date: Opt
                     max_seq = seq
             except ValueError:
                 pass
-                
+
     next_seq = max_seq + 1
     return f"{prefix}{next_seq:03d}"
 
@@ -195,6 +221,7 @@ def search_placement_opportunities(
     batch: str = "",
     opp_type: str = "",
     limit: int = 50,
+    include_recent: bool = False,
 ) -> List[Dict[str, Any]]:
     """Multi-layer keyword search for placement opportunities with relevance ranking.
 
@@ -212,8 +239,8 @@ def search_placement_opportunities(
     batch_clean = batch.strip()
     type_clean = opp_type.strip()
 
-    # Empty search guard: do not dump the whole database when nothing is requested
-    if not q_clean and not batch_clean and not type_clean:
+    # Empty search guard: do not dump the whole database when nothing is requested unless include_recent is True
+    if not q_clean and not batch_clean and not type_clean and not include_recent:
         return []
 
     qs = PlacementOpportunity.objects.select_related("company").all()
@@ -222,6 +249,53 @@ def search_placement_opportunities(
         qs = qs.filter(batch__iexact=batch_clean)
     if type_clean and type_clean.lower() != "all":
         qs = qs.filter(placement_internship__iexact=type_clean)
+
+    if not q_clean:
+        candidate_opps = list(qs.order_by("-id")[:limit])
+        results = []
+        for opp in candidate_opps:
+            raw_desig = (opp.designation or "").strip()
+            cleaned_desig = "" if raw_desig.upper() in ("NA", "N/A", "-", "NONE", "NULL") else raw_desig
+            raw_batch = (opp.batch or "").strip()
+            cleaned_batch = "" if raw_batch.upper() in ("NA", "N/A", "-", "NONE", "NULL") else raw_batch
+            raw_tech = (opp.tech_nontech or "").strip()
+            cleaned_tech = "" if raw_tech.upper() in ("NA", "N/A", "-", "NONE", "NULL") else raw_tech
+            raw_type = (opp.placement_internship or "").strip()
+            cleaned_type = "" if raw_type.upper() in ("NA", "N/A", "-", "NONE", "NULL") else raw_type
+            raw_raw = (opp.emolument_raw or "").strip()
+            ctc_display = ""
+            if raw_raw and raw_raw.upper() not in ("NA", "N/A", "₹ NA", "₹NA", "-", "NONE", "NULL"):
+                ctc_display = raw_raw
+            elif opp.emolument_value:
+                unit = opp.emolument_unit or "LPA"
+                ctc_display = f"₹{opp.emolument_value} {unit}"
+            raw_depts = opp.eligible_departments or []
+            cleaned_depts = [d for d in raw_depts if str(d).strip().upper() not in ("NA", "N/A", "-", "NONE", "NULL")] if isinstance(raw_depts, list) else []
+            raw_skills = opp.skills or []
+            cleaned_skills = [s for s in raw_skills if str(s).strip().upper() not in ("NA", "N/A", "-", "NONE", "NULL")] if isinstance(raw_skills, list) else [str(raw_skills)] if raw_skills else []
+            results.append({
+                "id": opp.id,
+                "company_id": opp.company.id,
+                "company_name": opp.company.name,
+                "company_website": opp.company.website,
+                "company_description": opp.company.description,
+                "company_aliases": opp.company.aliases or [],
+                "batch": cleaned_batch,
+                "designation": cleaned_desig or "Role not specified",
+                "tech_nontech": cleaned_tech,
+                "placement_internship": cleaned_type or "Placement",
+                "eligibility_criteria": opp.eligibility_criteria or "",
+                "eligible_departments": cleaned_depts,
+                "department_flags": opp.department_flags or {},
+                "job_profiles": opp.job_profiles or [],
+                "skills": cleaned_skills,
+                "emolument_raw": opp.emolument_raw or "",
+                "emolument_display": ctc_display or "Not specified",
+                "selection_process": opp.selection_process or "",
+                "number_of_offers": opp.number_of_offers,
+                "created_at": opp.created_at.isoformat() if opp.created_at else None,
+            })
+        return results
 
     tokens = q_clean.split()
     if tokens:
@@ -400,7 +474,10 @@ def extract_roles_responsibilities(opp: PlacementOpportunity) -> List[str]:
     return cleaned_bullets
 
 
-def get_opportunity_autofill_data(opportunity_id: int) -> Dict[str, Any]:
+def get_opportunity_autofill_data(
+    opportunity_id: int,
+    notice_type: Optional[str] = None,
+) -> Dict[str, Any]:
     """Retrieve opportunity and generate notice draft autofill defaults.
     
     CRITICAL: Auto-fill values populate notice fields, but do not bind to or modify
@@ -413,16 +490,27 @@ def get_opportunity_autofill_data(opportunity_id: int) -> Dict[str, Any]:
 
     company = opp.company
     today_str = date.today().isoformat()
-    serial_no = generate_next_serial_number("Placement")
+    
+    forced_type = str(notice_type).strip().lower() if notice_type else ""
+    if forced_type in ("internship", "int"):
+        is_internship = True
+        is_both = False
+    elif forced_type in ("placement", "pl"):
+        is_internship = False
+        is_both = False
+    else:
+        is_internship = (opp.placement_internship or "").strip().lower() == "internship"
+        is_both = (opp.placement_internship or "").strip().lower() == "both"
+
+    serial_no = generate_next_serial_number("Internship" if is_internship else "Placement")
 
     # Departments text
     dept_list = opp.eligible_departments or []
     depts_formatted = ", ".join(dept_list) if isinstance(dept_list, list) else str(dept_list)
     batch_val = (opp.batch or "").strip()
-    is_internship = (opp.placement_internship or "").strip().lower() == "internship"
-    is_both = (opp.placement_internship or "").strip().lower() == "both"
+    has_valid_batch = bool(batch_val and batch_val.lower() not in ("nan", "none", "null", "n/a", "na", "-"))
 
-    if batch_val:
+    if has_valid_batch:
         to_text = f"All concerned Students of {batch_val} Batch ({depts_formatted})" if depts_formatted else f"All concerned Students of {batch_val} Batch"
         if is_internship:
             subject = f"Campus Internship Drive - {company.name} for {batch_val} Batch"
@@ -464,12 +552,24 @@ def get_opportunity_autofill_data(opportunity_id: int) -> Dict[str, Any]:
             )
 
     # Compensation / salary
-    salary_str = opp.emolument_raw.strip() if opp.emolument_raw else ""
-    if not salary_str and opp.emolument_value:
-        unit = opp.emolument_unit or ("₹/month" if is_internship else "LPA")
-        salary_str = f"₹{opp.emolument_value} {unit}"
-    if not salary_str:
-        salary_str = "As per company norms"
+    raw_salary = opp.emolument_raw.strip() if opp.emolument_raw else ""
+    if is_internship:
+        # Check if the emolument is already formatted as a monthly stipend
+        is_monthly = any(m in raw_salary.lower() for m in ["/month", "/m", "pm", "per month", "stipend"])
+        if is_monthly and raw_salary:
+            salary_str = raw_salary
+        elif opp.emolument_unit == "MONTHLY_STIPEND" and opp.emolument_value:
+            salary_str = f"₹{opp.emolument_value:,.0f} / month"
+        else:
+            salary_str = "As per company norms"
+    else:
+        if raw_salary:
+            salary_str = raw_salary
+        elif opp.emolument_value:
+            unit = opp.emolument_unit or "LPA"
+            salary_str = f"₹{opp.emolument_value} {unit}"
+        else:
+            salary_str = "As per company norms"
 
     # Query linked internship offers if available
     internship_offers = []
@@ -479,10 +579,13 @@ def get_opportunity_autofill_data(opportunity_id: int) -> Dict[str, Any]:
         if internship_reg:
             for off in Offers.objects.filter(company=internship_reg):
                 stip_val = f"₹{off.stipend:,.0f} / month" if off.stipend else salary_str
+                pos_val = off.position or opp.designation or "Intern"
+                if "intern" not in pos_val.lower():
+                    pos_val = f"{pos_val} (Intern)"
                 internship_offers.append({
                     "type": off.type or "Internship",
                     "salary": stip_val,
-                    "position": off.position or (f"{opp.designation} (Intern)" if opp.designation else "Intern"),
+                    "position": pos_val,
                 })
     except Exception:
         pass
@@ -491,9 +594,10 @@ def get_opportunity_autofill_data(opportunity_id: int) -> Dict[str, Any]:
     if is_both:
         placement_row = {
             "type": "Regular",
-            "salary": salary_str,
+            "salary": raw_salary or "As per company norms",
             "position": opp.designation or "Graduate Engineer Trainee",
         }
+        int_pos = f"{opp.designation} (Intern)" if (opp.designation and "intern" not in opp.designation.lower()) else (opp.designation or "Intern")
         if internship_offers:
             table_rows = [placement_row] + internship_offers
         else:
@@ -502,10 +606,11 @@ def get_opportunity_autofill_data(opportunity_id: int) -> Dict[str, Any]:
                 {
                     "type": "Internship",
                     "salary": salary_str,
-                    "position": f"{opp.designation} (Intern)" if opp.designation else "Intern",
+                    "position": int_pos,
                 },
             ]
     elif is_internship:
+        int_pos = f"{opp.designation} (Intern)" if (opp.designation and "intern" not in opp.designation.lower()) else (opp.designation or "Intern")
         if internship_offers:
             table_rows = internship_offers
         else:
@@ -513,7 +618,7 @@ def get_opportunity_autofill_data(opportunity_id: int) -> Dict[str, Any]:
                 {
                     "type": "Internship",
                     "salary": salary_str,
-                    "position": opp.designation or "Intern",
+                    "position": int_pos,
                 }
             ]
     else:
@@ -544,7 +649,11 @@ def get_opportunity_autofill_data(opportunity_id: int) -> Dict[str, Any]:
         "to": to_text,
         "subject": subject,
         "intro": intro,
-        "about": company.description or f"{company.name} is a leading organization in its industry.",
+        "about": company.description or (
+            f"{company.name} is a leading organization offering valuable internship opportunities to students."
+            if is_internship
+            else f"{company.name} is a leading organization in its industry."
+        ),
         "eligibility_criteria": opp.eligibility_criteria or "As per company criteria",
         "roles": json.dumps(table_rows, ensure_ascii=False),
         "table_data": table_rows,
@@ -552,13 +661,21 @@ def get_opportunity_autofill_data(opportunity_id: int) -> Dict[str, Any]:
         "roles_responsibilities_list": roles_bullets,
         "skill_required": skills_str,
         "documents_to_carry": "",
-        "walk_in_interview": opp.selection_process or "Online Assessment followed by Technical and HR Interviews.",
+        "walk_in_interview": opp.selection_process or (
+            "Online Assessment / Shortlisting followed by Technical & HR Interviews for Internship."
+            if is_internship
+            else "Online Assessment followed by Technical and HR Interviews."
+        ),
         "company_registration_link": company.website or "",
-        "note": "Students must report on time in formal attire. Late entries will not be permitted.",
+        "note": (
+            "Students must report on time in formal attire. Internship duration, working hours, and evaluation will be per company guidelines."
+            if is_internship
+            else "Students must report on time in formal attire. Late entries will not be permitted."
+        ),
         "from_field": "Dr. Zahir Aalam",
         "from_designation": "Dean (TP&IL)",
         "location": "TCET Campus / Online",
-        "notice_type": "Placement",
+        "notice_type": "Internship" if is_internship else "Placement",
         "status": "DRAFT",
     }
 
@@ -654,10 +771,12 @@ def save_notice_draft(user, draft_id: Optional[int], data: Dict[str, Any], ip_ad
         if notice.status == "DRAFT" and notice.created_by and notice.created_by != user and not user.is_superuser:
             raise ValidationError("You do not have permission to modify another user's draft.")
     else:
+        req_ntype = data.get("notice_type")
+        initial_ntype = "Internship" if req_ntype and req_ntype.strip().lower() in ("internship", "int") else "Placement"
         notice = Notice(
             status="DRAFT",
             created_by=user,
-            notice_type="Placement",
+            notice_type=initial_ntype,
         )
         created = True
 
@@ -689,7 +808,11 @@ def save_notice_draft(user, draft_id: Optional[int], data: Dict[str, Any], ip_ad
     notice.location = sanitize_text(data.get("location", "").strip())
     notice.deadline = data.get("deadline") or None
 
-    notice.sr_no = data.get("sr_no", "").strip() or generate_next_serial_number("Placement")
+    req_ntype = data.get("notice_type")
+    if req_ntype:
+        notice.notice_type = "Internship" if req_ntype.strip().lower() in ("internship", "int") else "Placement"
+
+    notice.sr_no = data.get("sr_no", "").strip() or generate_next_serial_number(notice.notice_type)
     notice.to = sanitize_text(data.get("to", "").strip())
     notice.eligibility_criteria = sanitize_text(data.get("eligibility_criteria", "").strip())
     notice.roles = json.dumps(table_data, ensure_ascii=False) if table_data else (data.get("roles", "") or "")

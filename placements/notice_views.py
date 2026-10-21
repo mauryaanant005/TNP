@@ -42,12 +42,14 @@ class PlacementOpportunitySearchAPIView(APIView):
         batch = request.query_params.get("batch", "")
         opp_type = request.query_params.get("type", "")
         limit = int(request.query_params.get("limit", 50))
+        recent = request.query_params.get("recent", "").lower() in ("true", "1")
 
         results = notice_service.search_placement_opportunities(
             query=q,
             batch=batch,
             opp_type=opp_type,
             limit=limit,
+            include_recent=recent,
         )
         return Response(results, status=status.HTTP_200_OK)
 
@@ -62,7 +64,8 @@ class PlacementOpportunityAutofillAPIView(APIView):
 
     def get(self, request, pk, *args, **kwargs):
         try:
-            data = notice_service.get_opportunity_autofill_data(int(pk))
+            ntype = request.query_params.get("notice_type") or request.query_params.get("type")
+            data = notice_service.get_opportunity_autofill_data(int(pk), notice_type=ntype)
             return Response(data, status=status.HTTP_200_OK)
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
@@ -72,11 +75,12 @@ class PlacementOpportunityAutofillAPIView(APIView):
 
 
 class PlacementNoticeNextSerialAPIView(APIView):
-    """Fetch the next institutional Placement Notice serial number."""
+    """Fetch the next institutional Placement/Internship Notice serial number."""
     permission_classes = DRIVE_PERMS
 
     def get(self, request, *args, **kwargs):
-        sr_no = notice_service.generate_next_serial_number("Placement")
+        notice_type = request.query_params.get("type", "Placement")
+        sr_no = notice_service.generate_next_serial_number(notice_type)
         return Response({"sr_no": sr_no}, status=status.HTTP_200_OK)
 
 

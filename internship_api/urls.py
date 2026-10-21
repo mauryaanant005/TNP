@@ -5,6 +5,7 @@ from .views import (
     get_all_companies,
     get_company_with_offers,
     get_internship_notice,
+    get_internship_next_serial_number,
     job_application,
     create_job_acceptance,
     get_unverified_internships,
@@ -25,6 +26,10 @@ urlpatterns = [
     path("jobs/reports/", get_verified_internships),
     path("jobs/download-report/", download_verified_internships),
     # Notice endpoints
+    path("notice/next-serial-number/", get_internship_next_serial_number),
     path("notice/create/<str:company_pk>", create_or_update_internship_notice),
+    path("notice/create/<str:company_pk>/", create_or_update_internship_notice),
     path("notice/<str:company_pk>", get_internship_notice),
+    path("notice/<str:company_pk>/", get_internship_notice),
+    path("company/<str:pk>/", get_company_with_offers),
 ]

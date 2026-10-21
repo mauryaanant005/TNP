@@ -235,6 +235,23 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/internship/company/{id}/:
+    get:
+      operationId: internship_company_retrieve_3
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - internship
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/internship/company/register/:
     post:
       operationId: internship_company_register_create
@@ -341,6 +358,23 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/internship/notice/{company_pk}/:
+    get:
+      operationId: internship_notice_retrieve_2
+      description: Retrieve the InternshipNotice for the given company.
+      parameters:
+      - in: path
+        name: company_pk
+        schema:
+          type: string
+        required: true
+      tags:
+      - internship
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/internship/notice/create/{company_pk}:
     post:
       operationId: internship_notice_create_create
@@ -351,6 +385,34 @@ paths:
         schema:
           type: string
         required: true
+      tags:
+      - internship
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/internship/notice/create/{company_pk}/:
+    post:
+      operationId: internship_notice_create_create_2
+      description: Create or update the InternshipNotice for the given company.
+      parameters:
+      - in: path
+        name: company_pk
+        schema:
+          type: string
+        required: true
+      tags:
+      - internship
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/internship/notice/next-serial-number/:
+    get:
+      operationId: internship_notice_next_serial_number_retrieve
+      description: Fetch next institutional serial number for internship notice.
       tags:
       - internship
       security:
@@ -1618,7 +1680,8 @@ paths:
   /api/staff/placement-notices/next-serial-number/:
     get:
       operationId: staff_placement_notices_next_serial_number_retrieve
-      description: Fetch the next institutional Placement Notice serial number.
+      description: Fetch the next institutional Placement/Internship Notice serial
+        number.
       tags:
       - staff
       security:
@@ -2820,7 +2883,7 @@ components:
           maxLength: 100
         total_hours:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 4294967295
           minimum: 0
           format: int64
         start_date:
@@ -2957,7 +3020,7 @@ components:
           maxLength: 50
         version_count:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 4294967295
           minimum: 0
           format: int64
         custom_data: {}
@@ -3060,7 +3123,7 @@ components:
           maxLength: 50
         version_count:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 4294967295
           minimum: 0
           format: int64
         custom_data: {}
@@ -3482,7 +3545,7 @@ components:
           maxLength: 50
         version_count:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 4294967295
           minimum: 0
           format: int64
         custom_data: {}

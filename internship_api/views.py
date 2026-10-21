@@ -76,11 +76,56 @@ def create_company_with_offers(request):
 @permission_classes([IsAuthenticated])
 def get_company_with_offers(request, pk=None):
     try:
+        from placements.models import Company
         if pk:
-            # Retrieve a specific company and its offers
-            company = InternshipRegistration.objects.get(id=pk)
-            company_serializer = InternshipRegistrationSerializer(company)
-            offers = Offers.objects.filter(company=company)
+            # Check Company in placements first
+            company = None
+            try:
+                company = Company.objects.filter(id=int(pk)).first()
+            except (ValueError, TypeError):
+                company = Company.objects.filter(name__iexact=str(pk)).first()
+
+            if company:
+                opps = company.opportunities.all()
+                latest_opp = opps.order_by("-id").first()
+                comp_data = {
+                    "id": company.id,
+                    "name": company.name,
+                    "website": company.website or "",
+                    "description": company.description or f"{company.name} is offering internship opportunities.",
+                    "batch": latest_opp.batch if latest_opp else "",
+                    "departments": ", ".join(latest_opp.eligible_departments) if latest_opp and latest_opp.eligible_departments else "all",
+                    "domain": "IT" if latest_opp and getattr(latest_opp, "tech_nontech", "").lower() == "tech" else "Core",
+                    "min_cgpa": 6.5,
+                    "min_attendance": 75,
+                    "is_kt": False,
+                    "is_backlog": False,
+                }
+                offers_data = [
+                    {
+                        "id": o.id,
+                        "position": o.designation or "Intern",
+                        "stipend": o.emolument_value or 0,
+                        "type": o.placement_internship or "Internship",
+                        "skills": o.skills or [],
+                    }
+                    for o in opps
+                ]
+                return JsonResponse({"company": comp_data, "offers": offers_data}, status=status.HTTP_200_OK)
+
+            # Fallback to InternshipRegistration if exists
+            company_reg = None
+            try:
+                company_reg = InternshipRegistration.objects.filter(id=int(pk)).first()
+            except (ValueError, TypeError):
+                company_reg = InternshipRegistration.objects.filter(name__iexact=str(pk)).first()
+
+            if not company_reg:
+                return JsonResponse(
+                    {"error": "Company not found"}, status=status.HTTP_404_NOT_FOUND
+                )
+            company_serializer = InternshipRegistrationSerializer(company_reg)
+            offers = Offers.objects.filter(company=company_reg)
             offers_serializer = OffersSerializer(offers, many=True)
 
             return JsonResponse(
@@ -91,26 +136,7 @@ def get_company_with_offers(request, pk=None):
                 status=status.HTTP_200_OK,
             )
         else:
-            # Retrieve all companies with their offers
-            companies = InternshipRegistration.objects.all()
-            response_data = []
-            for company in companies:
-                company_serializer = InternshipRegistrationSerializer(company)
-                offers = Offers.objects.filter(company=company)
-                offers_serializer = OffersSerializer(offers, many=True)
-
-                response_data.append(
-                    {
-                        "company": company_serializer.data,
-                        "offers": offers_serializer.data,
-                    }
-                )
-
-            return JsonResponse(response_data, safe=False, status=status.HTTP_200_OK)
-    except InternshipRegistration.DoesNotExist:
-        return JsonResponse(
-            {"error": "Company not found"}, status=status.HTTP_404_NOT_FOUND
-        )
+            return get_all_companies(request)
     except Exception as e:
         return JsonResponse(
             safe_error_payload(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -122,14 +148,33 @@ def get_company_with_offers(request, pk=None):
 @permission_classes([HasRole.of(*ROLES.INTERNSHIP)])
 def get_all_companies(request):
     try:
-        companies = InternshipRegistration.objects.all()
+        from placements.models import Company
+        companies = Company.objects.all().order_by("name")
         company_data = []
-        for company in companies:
-            company_serializer = InternshipRegistrationSerializer(company)
-            offers = Offers.objects.filter(company=company)
-            offers_serializer = OffersSerializer(offers, many=True)
+        for c in companies:
+            opp = c.opportunities.order_by("-id").first()
             company_data.append(
-                {"company": company_serializer.data, "offers": offers_serializer.data}
+                {
+                    "company": {
+                        "id": c.id,
+                        "name": c.name,
+                        "batch": opp.batch if opp else "",
+                        "departments": ", ".join(opp.eligible_departments) if opp and opp.eligible_departments else "all",
+                        "domain": "IT" if opp and getattr(opp, "tech_nontech", "").lower() == "tech" else "Core",
+                        "website": c.website or "",
+                        "description": c.description or "",
+                    },
+                    "offers": [
+                        {
+                            "id": o.id,
+                            "position": o.designation or "Intern",
+                            "stipend": o.emolument_value or 0,
+                            "type": o.placement_internship or "Internship",
+                            "skills": o.skills or [],
+                        }
+                        for o in c.opportunities.all()
+                    ],
+                }
             )
         return JsonResponse(company_data, safe=False, status=status.HTTP_200_OK)
     except Exception as e:
@@ -401,15 +446,24 @@ def download_verified_internships(request):
 @permission_classes([HasRole.of(*ROLES.INTERNSHIP)])
 def create_or_update_internship_notice(request, company_pk):
     """Create or update the InternshipNotice for the given company."""
+    company = None
     try:
-        company = InternshipRegistration.objects.get(pk=company_pk)
-    except InternshipRegistration.DoesNotExist:
+        company = InternshipRegistration.objects.filter(pk=int(company_pk)).first()
+    except (ValueError, TypeError):
+        company = InternshipRegistration.objects.filter(name__iexact=str(company_pk)).first()
+    if not company:
         return JsonResponse({"error": "Company not found."}, status=status.HTTP_404_NOT_FOUND)
 
     data = request.data
     notice, created = InternshipNotice.objects.get_or_create(company=company)
 
-    notice.sr_no = data.get("srNo", notice.sr_no)
+    from placements.notice_service import generate_next_serial_number
+    req_sr = data.get("srNo", "").strip() if isinstance(data.get("srNo"), str) else ""
+    if req_sr:
+        notice.sr_no = req_sr
+    elif not notice.sr_no:
+        notice.sr_no = generate_next_serial_number("Internship")
+
     notice.to = data.get("to", notice.to)
     notice.subject = data.get("subject", notice.subject)
     notice.date = data.get("date", notice.date)
@@ -436,13 +490,27 @@ def create_or_update_internship_notice(request, company_pk):
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
+def get_internship_next_serial_number(request):
+    """Fetch next institutional serial number for internship notice."""
+    from placements.notice_service import generate_next_serial_number
+    sr_no = generate_next_serial_number("Internship")
+    return JsonResponse({"sr_no": sr_no}, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
 def get_internship_notice(request, company_pk):
     """Retrieve the InternshipNotice for the given company."""
+    company = None
     try:
-        company = InternshipRegistration.objects.get(pk=company_pk)
-        notice = InternshipNotice.objects.get(company=company)
-    except InternshipRegistration.DoesNotExist:
+        company = InternshipRegistration.objects.filter(pk=int(company_pk)).first()
+    except (ValueError, TypeError):
+        company = InternshipRegistration.objects.filter(name__iexact=str(company_pk)).first()
+    if not company:
         return JsonResponse({"error": "Company not found."}, status=status.HTTP_404_NOT_FOUND)
+    try:
+        notice = InternshipNotice.objects.get(company=company)
     except InternshipNotice.DoesNotExist:
         return JsonResponse({"error": "Notice not found."}, status=status.HTTP_404_NOT_FOUND)
 
