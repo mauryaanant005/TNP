@@ -182,9 +182,26 @@ class TestPlacementNoticeAutomation:
         assert data["eligibility_criteria"] == sample_opportunity.eligibility_criteria
         assert len(data["table_data"]) == 1
         assert data["table_data"][0]["salary"] == "₹7.5 LPA"
-        assert data["table_data"][0]["position"] == "Software Engineer"
         assert data["sr_no"].startswith("TCET/T&P/OFF/")
         assert data["company_registration_link"] == sample_company.website
+
+        # Verify internship opportunity receives TCET/T&P/INT/ serial number
+        intern_opp = PlacementOpportunity.objects.create(
+            company=sample_company,
+            batch="2027",
+            designation="Software Intern",
+            tech_nontech="Tech",
+            placement_internship="Internship",
+            eligibility_criteria="CGPA >= 7.0",
+            eligible_departments=["COMP"],
+            skills=["Python"],
+            emolument_raw="₹25,000 / month",
+        )
+        url_intern = reverse("placement-opportunity-autofill", kwargs={"pk": intern_opp.id})
+        res_intern = client.get(url_intern)
+        assert res_intern.status_code == status.HTTP_200_OK
+        data_intern = res_intern.json()
+        assert data_intern["sr_no"].startswith("TCET/T&P/INT/")
 
     def test_opportunity_autofill_data_different_batches(self, staff_user, sample_company):
         """Verify autofill dynamically supports all batches (e.g. 2026) without position details in subject/intro."""

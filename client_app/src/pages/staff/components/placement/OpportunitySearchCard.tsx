@@ -55,6 +55,9 @@ interface OpportunitySearchCardProps {
   noticeStatus?: "NEW" | "DRAFT" | "PUBLISHED";
   isDirty?: boolean;
   onOpenDrafts?: () => void;
+  title?: string;
+  searchPlaceholder?: string;
+  noticeType?: "Placement" | "Internship";
 }
 
 const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
@@ -65,7 +68,11 @@ const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
   noticeStatus,
   isDirty,
   onOpenDrafts,
+  title,
+  searchPlaceholder,
+  noticeType = "Placement",
 }) => {
+  const isInternship = noticeType === "Internship";
   const [searchQuery, setSearchQuery] = useState(selectedOpportunity?.company_name || "");
   const [selectedBatch, setSelectedBatch] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<string>("All");
@@ -97,14 +104,6 @@ const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
       const b = batch.trim();
       const t = type !== "All" ? type.trim() : "";
 
-      if (!q && !b && !t) {
-        setResults([]);
-        setHasSearched(false);
-        setSearchError(null);
-        setLoading(false);
-        return;
-      }
-
       setLoading(true);
       setSearchError(null);
       try {
@@ -112,6 +111,7 @@ const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
         if (q) params.q = q;
         if (b) params.batch = b;
         if (t) params.type = t;
+        if (!q && !b && !t) params.recent = "true";
 
         const res = await api.get("/api/staff/placement/opportunities/search/", { params });
         setResults(res.data || []);
@@ -131,9 +131,7 @@ const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
   // Debounced search trigger (300ms)
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchQuery.trim() || selectedBatch || (typeFilter && typeFilter !== "All")) {
-        fetchOpportunities(searchQuery, selectedBatch, typeFilter);
-      }
+      fetchOpportunities(searchQuery, selectedBatch, typeFilter);
     }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery, selectedBatch, typeFilter, fetchOpportunities]);
@@ -144,9 +142,7 @@ const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
 
   const handleInputClickOrFocus = () => {
     setDropdownOpen(true);
-    if (searchQuery.trim() || selectedBatch || (typeFilter && typeFilter !== "All")) {
-      fetchOpportunities(searchQuery, selectedBatch, typeFilter);
-    }
+    fetchOpportunities(searchQuery, selectedBatch, typeFilter);
   };
 
   const handleClear = () => {
@@ -218,7 +214,7 @@ const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
         >
           {/* ── Row 1, Col 1 : Heading ── */}
           <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#0f172a", lineHeight: 1.2 }}>
-            Search Company / Placement Opportunity
+            {title || (isInternship ? "Search Company / Internship Opportunity" : "Search Company / Placement Opportunity")}
           </Typography>
 
           {/* ── Row 1, Col 2 : Saved Draft button (+ status chip when saved) ── */}
@@ -269,7 +265,12 @@ const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
               inputRef={inputRef}
               size="small"
               fullWidth
-              placeholder="Search company, role, skill, batch (e.g. Infosys, Software, Java, 2027)..."
+              placeholder={
+                searchPlaceholder ||
+                (isInternship
+                  ? "Search company, role, skill, batch (e.g. TCS, Infosys, Reliance, 2026)..."
+                  : "Search company, role, skill, batch (e.g. Infosys, Software, Java, 2027)...")
+              }
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);

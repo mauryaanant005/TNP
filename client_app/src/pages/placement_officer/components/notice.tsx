@@ -151,29 +151,29 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(
     const rows: NoticeTableRow[] =
       formData.tableData && formData.tableData.length > 0
         ? formData.tableData.map((row) => ({
-            type: row.type?.trim() || "Regular",
+            type: row.type?.trim() || (isPlacement ? "Regular" : "Internship"),
             salary: row.salary?.trim() || "Not specified",
             position: row.position?.trim() || "Not specified",
           }))
         : formData.roles?.trim()
         ? [
             {
-              type: "Regular",
+              type: isPlacement ? "Regular" : "Internship",
               salary: "As per company norms",
               position: formData.roles.trim(),
             },
           ]
         : [
             {
-              type: "Regular",
+              type: isPlacement ? "Regular" : "Internship",
               salary: "Not specified",
-              position: "Graduate Engineer Trainee / Analyst",
+              position: isPlacement ? "Graduate Engineer Trainee / Analyst" : "Intern",
             },
           ];
 
     const serialNumber =
       formData.srNo?.trim() ||
-      `TCET/T&P/OFF/${new Date().getFullYear()}/${isPlacement ? "PL" : "INT"}-001`;
+      `TCET/T&P/${isPlacement ? "OFF" : "INT"}/${new Date().getFullYear()}/${isPlacement ? "PL" : "INT"}-001`;
 
     const formattedDate = formatNoticeDate(formData.date);
 
@@ -288,7 +288,7 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(
                           <thead>
                             <tr>
                               <th style={{ width: "25%" }}>Type</th>
-                              <th style={{ width: "30%" }}>CTC</th>
+                              <th style={{ width: "30%" }}>{isPlacement ? "CTC" : "Stipend"}</th>
                               <th style={{ width: "45%" }}>Position</th>
                             </tr>
                           </thead>

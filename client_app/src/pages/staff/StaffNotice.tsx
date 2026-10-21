@@ -66,6 +66,8 @@ const StaffNotice = () => {
             return (
               <button
                 key={tab.key}
+                id={`notice-tab-${tab.key}`}
+                data-testid={`notice-tab-${tab.key}`}
                 onClick={() => setActiveTab(tab.key)}
                 style={{
                   padding: "10px 20px",

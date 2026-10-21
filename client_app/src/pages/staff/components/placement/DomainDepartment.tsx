@@ -40,20 +40,6 @@ const DomainDepartmentsForm = ({ formData, setFormData }: Props) => {
     <>
       <Grid item xs={12}>
         <Select
-          name="domain"
-          value={formData.domain}
-          onChange={(e) =>
-            setFormData({ ...formData, domain: e.target.value as string })
-          }
-          fullWidth
-        >
-          <MenuItem value="core">Core</MenuItem>
-          <MenuItem value="it">IT</MenuItem>
-        </Select>
-      </Grid>
-
-      <Grid item xs={12}>
-        <Select
           name="departments"
           value={formData.departments}
           onChange={(e) => {
