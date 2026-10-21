@@ -39,9 +39,7 @@ const StaffNotice = () => {
         >
           Notice Management
         </h1>
-        <p style={{ margin: "4px 0 0", color: "#6b7a99", fontSize: "14px" }}>
-          Create and manage placement, internship, training, and other notices.
-        </p>
+
       </div>
 
       {/* White card container */}

@@ -47,11 +47,147 @@ const InternshipNotice = () => {
 
   const [companies, setCompanies] = useState<Company[]>([]);
 
-  const handleChange = (e: any) => {
+  const handleCompanySelect = async (companyId: string) => {
+    if (!companyId) {
+      setFormData({
+        srNo: "",
+        to: "",
+        subject: "",
+        date: "",
+        intro: "",
+        eligibility_criteria: "",
+        roles: "",
+        about: "",
+        skill_required: "",
+        Walk_in_interview: "",
+        Company_registration_Link: "",
+        Note: "",
+        From: "",
+        From_designation: "",
+        company: "",
+        location: "",
+      });
+      return;
+    }
+
+    // Set company id immediately and clean out stale values
     setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+      srNo: "",
+      to: "",
+      subject: "",
+      date: new Date().toISOString().split("T")[0],
+      intro: "",
+      eligibility_criteria: "",
+      roles: "",
+      about: "",
+      skill_required: "",
+      Walk_in_interview: "Online Assessment followed by Technical and HR Interviews.",
+      Company_registration_Link: "",
+      Note: "Students must report on time in formal attire. Late entries will not be permitted.",
+      From: "Dr. Zahir Aalam",
+      From_designation: "Dean (TP&IL)",
+      company: companyId,
+      location: "TCET Campus / Online",
     });
+
+    try {
+      // 1. Check if a saved notice already exists for this company
+      try {
+        const noticeRes = await api.get(`/api/internship/notice/${companyId}`, {
+          headers: { "X-CSRFToken": csrfToken || "" },
+          withCredentials: true,
+        });
+        if (noticeRes.data?.data) {
+          const n = noticeRes.data.data;
+          setFormData({
+            srNo: n.sr_no || "",
+            to: n.to || "",
+            subject: n.subject || "",
+            date: n.date || new Date().toISOString().split("T")[0],
+            intro: n.intro || "",
+            eligibility_criteria: n.eligibility_criteria || "",
+            roles: n.roles || "",
+            about: n.about || "",
+            skill_required: n.skill_required || "",
+            Walk_in_interview: n.walk_in_interview || "Online Assessment followed by Technical and HR Interviews.",
+            Company_registration_Link: n.company_registration_link || "",
+            Note: n.note || "Students must report on time in formal attire. Late entries will not be permitted.",
+            From: n.from_field || "Dr. Zahir Aalam",
+            From_designation: n.from_designation || "Dean (TP&IL)",
+            company: companyId,
+            location: n.location || "TCET Campus / Online",
+          });
+          toast.success("Loaded saved notice draft for company!");
+          return;
+        }
+      } catch {
+        // No saved notice yet, fall through to company master data
+      }
+
+      // 2. Fetch company master data and associated offers
+      const compRes = await api.get(`/api/internship/company/${companyId}`, {
+        headers: { "X-CSRFToken": csrfToken || "" },
+        withCredentials: true,
+      });
+
+      const compData = compRes.data?.company;
+      const offersData = compRes.data?.offers || [];
+
+      if (compData) {
+        const batchStr = compData.batch ? `${compData.batch} Batch` : "";
+        const deptsStr = compData.departments && compData.departments !== "all" ? ` (${compData.departments})` : "";
+
+        // Build eligibility criteria string
+        const critParts: string[] = [];
+        if (compData.min_cgpa) critParts.push(`Minimum CGPA: ${compData.min_cgpa}`);
+        if (compData.min_attendance) critParts.push(`Minimum Attendance: ${compData.min_attendance}%`);
+        if (compData.min_tenth_marks) critParts.push(`10th: ${compData.min_tenth_marks}%`);
+        if (compData.min_higher_secondary_marks) critParts.push(`12th/Diploma: ${compData.min_higher_secondary_marks}%`);
+        if (compData.is_kt === false) critParts.push("No active KT");
+        if (compData.is_backlog === false) critParts.push("No backlogs permitted");
+
+        // Build roles string from offers
+        const rolesList = offersData
+          .map((o: any) => {
+            const stip = o.stipend ? `₹${Number(o.stipend).toLocaleString()} / month` : "Unpaid";
+            return `• ${o.position || "Intern"} (${o.type || "Internship"}) — Stipend: ${stip}`;
+          })
+          .join("\n");
+
+        setFormData({
+          srNo: "",
+          to: batchStr ? `All concerned Students of ${batchStr}${deptsStr}` : `All concerned Students${deptsStr}`,
+          subject: `Campus Internship Drive - ${compData.name}${batchStr ? ` for ${batchStr}` : ""}`,
+          date: new Date().toISOString().split("T")[0],
+          intro: `All eligible and interested students${batchStr ? ` of ${batchStr}` : ""} are hereby informed that ${compData.name} is conducting an internship recruitment drive.`,
+          eligibility_criteria: critParts.length > 0 ? critParts.join(" | ") : "As per company criteria",
+          roles: rolesList,
+          about: `${compData.name} is offering internship opportunities in the ${compData.domain || "core/IT"} domain.`,
+          skill_required: "",
+          Walk_in_interview: "Online Assessment followed by Technical and HR Interviews.",
+          Company_registration_Link: "",
+          Note: "Students must report on time in formal attire. Late entries will not be permitted.",
+          From: "Dr. Zahir Aalam",
+          From_designation: "Dean (TP&IL)",
+          company: companyId,
+          location: "TCET Campus / Online",
+        });
+        toast.success(`Auto-filled internship details for ${compData.name}!`);
+      }
+    } catch (err) {
+      console.error("Failed to auto-fill company details:", err);
+    }
+  };
+
+  const handleChange = (e: any) => {
+    if (e.target.name === "company") {
+      handleCompanySelect(e.target.value);
+    } else {
+      setFormData({
+        ...formData,
+        [e.target.name]: e.target.value,
+      });
+    }
   };
   const csrfToken = getCookie("csrftoken");
   useEffect(() => {

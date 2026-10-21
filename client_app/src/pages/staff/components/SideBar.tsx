@@ -18,7 +18,7 @@ const Sidebar = () => {
         <h1 className="title">TCET - TNP</h1>
       </div>
       <ul className="menu">
-        <NavLink to="" className="menu-item gap-3">
+        <NavLink to="" end className="menu-item gap-3">
           <NotebookPen />
           <p>Notice Creation</p>
         </NavLink>

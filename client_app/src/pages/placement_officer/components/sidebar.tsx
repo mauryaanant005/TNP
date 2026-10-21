@@ -1,5 +1,6 @@
 import { NavLink } from "react-router";
 import "./sidebar.css";
+import { ClipboardList } from "lucide-react";
 import { logout, redirectToProfile } from "@/utils";
 import Logo from "@/assets/img/logo.png";
 import ProfileIcon from "@/assets/img/user_profile_new.png";
@@ -12,8 +13,12 @@ const Sidebar = () => {
         <h1 className="title">TCET - TNP</h1>
       </div>
       <ul className="menu">
-        <NavLink to="" className="menu-item">
+        <NavLink to="" end className="menu-item">
           <p>Placement Statistics</p>
+        </NavLink>
+        <NavLink to="duty-chart" className="menu-item gap-3">
+          <ClipboardList size={20} />
+          <p>Duty Chart</p>
         </NavLink>
         <NavLink to="placement-consolidated-report" className="menu-item">
           <p>Consolidated Report</p>

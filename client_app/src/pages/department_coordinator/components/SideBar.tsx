@@ -25,7 +25,7 @@ const Sidebar = () => {
           </NavLink>
         )}
         <hr style={{ margin: "8px 0", borderColor: "#e2e8f0" }} />
-        <NavLink to="/department_coordinator" className="menu-item">
+        <NavLink to="/department_coordinator" end className="menu-item">
           <p>Students Data</p>
         </NavLink>
         <NavLink to="attendance" className="menu-item">

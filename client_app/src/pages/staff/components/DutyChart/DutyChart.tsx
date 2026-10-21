@@ -9,13 +9,18 @@ import {
   RotateCcw,
   Calendar,
   Layers,
-  ChevronDown,
-  ChevronUp,
   FolderOpen,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { apiFetch } from "@/lib/api";
-import { DutyChartPreview, DutyChartFormData, DutyChartTableRow } from "./DutyChartPreview";
+import {
+  DutyChartPreview,
+  DutyChartFormData,
+  DutyChartTableRow,
+  PRINCIPAL_NAME,
+  PRINCIPAL_DESIGNATION,
+  PERMANENT_COPY_TO,
+} from "./DutyChartPreview";
 import "@/pages/DutyChart.css";
 
 interface SavedDraftItem {
@@ -37,9 +42,9 @@ const getBlankFormData = (serial: string = ""): DutyChartFormData => ({
   intro: "",
   eventDates: [],
   notes: [],
-  signatoryName: "",
-  signatoryDesignation: "",
-  copyTo: [],
+  signatoryName: PRINCIPAL_NAME,
+  signatoryDesignation: PRINCIPAL_DESIGNATION,
+  copyTo: [...PERMANENT_COPY_TO],
 });
 
 const getBlankTableRow = (sr: number = 1): DutyChartTableRow => ({
@@ -56,7 +61,23 @@ const getBlankTableRow = (sr: number = 1): DutyChartTableRow => ({
 
 export const DutyChart: React.FC = () => {
   const contentRef = useRef<HTMLDivElement>(null);
-  const reactPrintFn = useReactToPrint({ contentRef });
+  const reactPrintFn = useReactToPrint({
+    contentRef,
+    pageStyle: `
+      @page {
+        size: A4 portrait;
+        margin: 0 !important;
+      }
+      @media print {
+        body {
+          margin: 0 !important;
+          padding: 0 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+    `,
+  });
 
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
@@ -132,7 +153,12 @@ export const DutyChart: React.FC = () => {
   // Load a selected saved draft
   const loadSavedDraft = (draft: SavedDraftItem) => {
     if (draft.formData) {
-      setFormData(draft.formData);
+      setFormData({
+        ...draft.formData,
+        signatoryName: PRINCIPAL_NAME,
+        signatoryDesignation: PRINCIPAL_DESIGNATION,
+        copyTo: [...PERMANENT_COPY_TO],
+      });
       syncNotesFromFormData(draft.formData.notes || []);
     }
     if (draft.tableData && draft.tableData.length > 0) {
@@ -242,18 +268,6 @@ export const DutyChart: React.FC = () => {
     });
   };
 
-  const moveRow = (index: number, direction: "up" | "down") => {
-    const targetIdx = direction === "up" ? index - 1 : index + 1;
-    if (targetIdx < 0 || targetIdx >= tableData.length) return;
-    setTableData((prev) => {
-      const copy = [...prev];
-      const temp = copy[index];
-      copy[index] = copy[targetIdx];
-      copy[targetIdx] = temp;
-      return copy.map((r, i) => ({ ...r, srNo: i + 1 }));
-    });
-  };
-
 
 
   // Save draft to backend — flush notesRaw first
@@ -261,7 +275,13 @@ export const DutyChart: React.FC = () => {
     setSaving(true);
     // Flush notes before saving
     const flushedNotes = notesRaw.split("\n").filter((l) => l.trim().length > 0);
-    const latestFormData = { ...formData, notes: flushedNotes };
+    const latestFormData = {
+      ...formData,
+      notes: flushedNotes,
+      signatoryName: PRINCIPAL_NAME,
+      signatoryDesignation: PRINCIPAL_DESIGNATION,
+      copyTo: [...PERMANENT_COPY_TO],
+    };
     setFormData(latestFormData);
     try {
       const payload = {
@@ -295,6 +315,9 @@ export const DutyChart: React.FC = () => {
   const previewFormData: DutyChartFormData = {
     ...formData,
     notes: notesRaw.split("\n").filter((l) => l.trim().length > 0),
+    signatoryName: PRINCIPAL_NAME,
+    signatoryDesignation: PRINCIPAL_DESIGNATION,
+    copyTo: [...PERMANENT_COPY_TO],
   };
 
   if (loading) {
@@ -339,7 +362,7 @@ export const DutyChart: React.FC = () => {
             {/* Document Metadata Fields */}
             <div className="dc-grid-3">
               <div className="dc-form-group">
-                <label className="dc-form-label">Serial Number</label>
+                <label className="dc-form-label">Sr No : </label>
                 <input
                   type="text"
                   name="srNo"
@@ -386,7 +409,7 @@ export const DutyChart: React.FC = () => {
             </div>
 
             <div className="dc-form-group" style={{ marginBottom: "16px" }}>
-              <label className="dc-form-label">Introductory Paragraph</label>
+              <label className="dc-form-label">Introduction</label>
               <textarea
                 name="intro"
                 value={formData.intro}
@@ -459,20 +482,32 @@ export const DutyChart: React.FC = () => {
 
             <div className="dc-table-editor-wrapper">
               <table className="dc-editor-table">
+                <colgroup>
+                  <col style={{ width: "45px" }} />
+                  <col style={{ width: "180px" }} />
+                  <col style={{ width: "140px" }} />
+                  <col style={{ width: "70px" }} />
+                  <col style={{ width: "80px" }} />
+                  {formData.eventDates.map((d) => (
+                    <col key={d} style={{ width: "70px" }} />
+                  ))}
+                  <col style={{ width: "300px" }} />
+                  <col style={{ width: "80px" }} />
+                </colgroup>
                 <thead>
                   <tr>
                     <th style={{ width: "45px" }}>Sr.</th>
-                    <th style={{ width: "220px" }}>Faculty / Staff Name</th>
-                    <th style={{ width: "170px" }}>Designation</th>
-                    <th style={{ width: "80px" }}>Dept</th>
-                    <th style={{ width: "90px" }}>Reporting</th>
+                    <th style={{ width: "180px" }}>Faculty / Staff Name</th>
+                    <th style={{ width: "140px" }}>Designation</th>
+                    <th style={{ width: "70px" }}>Dept</th>
+                    <th style={{ width: "80px" }}>Reporting</th>
                     {formData.eventDates.map((d) => (
                       <th key={d} style={{ width: "70px", textAlign: "center" }}>
                         {d} (Duty)
                       </th>
                     ))}
-                    <th style={{ width: "240px" }}>Roles and Responsibilities</th>
-                    <th style={{ width: "100px", textAlign: "center" }}>Actions</th>
+                    <th style={{ width: "300px" }}>Roles and Responsibilities</th>
+                    <th style={{ width: "80px", textAlign: "center" }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -567,37 +602,15 @@ export const DutyChart: React.FC = () => {
                         />
                       </td>
                       <td style={{ textAlign: "center" }}>
-                        <div style={{ display: "inline-flex", gap: "2px" }}>
-                          <button
-                            type="button"
-                            onClick={() => moveRow(index, "up")}
-                            disabled={index === 0}
-                            className="dc-btn dc-btn-secondary dc-btn-sm"
-                            style={{ padding: "2px 4px" }}
-                            title="Move Up"
-                          >
-                            <ChevronUp size={13} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => moveRow(index, "down")}
-                            disabled={index === tableData.length - 1}
-                            className="dc-btn dc-btn-secondary dc-btn-sm"
-                            style={{ padding: "2px 4px" }}
-                            title="Move Down"
-                          >
-                            <ChevronDown size={13} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => removeRow(index)}
-                            className="dc-btn dc-btn-danger dc-btn-sm"
-                            style={{ padding: "2px 4px" }}
-                            title="Remove Row"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeRow(index)}
+                          className="dc-btn dc-btn-danger dc-btn-sm"
+                          style={{ padding: "4px 8px" }}
+                          title="Remove Row"
+                        >
+                          <Trash2 size={13} />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -608,7 +621,7 @@ export const DutyChart: React.FC = () => {
             {/* Bottom Details (Notes, Signatory, Copy To) */}
             <div className="dc-grid-2" style={{ marginTop: "20px" }}>
               <div className="dc-form-group">
-                <label className="dc-form-label">Notes (One note per line)</label>
+                <label className="dc-form-label">Note : </label>
                 {/*
                   Notes textarea uses its own raw state so Enter inserts newlines
                   naturally. We flush to formData.notes only on blur.
@@ -626,49 +639,62 @@ export const DutyChart: React.FC = () => {
                   }}
                   className="dc-textarea"
                   rows={3}
-                  placeholder="Enter notes, one per line…"
+
                 />
               </div>
 
               <div className="dc-form-group">
-                <label className="dc-form-label">Copy To List (One recipient per line)</label>
-                <textarea
-                  value={formData.copyTo.join("\n")}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      copyTo: e.target.value.split("\n").filter((l) => l.trim().length > 0),
-                    }))
-                  }
-                  className="dc-textarea"
-                  rows={3}
-                  placeholder={"Vice Principal\nAll Deans\nAll HODs"}
-                />
+                <label className="dc-form-label">Copy To (Permanent)</label>
+                <div
+                  className="dc-input"
+                  style={{
+                    backgroundColor: "#f8fafc",
+                    color: "#0f172a",
+                    fontSize: "12px",
+                    lineHeight: "1.5",
+                    cursor: "default",
+                    userSelect: "none",
+                    height: "auto",
+                    padding: "8px 12px",
+                  }}
+                >
+                  {PERMANENT_COPY_TO.map((entry) => (
+                    <div key={entry}>{entry}</div>
+                  ))}
+                </div>
               </div>
             </div>
 
             <div className="dc-grid-2" style={{ marginTop: "12px" }}>
               <div className="dc-form-group">
                 <label className="dc-form-label">Principal / Signatory Name</label>
-                <input
-                  type="text"
-                  name="signatoryName"
-                  value={formData.signatoryName}
-                  onChange={handleInputChange}
+                <div
                   className="dc-input"
-                  placeholder="e.g. (Dr. B. K. Mishra)"
-                />
+                  style={{
+                    backgroundColor: "#f8fafc",
+                    color: "#0f172a",
+                    fontWeight: 600,
+                    cursor: "default",
+                    userSelect: "none",
+                  }}
+                >
+                  {PRINCIPAL_NAME}
+                </div>
               </div>
               <div className="dc-form-group">
                 <label className="dc-form-label">Signatory Designation</label>
-                <input
-                  type="text"
-                  name="signatoryDesignation"
-                  value={formData.signatoryDesignation}
-                  onChange={handleInputChange}
+                <div
                   className="dc-input"
-                  placeholder="e.g. Principal"
-                />
+                  style={{
+                    backgroundColor: "#f8fafc",
+                    color: "#0f172a",
+                    fontWeight: 600,
+                    cursor: "default",
+                    userSelect: "none",
+                  }}
+                >
+                  {PRINCIPAL_DESIGNATION}
+                </div>
               </div>
             </div>
 

@@ -14,7 +14,7 @@ const Sidebar = () => {
         <h1 className="title">TCET - TNP</h1>
       </div>
       <ul className="menu">
-        <NavLink to="" className="menu-item">
+        <NavLink to="" end className="menu-item">
           <img src={Stats} alt="Placement Statistics" className="menu-icon" />
           <p>Training</p>
         </NavLink>

@@ -1,5 +1,5 @@
 import { apiFetch } from "@/lib/api";
-// PlacementCompany.tsx
+// PlacementCompany.ptsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { Container, Paper, Typography, Box, Grid, Button } from "@mui/material";

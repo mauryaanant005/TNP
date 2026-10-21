@@ -42,9 +42,9 @@ const Sidebar = () => {
         <IconButton component={Link} to="/profile" onClick={redirectToProfile}>
           <ProfileIcon src={UserProfileIcon} alt="Profile" />
         </IconButton>
-          <IconButton component="button" onClick={handleLogout}>
-            <LogoutIcon src={UserLogoutIcon} alt="Logout" />
-          </IconButton>
+        <IconButton component="button" onClick={handleLogout}>
+          <LogoutIcon src={UserLogoutIcon} alt="Logout" />
+        </IconButton>
       </BottomMenu>
     </SidebarContainer>
   );

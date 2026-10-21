@@ -45,30 +45,125 @@
 
 .menu {
   list-style: none;
-  padding: 0;
+  padding: 6px 0;
   margin: 0;
-}
-
-.menu-item {
-  text-decoration: none;
-  /* display: flex;
-    align-items: center; */
-  margin-bottom: 5px;
-  color: #153f74;
-  font-size: 1rem;
-  transition: color 0.3s ease;
   display: flex;
-  /* justify-content: space-between; */
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* ── Base Navigation Item ─────────────────────────────────────────── */
+.menu-item {
+  position: relative;
+  display: flex;
   align-items: center;
+  text-decoration: none;
+  color: #334155;
+  font-size: 0.93rem;
+  font-weight: 500;
+  padding: 10px 14px 10px 16px;
+  border-radius: 12px;
+  background-color: transparent;
+  transition: background-color 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  overflow: hidden;
+  user-select: none;
 }
 
-.menu-icon {
-  height: 1.5rem;
+/* Left Accent Indicator Bar (Active State) */
+.menu-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 15%;
+  bottom: 15%;
+  width: 4px;
+  background-color: #153f74;
+  border-radius: 0 4px 4px 0;
+  opacity: 0;
+  transform: scaleY(0.2);
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-item p {
+  margin: 0;
+  font-size: 0.93rem;
+  line-height: 1.35;
+  color: inherit;
+  transition: color 0.22s ease, font-weight 0.22s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menu-icon,
+.menu-item svg {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #64748b;
   margin-right: 10px;
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+              filter 0.22s ease;
 }
 
+/* ── 1. Modern Hover Animation ───────────────────────────────────── */
 .menu-item:hover {
-  color: #1b4d96;
+  background-color: rgba(21, 63, 116, 0.05);
+  color: #153f74;
+}
+
+.menu-item:hover p {
+  color: #153f74;
+  font-weight: 600;
+}
+
+.menu-item:hover svg,
+.menu-item:hover .menu-icon {
+  color: #153f74;
+  transform: translateX(3px) scale(1.05);
+}
+
+/* ── 2. Persistent Active Page State ─────────────────────────────── */
+.menu-item.active {
+  background: linear-gradient(90deg, rgba(21, 63, 116, 0.12) 0%, rgba(21, 63, 116, 0.04) 100%);
+  color: #153f74;
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px rgba(21, 63, 116, 0.08);
+}
+
+.menu-item.active::before {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.menu-item.active p {
+  color: #153f74;
+  font-weight: 700;
+}
+
+.menu-item.active svg,
+.menu-item.active .menu-icon {
+  color: #153f74;
+  transform: scale(1.08);
+  filter: drop-shadow(0 1px 2px rgba(21, 63, 116, 0.25));
+}
+
+/* ── 3. Combined Active + Hover State ────────────────────────────── */
+.menu-item.active:hover {
+  background: linear-gradient(90deg, rgba(21, 63, 116, 0.18) 0%, rgba(21, 63, 116, 0.08) 100%);
+}
+
+.menu-item.active:hover svg,
+.menu-item.active:hover .menu-icon {
+  transform: translateX(2px) scale(1.1);
 }
 
 .bottom-menu {

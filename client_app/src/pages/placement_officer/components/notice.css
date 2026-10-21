@@ -178,6 +178,11 @@
   overflow: hidden;
 }
 
+/* Preview-only: .notice-document-wrapper wraps only on-screen preview, ensuring clear spacing below header without touching print/PDF */
+.notice-document-wrapper .notice-header-container {
+  margin: 0 0 12px 0;
+}
+
 .header-image {
   width: 100%;
   height: auto;
