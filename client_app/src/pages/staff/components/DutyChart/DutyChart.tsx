@@ -484,39 +484,41 @@ export const DutyChart: React.FC = () => {
               <table className="dc-editor-table">
                 <colgroup>
                   <col style={{ width: "45px" }} />
-                  <col style={{ width: "180px" }} />
-                  <col style={{ width: "140px" }} />
-                  <col style={{ width: "70px" }} />
-                  <col style={{ width: "80px" }} />
+                  <col style={{ width: "160px" }} />
+                  <col style={{ width: "120px" }} />
+                  <col style={{ width: "90px" }} />
+                  <col style={{ width: "100px" }} />
                   {formData.eventDates.map((d) => (
                     <col key={d} style={{ width: "70px" }} />
                   ))}
-                  <col style={{ width: "300px" }} />
+                  <col style={{ width: "70px" }} />{/* Sign */}
+                  <col style={{ width: "260px" }} />
                   <col style={{ width: "80px" }} />
                 </colgroup>
                 <thead>
                   <tr>
-                    <th style={{ width: "45px" }}>Sr.</th>
-                    <th style={{ width: "180px" }}>Faculty / Staff Name</th>
-                    <th style={{ width: "140px" }}>Designation</th>
-                    <th style={{ width: "70px" }}>Dept</th>
-                    <th style={{ width: "80px" }}>Reporting</th>
+                    <th style={{ width: "45px", textAlign: "center" }}>Sr.</th>
+                    <th style={{ width: "160px", textAlign: "center" }}>Faculty / Staff Name</th>
+                    <th style={{ width: "120px", textAlign: "center" }}>Designation</th>
+                    <th style={{ width: "90px", textAlign: "center" }}>Dept</th>
+                    <th style={{ width: "100px", textAlign: "center" }}>Reporting Time</th>
                     {formData.eventDates.map((d) => (
                       <th key={d} style={{ width: "70px", textAlign: "center" }}>
                         {d} (Duty)
                       </th>
                     ))}
-                    <th style={{ width: "300px" }}>Roles and Responsibilities</th>
+                    <th style={{ width: "70px", textAlign: "center" }}>Sign</th>
+                    <th style={{ width: "260px", textAlign: "center" }}>Roles and Responsibilities</th>
                     <th style={{ width: "80px", textAlign: "center" }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {tableData.map((row, index) => (
                     <tr key={index}>
-                      <td style={{ textAlign: "center", fontWeight: "bold" }}>
+                      <td style={{ textAlign: "center", verticalAlign: "middle", fontWeight: "bold" }}>
                         {row.srNo ?? index + 1}
                       </td>
-                      <td>
+                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
                         <input
                           type="text"
                           value={row.name}
@@ -524,10 +526,11 @@ export const DutyChart: React.FC = () => {
                             handleTableCellChange(index, "name", e.target.value)
                           }
                           className="dc-editor-input"
+                          style={{ textAlign: "center" }}
                           placeholder="Name"
                         />
                       </td>
-                      <td>
+                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
                         <input
                           type="text"
                           value={row.designation}
@@ -535,10 +538,11 @@ export const DutyChart: React.FC = () => {
                             handleTableCellChange(index, "designation", e.target.value)
                           }
                           className="dc-editor-input"
+                          style={{ textAlign: "center" }}
                           placeholder="Designation"
                         />
                       </td>
-                      <td>
+                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
                         <input
                           type="text"
                           value={row.department}
@@ -550,7 +554,7 @@ export const DutyChart: React.FC = () => {
                           placeholder="Dept"
                         />
                       </td>
-                      <td>
+                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
                         <input
                           type="text"
                           value={row.reportingTime}
@@ -567,7 +571,7 @@ export const DutyChart: React.FC = () => {
                       {formData.eventDates.map((d) => {
                         const isAssigned = row.dutyDates ? !!row.dutyDates[d] : false;
                         return (
-                          <td key={d} style={{ textAlign: "center" }}>
+                          <td key={d} style={{ textAlign: "center", verticalAlign: "middle" }}>
                             <button
                               type="button"
                               onClick={() => toggleDutyDate(index, d)}
@@ -590,7 +594,21 @@ export const DutyChart: React.FC = () => {
                         );
                       })}
 
-                      <td>
+                      {/* Sign column */}
+                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+                        <input
+                          type="text"
+                          value={row.sign ?? ""}
+                          onChange={(e) =>
+                            handleTableCellChange(index, "sign", e.target.value)
+                          }
+                          className="dc-editor-input"
+                          style={{ textAlign: "center" }}
+                          placeholder="Sign"
+                        />
+                      </td>
+
+                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
                         <textarea
                           value={row.roles}
                           onChange={(e) =>
@@ -598,10 +616,11 @@ export const DutyChart: React.FC = () => {
                           }
                           className="dc-editor-input"
                           rows={2}
+                          style={{ textAlign: "center" }}
                           placeholder="Roles & Responsibilities"
                         />
                       </td>
-                      <td style={{ textAlign: "center" }}>
+                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
                         <button
                           type="button"
                           onClick={() => removeRow(index)}

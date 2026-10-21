@@ -21,16 +21,22 @@ export interface DutyChartColumnDef {
   className?: string;
 }
 
-// Authoritative 7-column definitions: 5 + 18 + 14 + 7 + 8 + 8 + 40 = 100%
-export const DUTY_CHART_COLUMNS: readonly DutyChartColumnDef[] = [
+// Static fixed columns — date columns are inserted dynamically from formData.eventDates
+export const STATIC_LEFT_COLUMNS: readonly DutyChartColumnDef[] = [
   { key: "srNo", label: "Sr. No", width: "5%", className: "dc-cell-center" },
   { key: "name", label: "Name of the Faculty / Staff", width: "18%", className: "dc-cell-name" },
   { key: "designation", label: "Designation", width: "14%", className: "dc-cell-desig" },
   { key: "department", label: "Dept.", width: "7%", className: "dc-cell-center" },
-  { key: "reportingTime", label: "Reporting Time", width: "8%", className: "dc-cell-center" },
-  { key: "sign", label: "Sign", width: "8%", className: "dc-cell-center" },
-  { key: "roles", label: "Roles and Responsibilities", width: "40%", className: "dc-cell-roles" },
+  { key: "reportingTime", label: "Reporting Time", width: "10%", className: "dc-cell-center" },
 ] as const;
+
+export const STATIC_RIGHT_COLUMNS: readonly DutyChartColumnDef[] = [
+  { key: "sign", label: "Sign", width: "8%", className: "dc-cell-center" },
+  { key: "roles", label: "Roles and Responsibilities", width: "38%", className: "dc-cell-roles" },
+] as const;
+
+// Keep old export alias so any other imports don't break
+export const DUTY_CHART_COLUMNS = [...STATIC_LEFT_COLUMNS, ...STATIC_RIGHT_COLUMNS];
 
 export interface DutyChartFormData {
   srNo: string;
@@ -179,16 +185,37 @@ export const DutyChartPreview = React.forwardRef<HTMLDivElement, DutyChartPrevie
                       )}
                     </div>
 
-                    {/* Main Duty Assignment Table — Authoritative 7-Column Fixed Layout */}
+                    {/* Main Duty Assignment Table — dynamic date columns inserted between Reporting Time and Sign */}
                     <table className="dc-table">
                       <colgroup>
-                        {DUTY_CHART_COLUMNS.map((col) => (
+                        {STATIC_LEFT_COLUMNS.map((col) => (
+                          <col key={col.key} style={{ width: col.width }} />
+                        ))}
+                        {/* One column per event date */}
+                        {formData.eventDates && formData.eventDates.map((d) => (
+                          <col key={`date-col-${d}`} style={{ width: "6%" }} />
+                        ))}
+                        {STATIC_RIGHT_COLUMNS.map((col) => (
                           <col key={col.key} style={{ width: col.width }} />
                         ))}
                       </colgroup>
                       <thead>
                         <tr>
-                          {DUTY_CHART_COLUMNS.map((col) => (
+                          {STATIC_LEFT_COLUMNS.map((col) => (
+                            <th key={col.key} style={{ width: col.width }}>
+                              {col.label}
+                            </th>
+                          ))}
+                          {/* Dynamic date column headers */}
+                          {formData.eventDates && formData.eventDates.map((d) => (
+                            <th
+                              key={`date-th-${d}`}
+                              style={{ width: "6%", textAlign: "center", fontSize: "10px", wordBreak: "break-word" }}
+                            >
+                              {d}
+                            </th>
+                          ))}
+                          {STATIC_RIGHT_COLUMNS.map((col) => (
                             <th
                               key={col.key}
                               style={{ width: col.width }}
@@ -209,6 +236,19 @@ export const DutyChartPreview = React.forwardRef<HTMLDivElement, DutyChartPrevie
                             <td className="dc-cell-desig">{row.designation || <>&nbsp;</>}</td>
                             <td className="dc-cell-center">{row.department || <>&nbsp;</>}</td>
                             <td className="dc-cell-center">{row.reportingTime || <>&nbsp;</>}</td>
+                            {/* Dynamic date duty cells */}
+                            {formData.eventDates && formData.eventDates.map((d) => {
+                              const isAssigned = row.dutyDates ? !!row.dutyDates[d] : false;
+                              return (
+                                <td
+                                  key={`date-td-${d}`}
+                                  className="dc-cell-center"
+                                  style={{ fontWeight: isAssigned ? "bold" : "normal", fontSize: "13px" }}
+                                >
+                                  {isAssigned ? "✓" : <>&nbsp;</>}
+                                </td>
+                              );
+                            })}
                             <td className="dc-cell-center">{row.sign || <>&nbsp;</>}</td>
                             <td className="dc-cell-roles">
                               {renderRoleContent(row.roles)}
