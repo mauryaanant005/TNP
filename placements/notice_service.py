@@ -419,37 +419,111 @@ def get_opportunity_autofill_data(opportunity_id: int) -> Dict[str, Any]:
     dept_list = opp.eligible_departments or []
     depts_formatted = ", ".join(dept_list) if isinstance(dept_list, list) else str(dept_list)
     batch_val = (opp.batch or "").strip()
+    is_internship = (opp.placement_internship or "").strip().lower() == "internship"
+    is_both = (opp.placement_internship or "").strip().lower() == "both"
+
     if batch_val:
         to_text = f"All concerned Students of {batch_val} Batch ({depts_formatted})" if depts_formatted else f"All concerned Students of {batch_val} Batch"
-        subject = f"Campus Recruitment Drive - {company.name} for {batch_val} Batch"
-        intro = (
-            f"All eligible and interested students of {batch_val} batch are hereby informed that "
-            f"{company.name} is conducting a campus recruitment drive."
-        )
+        if is_internship:
+            subject = f"Campus Internship Drive - {company.name} for {batch_val} Batch"
+            intro = (
+                f"All eligible and interested students of {batch_val} batch are hereby informed that "
+                f"{company.name} is offering internship opportunities."
+            )
+        elif is_both:
+            subject = f"Campus Placement & Internship Drive - {company.name} for {batch_val} Batch"
+            intro = (
+                f"All eligible and interested students of {batch_val} batch are hereby informed that "
+                f"{company.name} is conducting a campus recruitment and internship drive."
+            )
+        else:
+            subject = f"Campus Recruitment Drive - {company.name} for {batch_val} Batch"
+            intro = (
+                f"All eligible and interested students of {batch_val} batch are hereby informed that "
+                f"{company.name} is conducting a campus recruitment drive."
+            )
     else:
         to_text = f"All concerned Students ({depts_formatted})" if depts_formatted else "All concerned Students"
-        subject = f"Campus Recruitment Drive - {company.name}"
-        intro = (
-            f"All eligible and interested students are hereby informed that "
-            f"{company.name} is conducting a campus recruitment drive."
-        )
+        if is_internship:
+            subject = f"Campus Internship Drive - {company.name}"
+            intro = (
+                f"All eligible and interested students are hereby informed that "
+                f"{company.name} is offering internship opportunities."
+            )
+        elif is_both:
+            subject = f"Campus Placement & Internship Drive - {company.name}"
+            intro = (
+                f"All eligible and interested students are hereby informed that "
+                f"{company.name} is conducting a campus recruitment and internship drive."
+            )
+        else:
+            subject = f"Campus Recruitment Drive - {company.name}"
+            intro = (
+                f"All eligible and interested students are hereby informed that "
+                f"{company.name} is conducting a campus recruitment drive."
+            )
 
     # Compensation / salary
     salary_str = opp.emolument_raw.strip() if opp.emolument_raw else ""
     if not salary_str and opp.emolument_value:
-        unit = opp.emolument_unit or "LPA"
+        unit = opp.emolument_unit or ("₹/month" if is_internship else "LPA")
         salary_str = f"₹{opp.emolument_value} {unit}"
     if not salary_str:
         salary_str = "As per company norms"
 
+    # Query linked internship offers if available
+    internship_offers = []
+    try:
+        from internship_api.models import InternshipRegistration, Offers
+        internship_reg = InternshipRegistration.objects.filter(name__iexact=company.name).first()
+        if internship_reg:
+            for off in Offers.objects.filter(company=internship_reg):
+                stip_val = f"₹{off.stipend:,.0f} / month" if off.stipend else salary_str
+                internship_offers.append({
+                    "type": off.type or "Internship",
+                    "salary": stip_val,
+                    "position": off.position or (f"{opp.designation} (Intern)" if opp.designation else "Intern"),
+                })
+    except Exception:
+        pass
+
     # Structured table rows
-    table_rows = [
-        {
-            "type": "Regular" if opp.placement_internship == "Placement" else opp.placement_internship,
+    if is_both:
+        placement_row = {
+            "type": "Regular",
             "salary": salary_str,
             "position": opp.designation or "Graduate Engineer Trainee",
         }
-    ]
+        if internship_offers:
+            table_rows = [placement_row] + internship_offers
+        else:
+            table_rows = [
+                placement_row,
+                {
+                    "type": "Internship",
+                    "salary": salary_str,
+                    "position": f"{opp.designation} (Intern)" if opp.designation else "Intern",
+                },
+            ]
+    elif is_internship:
+        if internship_offers:
+            table_rows = internship_offers
+        else:
+            table_rows = [
+                {
+                    "type": "Internship",
+                    "salary": salary_str,
+                    "position": opp.designation or "Intern",
+                }
+            ]
+    else:
+        table_rows = [
+            {
+                "type": "Regular",
+                "salary": salary_str,
+                "position": opp.designation or "Graduate Engineer Trainee",
+            }
+        ]
 
     # Skills list
     skills_list = opp.skills if isinstance(opp.skills, list) else [opp.skills] if opp.skills else []

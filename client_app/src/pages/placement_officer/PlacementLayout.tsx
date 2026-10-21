@@ -5,14 +5,15 @@ import "./placement.css";
 import { Outlet, useNavigate } from "react-router";
 import { useAtomValue } from "jotai";
 import { authAtom } from "@/authAtom";
+import { roleIsAllowed, ROLE_GROUPS } from "@/lib/roles";
 const PlacementLayout = () => {
   const authUser = useAtomValue(authAtom);
   const navigate = useNavigate();
   useEffect(() => {
-    if (!authUser || authUser.role !== "placement_officer") {
+    if (!authUser || !roleIsAllowed(authUser.role, ROLE_GROUPS.PLACEMENT_REPORTS)) {
       navigate("/");
     }
-  }, []);
+  }, [authUser, navigate]);
   return (
     <div className="ribbon">
       <div className="app">
