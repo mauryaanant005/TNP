@@ -286,6 +286,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/internship/company/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["internship_company_retrieve_3"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/internship/company/register/": {
         parameters: {
             query?: never;
@@ -431,6 +447,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/internship/notice/{company_pk}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Retrieve the InternshipNotice for the given company. */
+        get: operations["internship_notice_retrieve_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/internship/notice/create/{company_pk}": {
         parameters: {
             query?: never;
@@ -442,6 +475,40 @@ export interface paths {
         put?: never;
         /** @description Create or update the InternshipNotice for the given company. */
         post: operations["internship_notice_create_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internship/notice/create/{company_pk}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Create or update the InternshipNotice for the given company. */
+        post: operations["internship_notice_create_create_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/internship/notice/next-serial-number/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Fetch next institutional serial number for internship notice. */
+        get: operations["internship_notice_next_serial_number_retrieve"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1671,7 +1738,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Fetch the next institutional Placement Notice serial number. */
+        /** @description Fetch the next institutional Placement/Internship Notice serial number. */
         get: operations["staff_placement_notices_next_serial_number_retrieve"];
         put?: never;
         post?: never;
@@ -3168,6 +3235,26 @@ export interface operations {
             };
         };
     };
+    internship_company_retrieve_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     internship_company_register_create: {
         parameters: {
             query?: never;
@@ -3334,6 +3421,26 @@ export interface operations {
             };
         };
     };
+    internship_notice_retrieve_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                company_pk: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     internship_notice_create_create: {
         parameters: {
             query?: never;
@@ -3341,6 +3448,44 @@ export interface operations {
             path: {
                 company_pk: string;
             };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    internship_notice_create_create_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                company_pk: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    internship_notice_next_serial_number_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
