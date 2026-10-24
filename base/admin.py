@@ -105,6 +105,12 @@ class FacultyStaffProgramFilter(SimpleListFilter):
         return queryset
 
 
+def _normalize_unfold_form_args(args, kwargs):
+    if "data" in kwargs and not args:
+        return (kwargs.pop("data"),), kwargs
+    return args, kwargs
+
+
 # =============================================================================
 # Faculty & Staff Users Admin
 # =============================================================================
@@ -155,6 +161,7 @@ class FacultyStaffUserCreationForm(UserCreationForm):
         fields = ("email", "full_name", "role", "department", "program", "is_staff", "is_superuser")
 
     def __init__(self, *args, **kwargs):
+        args, kwargs = _normalize_unfold_form_args(args, kwargs)
         super().__init__(*args, **kwargs)
         self.fields["department"].choices = get_department_choices()
         self.fields["program"].choices = get_program_choices()
@@ -244,6 +251,7 @@ class FacultyStaffUserChangeForm(UserChangeForm):
         )
 
     def __init__(self, *args, **kwargs):
+        args, kwargs = _normalize_unfold_form_args(args, kwargs)
         super().__init__(*args, **kwargs)
         self.fields["department"].choices = get_department_choices()
         self.fields["program"].choices = get_program_choices()
@@ -418,6 +426,10 @@ class StudentUserCreationForm(UserCreationForm):
         model = StudentUser
         fields = ("email", "full_name")
 
+    def __init__(self, *args, **kwargs):
+        args, kwargs = _normalize_unfold_form_args(args, kwargs)
+        super().__init__(*args, **kwargs)
+
     def clean_email(self):
         email = self.cleaned_data.get("email")
         if email and User.objects.filter(email__iexact=email).exists():
@@ -462,6 +474,10 @@ class StudentUserChangeForm(UserChangeForm):
             "password",
             "full_name",
         )
+
+    def __init__(self, *args, **kwargs):
+        args, kwargs = _normalize_unfold_form_args(args, kwargs)
+        super().__init__(*args, **kwargs)
 
     def clean_password(self):
         return self.initial["password"]
