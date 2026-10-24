@@ -7,8 +7,6 @@ import {
   Trash2,
   Save,
   RotateCcw,
-  Calendar,
-  Layers,
   FolderOpen,
 } from "lucide-react";
 import toast from "react-hot-toast";
