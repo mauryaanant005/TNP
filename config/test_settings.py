@@ -43,6 +43,8 @@ CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
 CELERY_TASK_ALWAYS_EAGER = True
+CELERY_BROKER_URL = "memory://"
+CELERY_RESULT_BACKEND = "cache+memory://"
 # Deliberately False: an endpoint that only dispatches a task should still
 # answer 202 in an authorisation test even if the task body then fails on test
 # data. Tests that care about task behaviour call the task directly.
