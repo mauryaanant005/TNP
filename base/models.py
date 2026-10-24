@@ -75,7 +75,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         if not self.password:
             default_pwd = getattr(settings, "DEFAULT_SEED_PASSWORD", os.getenv("DEFAULT_SEED_PASSWORD", "tcet@1234"))
             self.set_password(default_pwd)
-        elif not (self.password.startswith(('pbkdf2_sha256$', 'pbkdf2_sha1$', 'argon2$', 'bcrypt$', 'scrypt$', 'bcrypt_sha256$')) or self.password.startswith('!')):
+        elif not (self.password.startswith(('pbkdf2_sha256$', 'pbkdf2_sha1$', 'argon2$', 'bcrypt$', 'scrypt$', 'bcrypt_sha256$', 'md5$')) or self.password.startswith('!')):
             self.set_password(self.password)
         super().save(*args, **kwargs)
 
@@ -222,3 +222,50 @@ class FacultyResponsibility(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     program = models.CharField(max_length=255, null=True)
     department = models.CharField(max_length=255, null=True)
+
+    class Meta:
+        verbose_name = "Faculty Responsibility"
+        verbose_name_plural = "Faculty Responsibilities"
+
+    def __str__(self):
+        parts = []
+        if self.department:
+            parts.append(f"Dept: {self.department}")
+        if self.program:
+            parts.append(f"Program: {self.program}")
+        desc = " | ".join(parts) if parts else "No assignment"
+        return f"{self.user.email} ({desc})"
+
+
+NON_STUDENT_ROLES = [
+    choice for choice in User.USER_ROLE_TYPE if choice[0] != "student"
+]
+
+
+class StudentUserManager(CustomUserManager):
+    def get_queryset(self):
+        return super().get_queryset().filter(role="student")
+
+
+class FacultyStaffUserManager(CustomUserManager):
+    def get_queryset(self):
+        return super().get_queryset().exclude(role="student")
+
+
+class StudentUser(User):
+    objects = StudentUserManager()
+
+    class Meta:
+        proxy = True
+        verbose_name = "Student User"
+        verbose_name_plural = "Student Users"
+
+
+class FacultyStaffUser(User):
+    objects = FacultyStaffUserManager()
+
+    class Meta:
+        proxy = True
+        verbose_name = "Faculty & Staff User"
+        verbose_name_plural = "Faculty & Staff Users"
+

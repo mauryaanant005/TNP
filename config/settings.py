@@ -504,22 +504,36 @@ UNFOLD = {
         "collapsible": False,
         "navigation": [
             {
-                "title": _("Navigation"),
+                "title": _("User Management"),
                 "separator": True,
                 "collapsible": True,
                 "items": [
                     {
                         "title": _("Dashboard"),
+                        "icon": "dashboard",
                         "link": reverse_lazy("admin:index"),
                         "permission": lambda request: request.user.is_superuser,
                     },
                     {
-                        "title": _("Users"),
-                        "link": reverse_lazy("admin:base_user_changelist"),
+                        "title": _("Faculty & Staff Users"),
+                        "icon": "badge",
+                        "link": reverse_lazy("admin:base_facultystaffuser_changelist"),
                     },
                     {
-                        "title": _("Student"),
+                        "title": _("Student Users"),
+                        "icon": "person",
+                        "link": reverse_lazy("admin:base_studentuser_changelist"),
+                    },
+                    {
+                        "title": _("Student Profiles"),
+                        "icon": "school",
                         "link": reverse_lazy("admin:student_student_changelist"),
+                    },
+                    {
+                        "title": _("All Accounts (Audit)"),
+                        "icon": "manage_accounts",
+                        "link": reverse_lazy("admin:base_user_changelist"),
+                        "permission": lambda request: request.user.is_superuser,
                     },
                 ],
             },
