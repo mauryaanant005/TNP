@@ -330,6 +330,28 @@ export const DutyChart: React.FC = () => {
     );
   }
 
+  const sectionTitleStyle: React.CSSProperties = {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontWeight: 700,
+    fontSize: "16px",
+    lineHeight: 1.5,
+    letterSpacing: "0.00938em",
+    color: "#000000ff",
+    margin: "0 0 12px 0",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  };
+
+  const blueDotStyle: React.CSSProperties = {
+    display: "inline-block",
+    width: 8,
+    height: 8,
+    borderRadius: "50%",
+    background: "#3b82f6",
+    flexShrink: 0,
+  };
+
   return (
     <div className="dc-manager-container">
       {/* ── Toolbar (replaces removed blue header) ────────────────────────── */}
@@ -358,361 +380,385 @@ export const DutyChart: React.FC = () => {
       {/* ── Form Card ─────────────────────────────────────────────────────── */}
       <div className="dc-card">
         <div className="dc-card-body">
-          <form onSubmit={(e) => e.preventDefault()}>
-            {/* Document Metadata Fields */}
-            <div className="dc-grid-3">
-              <div className="dc-form-group">
-                <label className="dc-form-label">Sr No : </label>
-                <input
-                  type="text"
-                  name="srNo"
-                  value={formData.srNo}
-                  onChange={handleInputChange}
-                  className="dc-input"
-                  placeholder="e.g. TCET/T&P/DC  47   of 2026"
-                />
-              </div>
-              <div className="dc-form-group">
-                <label className="dc-form-label">Notice Date</label>
-                <input
-                  type="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleInputChange}
-                  className="dc-input"
-                />
-              </div>
-              <div className="dc-form-group">
-                <label className="dc-form-label">Recipient (To)</label>
-                <input
-                  type="text"
-                  name="to"
-                  value={formData.to}
-                  onChange={handleInputChange}
-                  className="dc-input"
-                  placeholder="All Concerned Faculty & Staff Members"
-                />
-              </div>
-            </div>
-
-            {/* Subject & Intro */}
-            <div className="dc-form-group" style={{ marginBottom: "16px" }}>
-              <label className="dc-form-label">Subject</label>
-              <input
-                type="text"
-                name="subject"
-                value={formData.subject}
-                onChange={handleInputChange}
-                className="dc-input"
-                placeholder="Duties for Placement Drive by..."
-              />
-            </div>
-
-            <div className="dc-form-group" style={{ marginBottom: "16px" }}>
-              <label className="dc-form-label">Introduction</label>
-              <textarea
-                name="intro"
-                value={formData.intro}
-                onChange={handleInputChange}
-                className="dc-textarea"
-                rows={3}
-                placeholder="All concerned faculty and staff members have been assigned duties..."
-              />
-            </div>
-
-            {/* Event Dates Dynamic Columns Editor */}
-            <div className="dc-form-group" style={{ marginBottom: "20px" }}>
-              <label className="dc-form-label">
-                <Calendar size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: "4px" }} />
-                Event Date Columns (Checkmark Schedule Columns)
-              </label>
-              <div className="dc-dates-editor">
-                {formData.eventDates.map((d) => (
-                  <span key={d} className="dc-date-tag">
-                    {d}
-                    <span
-                      onClick={() => removeEventDate(d)}
-                      className="dc-tag-close"
-                      title="Remove column"
-                    >
-                      &times;
-                    </span>
-                  </span>
-                ))}
-                <div style={{ display: "inline-flex", gap: "6px", alignItems: "center" }}>
+          <form onSubmit={(e) => e.preventDefault()} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            {/* Section: Document Metadata */}
+            <div>
+              <h3 style={sectionTitleStyle}>
+                <span style={blueDotStyle} />
+                Document Metadata
+              </h3>
+              <div className="dc-grid-3">
+                <div className="dc-form-group">
                   <input
                     type="text"
-                    placeholder="Add date (e.g. 10th Sep)"
-                    value={newDateInput}
-                    onChange={(e) => setNewDateInput(e.target.value)}
+                    name="srNo"
+                    value={formData.srNo}
+                    onChange={handleInputChange}
+                    className="dc-input"
+                    placeholder="Reference Number"
+                  />
+                </div>
+                <div className="dc-form-group">
+                  <input
+                    type="date"
+                    name="date"
+                    value={formData.date}
+                    onChange={handleInputChange}
+                    className="dc-input"
+                  />
+                </div>
+                <div className="dc-form-group">
+                  <input
+                    type="text"
+                    name="to"
+                    value={formData.to}
+                    onChange={handleInputChange}
+                    className="dc-input"
+                    placeholder="To"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section: Subject & Introduction */}
+            <div>
+              <h3 style={sectionTitleStyle}>
+                <span style={blueDotStyle} />
+                Subject &amp; Introduction
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                <div className="dc-form-group">
+                  <input
+                    type="text"
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleInputChange}
+                    className="dc-input"
+                    placeholder="Subject"
+                  />
+                </div>
+                <div className="dc-form-group">
+                  <textarea
+                    name="intro"
+                    value={formData.intro}
+                    onChange={handleInputChange}
+                    className="dc-textarea"
+                    rows={3}
+                    placeholder="Introduction"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section: Event Date Columns */}
+            <div>
+              <h3 style={sectionTitleStyle}>
+                <span style={blueDotStyle} />
+                Event Date Columns
+              </h3>
+              <div className="dc-form-group">
+                <div className="dc-dates-editor">
+                  {formData.eventDates.map((d) => (
+                    <span key={d} className="dc-date-tag">
+                      {d}
+                      <span
+                        onClick={() => removeEventDate(d)}
+                        className="dc-tag-close"
+                        title="Remove column"
+                      >
+                        &times;
+                      </span>
+                    </span>
+                  ))}
+                  <div style={{ display: "inline-flex", gap: "6px", alignItems: "center" }}>
+                    <input
+                      type="text"
+                      placeholder="Add date (e.g. 10th Sep)"
+                      value={newDateInput}
+                      onChange={(e) => setNewDateInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addEventDate();
+                        }
+                      }}
+                      className="dc-input"
+                      style={{ padding: "4px 8px", width: "160px", fontSize: "12px" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={addEventDate}
+                      className="dc-btn dc-btn-secondary dc-btn-sm"
+                    >
+                      <Plus size={12} /> Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Section: Duty Assignment Table Editor */}
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "12px",
+                }}
+              >
+                <h3 style={sectionTitleStyle}>
+                  <span style={blueDotStyle} />
+                  Faculty &amp; Staff Duty Roster
+                </h3>
+                <button
+                  type="button"
+                  onClick={addRow}
+                  className="dc-btn dc-btn-primary dc-btn-sm"
+                >
+                  <Plus size={14} /> Add Row
+                </button>
+              </div>
+
+              <div className="dc-table-editor-wrapper">
+                <table className="dc-editor-table">
+                  <colgroup>
+                    <col style={{ width: "45px" }} />
+                    <col style={{ width: "160px" }} />
+                    <col style={{ width: "120px" }} />
+                    <col style={{ width: "90px" }} />
+                    <col style={{ width: "100px" }} />
+                    {formData.eventDates.map((d) => (
+                      <col key={d} style={{ width: "70px" }} />
+                    ))}
+                    <col style={{ width: "70px" }} />{/* Sign */}
+                    <col style={{ width: "260px" }} />
+                    <col style={{ width: "80px" }} />
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th style={{ width: "45px", textAlign: "center" }}>Sr.</th>
+                      <th style={{ width: "160px", textAlign: "center" }}>Faculty / Staff Name</th>
+                      <th style={{ width: "120px", textAlign: "center" }}>Designation</th>
+                      <th style={{ width: "90px", textAlign: "center" }}>Dept</th>
+                      <th style={{ width: "100px", textAlign: "center" }}>Reporting Time</th>
+                      {formData.eventDates.map((d) => (
+                        <th key={d} style={{ width: "70px", textAlign: "center" }}>
+                          {d} (Duty)
+                        </th>
+                      ))}
+                      <th style={{ width: "70px", textAlign: "center" }}>Sign</th>
+                      <th style={{ width: "260px", textAlign: "center" }}>Roles and Responsibilities</th>
+                      <th style={{ width: "80px", textAlign: "center" }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tableData.map((row, index) => (
+                      <tr key={index}>
+                        <td style={{ textAlign: "center", verticalAlign: "middle", fontWeight: "bold" }}>
+                          {row.srNo ?? index + 1}
+                        </td>
+                        <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+                          <input
+                            type="text"
+                            value={row.name}
+                            onChange={(e) =>
+                              handleTableCellChange(index, "name", e.target.value)
+                            }
+                            className="dc-editor-input"
+                            style={{ textAlign: "center" }}
+                            placeholder="Name"
+                          />
+                        </td>
+                        <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+                          <input
+                            type="text"
+                            value={row.designation}
+                            onChange={(e) =>
+                              handleTableCellChange(index, "designation", e.target.value)
+                            }
+                            className="dc-editor-input"
+                            style={{ textAlign: "center" }}
+                            placeholder="Designation"
+                          />
+                        </td>
+                        <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+                          <input
+                            type="text"
+                            value={row.department}
+                            onChange={(e) =>
+                              handleTableCellChange(index, "department", e.target.value)
+                            }
+                            className="dc-editor-input"
+                            style={{ textAlign: "center" }}
+                            placeholder="Dept"
+                          />
+                        </td>
+                        <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+                          <input
+                            type="text"
+                            value={row.reportingTime}
+                            onChange={(e) =>
+                              handleTableCellChange(index, "reportingTime", e.target.value)
+                            }
+                            className="dc-editor-input"
+                            style={{ textAlign: "center" }}
+                            placeholder="09.30"
+                          />
+                        </td>
+
+                        {/* Event Date Duty Toggles */}
+                        {formData.eventDates.map((d) => {
+                          const isAssigned = row.dutyDates ? !!row.dutyDates[d] : false;
+                          return (
+                            <td key={d} style={{ textAlign: "center", verticalAlign: "middle" }}>
+                              <button
+                                type="button"
+                                onClick={() => toggleDutyDate(index, d)}
+                                style={{
+                                  width: "28px",
+                                  height: "26px",
+                                  borderRadius: "4px",
+                                  border: isAssigned ? "1px solid #16a34a" : "1px solid #cbd5e1",
+                                  background: isAssigned ? "#dcfce7" : "#ffffff",
+                                  color: isAssigned ? "#15803d" : "#94a3b8",
+                                  fontWeight: "bold",
+                                  cursor: "pointer",
+                                  fontSize: "13px",
+                                }}
+                                title={`Toggle duty mark for ${d}`}
+                              >
+                                {isAssigned ? "√" : "-"}
+                              </button>
+                            </td>
+                          );
+                        })}
+
+                        {/* Sign column */}
+                        <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+                          <input
+                            type="text"
+                            value={row.sign ?? ""}
+                            onChange={(e) =>
+                              handleTableCellChange(index, "sign", e.target.value)
+                            }
+                            className="dc-editor-input"
+                            style={{ textAlign: "center" }}
+                            placeholder="Sign"
+                          />
+                        </td>
+
+                        <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+                          <textarea
+                            value={row.roles}
+                            onChange={(e) =>
+                              handleTableCellChange(index, "roles", e.target.value)
+                            }
+                            className="dc-editor-input"
+                            rows={2}
+                            style={{ textAlign: "center" }}
+                            placeholder="Roles & Responsibilities"
+                          />
+                        </td>
+                        <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+                          <button
+                            type="button"
+                            onClick={() => removeRow(index)}
+                            className="dc-btn dc-btn-danger dc-btn-sm"
+                            style={{ padding: "4px 8px" }}
+                            title="Remove Row"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Section: Notes, Signatory & Copy To */}
+            <div>
+              <h3 style={sectionTitleStyle}>
+                <span style={blueDotStyle} />
+                Notes, Signatory &amp; Copy To
+              </h3>
+              <div className="dc-grid-2">
+                <div className="dc-form-group">
+                  {/*
+                    Notes textarea uses its own raw state so Enter inserts newlines
+                    naturally. We flush to formData.notes only on blur.
+                  */}
+                  <textarea
+                    value={notesRaw}
+                    onChange={(e) => setNotesRaw(e.target.value)}
+                    onBlur={handleNotesBlur}
                     onKeyDown={(e) => {
+                      // Allow Enter to insert a newline — do NOT submit or preventDefault
                       if (e.key === "Enter") {
-                        e.preventDefault();
-                        addEventDate();
+                        // Let the browser handle it naturally
+                        return;
                       }
                     }}
-                    className="dc-input"
-                    style={{ padding: "4px 8px", width: "160px", fontSize: "12px" }}
+                    className="dc-textarea"
+                    rows={3}
+                    placeholder="Note"
                   />
-                  <button
-                    type="button"
-                    onClick={addEventDate}
-                    className="dc-btn dc-btn-secondary dc-btn-sm"
+                </div>
+
+                <div className="dc-form-group">
+                  <label className="dc-form-label">Copy To (Permanent)</label>
+                  <div
+                    className="dc-input"
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      color: "#0f172a",
+                      fontSize: "12px",
+                      lineHeight: "1.5",
+                      cursor: "default",
+                      userSelect: "none",
+                      height: "auto",
+                      padding: "8px 12px",
+                    }}
                   >
-                    <Plus size={12} /> Add
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Duty Assignment Table Editor */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-              <h3 style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#1e3a8a" }}>
-                <Layers size={16} style={{ display: "inline", verticalAlign: "middle", marginRight: "6px" }} />
-                Faculty &amp; Staff Duty Roster
-              </h3>
-              <button
-                type="button"
-                onClick={addRow}
-                className="dc-btn dc-btn-primary dc-btn-sm"
-              >
-                <Plus size={14} /> Add Row
-              </button>
-            </div>
-
-            <div className="dc-table-editor-wrapper">
-              <table className="dc-editor-table">
-                <colgroup>
-                  <col style={{ width: "45px" }} />
-                  <col style={{ width: "160px" }} />
-                  <col style={{ width: "120px" }} />
-                  <col style={{ width: "90px" }} />
-                  <col style={{ width: "100px" }} />
-                  {formData.eventDates.map((d) => (
-                    <col key={d} style={{ width: "70px" }} />
-                  ))}
-                  <col style={{ width: "70px" }} />{/* Sign */}
-                  <col style={{ width: "260px" }} />
-                  <col style={{ width: "80px" }} />
-                </colgroup>
-                <thead>
-                  <tr>
-                    <th style={{ width: "45px", textAlign: "center" }}>Sr.</th>
-                    <th style={{ width: "160px", textAlign: "center" }}>Faculty / Staff Name</th>
-                    <th style={{ width: "120px", textAlign: "center" }}>Designation</th>
-                    <th style={{ width: "90px", textAlign: "center" }}>Dept</th>
-                    <th style={{ width: "100px", textAlign: "center" }}>Reporting Time</th>
-                    {formData.eventDates.map((d) => (
-                      <th key={d} style={{ width: "70px", textAlign: "center" }}>
-                        {d} (Duty)
-                      </th>
+                    {PERMANENT_COPY_TO.map((entry) => (
+                      <div key={entry}>{entry}</div>
                     ))}
-                    <th style={{ width: "70px", textAlign: "center" }}>Sign</th>
-                    <th style={{ width: "260px", textAlign: "center" }}>Roles and Responsibilities</th>
-                    <th style={{ width: "80px", textAlign: "center" }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tableData.map((row, index) => (
-                    <tr key={index}>
-                      <td style={{ textAlign: "center", verticalAlign: "middle", fontWeight: "bold" }}>
-                        {row.srNo ?? index + 1}
-                      </td>
-                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
-                        <input
-                          type="text"
-                          value={row.name}
-                          onChange={(e) =>
-                            handleTableCellChange(index, "name", e.target.value)
-                          }
-                          className="dc-editor-input"
-                          style={{ textAlign: "center" }}
-                          placeholder="Name"
-                        />
-                      </td>
-                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
-                        <input
-                          type="text"
-                          value={row.designation}
-                          onChange={(e) =>
-                            handleTableCellChange(index, "designation", e.target.value)
-                          }
-                          className="dc-editor-input"
-                          style={{ textAlign: "center" }}
-                          placeholder="Designation"
-                        />
-                      </td>
-                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
-                        <input
-                          type="text"
-                          value={row.department}
-                          onChange={(e) =>
-                            handleTableCellChange(index, "department", e.target.value)
-                          }
-                          className="dc-editor-input"
-                          style={{ textAlign: "center" }}
-                          placeholder="Dept"
-                        />
-                      </td>
-                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
-                        <input
-                          type="text"
-                          value={row.reportingTime}
-                          onChange={(e) =>
-                            handleTableCellChange(index, "reportingTime", e.target.value)
-                          }
-                          className="dc-editor-input"
-                          style={{ textAlign: "center" }}
-                          placeholder="09.30"
-                        />
-                      </td>
-
-                      {/* Event Date Duty Toggles */}
-                      {formData.eventDates.map((d) => {
-                        const isAssigned = row.dutyDates ? !!row.dutyDates[d] : false;
-                        return (
-                          <td key={d} style={{ textAlign: "center", verticalAlign: "middle" }}>
-                            <button
-                              type="button"
-                              onClick={() => toggleDutyDate(index, d)}
-                              style={{
-                                width: "28px",
-                                height: "26px",
-                                borderRadius: "4px",
-                                border: isAssigned ? "1px solid #16a34a" : "1px solid #cbd5e1",
-                                background: isAssigned ? "#dcfce7" : "#ffffff",
-                                color: isAssigned ? "#15803d" : "#94a3b8",
-                                fontWeight: "bold",
-                                cursor: "pointer",
-                                fontSize: "13px",
-                              }}
-                              title={`Toggle duty mark for ${d}`}
-                            >
-                              {isAssigned ? "√" : "-"}
-                            </button>
-                          </td>
-                        );
-                      })}
-
-                      {/* Sign column */}
-                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
-                        <input
-                          type="text"
-                          value={row.sign ?? ""}
-                          onChange={(e) =>
-                            handleTableCellChange(index, "sign", e.target.value)
-                          }
-                          className="dc-editor-input"
-                          style={{ textAlign: "center" }}
-                          placeholder="Sign"
-                        />
-                      </td>
-
-                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
-                        <textarea
-                          value={row.roles}
-                          onChange={(e) =>
-                            handleTableCellChange(index, "roles", e.target.value)
-                          }
-                          className="dc-editor-input"
-                          rows={2}
-                          style={{ textAlign: "center" }}
-                          placeholder="Roles & Responsibilities"
-                        />
-                      </td>
-                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
-                        <button
-                          type="button"
-                          onClick={() => removeRow(index)}
-                          className="dc-btn dc-btn-danger dc-btn-sm"
-                          style={{ padding: "4px 8px" }}
-                          title="Remove Row"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Bottom Details (Notes, Signatory, Copy To) */}
-            <div className="dc-grid-2" style={{ marginTop: "20px" }}>
-              <div className="dc-form-group">
-                <label className="dc-form-label">Note : </label>
-                {/*
-                  Notes textarea uses its own raw state so Enter inserts newlines
-                  naturally. We flush to formData.notes only on blur.
-                */}
-                <textarea
-                  value={notesRaw}
-                  onChange={(e) => setNotesRaw(e.target.value)}
-                  onBlur={handleNotesBlur}
-                  onKeyDown={(e) => {
-                    // Allow Enter to insert a newline — do NOT submit or preventDefault
-                    if (e.key === "Enter") {
-                      // Let the browser handle it naturally
-                      return;
-                    }
-                  }}
-                  className="dc-textarea"
-                  rows={3}
-
-                />
-              </div>
-
-              <div className="dc-form-group">
-                <label className="dc-form-label">Copy To (Permanent)</label>
-                <div
-                  className="dc-input"
-                  style={{
-                    backgroundColor: "#f8fafc",
-                    color: "#0f172a",
-                    fontSize: "12px",
-                    lineHeight: "1.5",
-                    cursor: "default",
-                    userSelect: "none",
-                    height: "auto",
-                    padding: "8px 12px",
-                  }}
-                >
-                  {PERMANENT_COPY_TO.map((entry) => (
-                    <div key={entry}>{entry}</div>
-                  ))}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="dc-grid-2" style={{ marginTop: "12px" }}>
-              <div className="dc-form-group">
-                <label className="dc-form-label">Principal / Signatory Name</label>
-                <div
-                  className="dc-input"
-                  style={{
-                    backgroundColor: "#f8fafc",
-                    color: "#0f172a",
-                    fontWeight: 600,
-                    cursor: "default",
-                    userSelect: "none",
-                  }}
-                >
-                  {PRINCIPAL_NAME}
+              <div className="dc-grid-2" style={{ marginTop: "12px" }}>
+                <div className="dc-form-group">
+                  <label className="dc-form-label">Principal / Signatory Name</label>
+                  <div
+                    className="dc-input"
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      color: "#0f172a",
+                      fontWeight: 600,
+                      cursor: "default",
+                      userSelect: "none",
+                    }}
+                  >
+                    {PRINCIPAL_NAME}
+                  </div>
                 </div>
-              </div>
-              <div className="dc-form-group">
-                <label className="dc-form-label">Signatory Designation</label>
-                <div
-                  className="dc-input"
-                  style={{
-                    backgroundColor: "#f8fafc",
-                    color: "#0f172a",
-                    fontWeight: 600,
-                    cursor: "default",
-                    userSelect: "none",
-                  }}
-                >
-                  {PRINCIPAL_DESIGNATION}
+                <div className="dc-form-group">
+                  <label className="dc-form-label">Signatory Designation</label>
+                  <div
+                    className="dc-input"
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      color: "#0f172a",
+                      fontWeight: 600,
+                      cursor: "default",
+                      userSelect: "none",
+                    }}
+                  >
+                    {PRINCIPAL_DESIGNATION}
+                  </div>
                 </div>
               </div>
             </div>
@@ -731,27 +777,58 @@ export const DutyChart: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Inline Document Preview (always visible below the form) ───────── */}
-      <div className="dc-inline-preview-section">
-        <div className="dc-inline-preview-header">
-          <div style={{ fontSize: "13px", color: "#334155" }}>
-            <strong>Official Institutional Preview</strong> &mdash; <code>TCET/FRM/MP-04/11</code> &bull; Revision: B
-          </div>
+      {/* ── Permanently Visible Live Preview Card ───────── */}
+      <div className="dc-card">
+        <div
+          style={{
+            padding: "12px 20px",
+            backgroundColor: "#f8fafc",
+            borderBottom: "1px solid #e2e8f0",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "12px",
+          }}
+        >
+          <span
+            style={{
+              fontWeight: 700,
+              fontSize: "15px",
+              color: "#1e3a8a",
+            }}
+          >
+            Live Duty Chart Preview
+          </span>
+
           <button
             type="button"
             onClick={() => reactPrintFn()}
-            className="dc-btn dc-btn-success dc-btn-sm"
+            className="dc-btn dc-btn-primary dc-btn-sm"
+            style={{ padding: "6px 16px", fontSize: "13px", fontWeight: 600 }}
           >
-            <Printer size={13} /> Print / Save PDF
+            <Printer size={15} /> Print / Save PDF
           </button>
         </div>
 
-        {/* The live document — ref attached here for react-to-print */}
-        <DutyChartPreview
-          formData={previewFormData}
-          tableData={tableData}
-          ref={contentRef}
-        />
+        <div
+          style={{
+            backgroundColor: "#525659",
+            padding: "24px",
+            display: "flex",
+            justifyContent: "center",
+            overflowX: "auto",
+          }}
+        >
+          <div style={{ width: "100%", maxWidth: "850px" }}>
+            {/* The live document — ref attached here for react-to-print */}
+            <DutyChartPreview
+              formData={previewFormData}
+              tableData={tableData}
+              ref={contentRef}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Saved Drafts Modal */}

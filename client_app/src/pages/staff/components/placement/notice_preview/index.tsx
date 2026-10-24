@@ -188,8 +188,14 @@ const notice = forwardRef<
           </ol>
         </div>
 
-        <div className="notice-bottom">
-          <div className="notice-copyto">
+        <div className="notice-bottom" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div className="notice-signature" style={{ alignSelf: "flex-end", textAlign: "right" }}>
+            <p>Sd/-</p>
+            <p>(Dr. Zahir Aalam)</p>
+            <p>Dean (TP&IL)</p>
+          </div>
+
+          <div className="notice-copyto" style={{ textAlign: "left", width: "100%" }}>
             <p>
               <strong>Copy to:</strong>
             </p>
@@ -201,12 +207,6 @@ const notice = forwardRef<
               <li>Website</li>
               <li>notice Board of TCET</li>
             </ul>
-          </div>
-
-          <div className="notice-signature">
-            <p>Sd/-</p>
-            <p>(Dr. Zahir Aalam)</p>
-            <p>Dean (TP&IL)</p>
           </div>
         </div>
 
