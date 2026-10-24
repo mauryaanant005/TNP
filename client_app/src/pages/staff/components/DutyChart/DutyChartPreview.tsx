@@ -3,7 +3,7 @@ import headerImage from "@/assets/tcet header.png";
 import footerImage from "@/assets/tcet footer.png";
 import logoWatermark from "@/assets/img/logo.png";
 
-export const PRINCIPAL_NAME = "Dr. B.K. Mishra";
+export const PRINCIPAL_NAME = "(Dr. B.K. Mishra)";
 export const PRINCIPAL_DESIGNATION = "Principal";
 
 export const PERMANENT_COPY_TO = [
@@ -86,17 +86,17 @@ export const DutyChartPreview = React.forwardRef<HTMLDivElement, DutyChartPrevie
       tableData && tableData.length > 0
         ? tableData
         : [
-            {
-              srNo: 1,
-              name: "",
-              designation: "",
-              department: "",
-              reportingTime: "",
-              dutyDates: {},
-              sign: "",
-              roles: "",
-            },
-          ];
+          {
+            srNo: 1,
+            name: "",
+            designation: "",
+            department: "",
+            reportingTime: "",
+            dutyDates: {},
+            sign: "",
+            roles: "",
+          },
+        ];
 
     const renderRoleContent = (roleText?: string) => {
       if (!roleText || !roleText.trim()) return <>&nbsp;</>;
@@ -258,37 +258,36 @@ export const DutyChartPreview = React.forwardRef<HTMLDivElement, DutyChartPrevie
                       </tbody>
                     </table>
 
-                    {/* Notes and Signatory / Copy To Section */}
-                    <div className="dc-bottom-container">
-                      {/* Notes */}
-                      <div className="dc-notes-block">
+                    {/* Notes Block — flows immediately after table */}
+                    {formData.notes && formData.notes.length > 0 && (
+                      <div className="dc-notes-block" style={{ marginTop: "8px", marginBottom: "8px", pageBreakInside: "avoid" }}>
                         <p className="dc-note-title">Note:</p>
-                        {formData.notes && formData.notes.length > 0 ? (
-                          <ol className="dc-notes-list">
-                            {formData.notes.map((note, nIdx) => (
-                              <li key={nIdx}>{note}</li>
-                            ))}
-                          </ol>
-                        ) : (
-                          <div style={{ minHeight: "10px" }} />
-                        )}
+                        <ol className="dc-notes-list">
+                          {formData.notes.map((note, nIdx) => (
+                            <li key={nIdx}>{note}</li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
+
+                    {/* Signatory & Copy to Section — Signatory on Right ABOVE Copy to on Left */}
+                    <div className="dc-bottom-container" style={{ pageBreakInside: "avoid", marginTop: "12px" }}>
+                      {/* Principal Signature Block — on right, ABOVE Copy to */}
+                      <div className="dc-signatory-wrapper" style={{ display: "flex", justifyContent: "flex-end", width: "100%", marginBottom: "12px" }}>
+                        <div className="dc-principal-block" style={{ textAlign: "center", minWidth: "180px" }}>
+                          <p className="dc-principal-name" style={{ fontWeight: 700, margin: 0 }}>{PRINCIPAL_NAME}</p>
+                          <p className="dc-principal-title" style={{ margin: "2px 0 0 0" }}>{PRINCIPAL_DESIGNATION}</p>
+                        </div>
                       </div>
 
-                      {/* Principal Signature Block on right & Copy to on left */}
-                      <div className="dc-signatory-row">
-                        <div className="dc-copyto-block">
-                          <p className="dc-copyto-title">Copy to:</p>
-                          <ul className="dc-copyto-list">
-                            {PERMANENT_COPY_TO.map((item, cIdx) => (
-                              <li key={cIdx}>{item}</li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        <div className="dc-principal-block">
-                          <p className="dc-principal-name">{PRINCIPAL_NAME}</p>
-                          <p className="dc-principal-title">{PRINCIPAL_DESIGNATION}</p>
-                        </div>
+                      {/* Copy to Block — on left, BELOW Principal */}
+                      <div className="dc-copyto-block" style={{ textAlign: "left", width: "100%" }}>
+                        <p className="dc-copyto-title" style={{ fontWeight: 700, textDecoration: "underline", margin: "0 0 2px 0" }}>Copy to:</p>
+                        <ul className="dc-copyto-list" style={{ listStyle: "none", margin: 0, padding: 0 }}>
+                          {PERMANENT_COPY_TO.map((item, cIdx) => (
+                            <li key={cIdx}>{item}</li>
+                          ))}
+                        </ul>
                       </div>
                     </div>
                   </div>

@@ -788,7 +788,7 @@ const PlacementNotice: React.FC = () => {
           {/* Skills Chip Input */}
           <Grid item xs={12}>
             <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, display: "block", mb: 1 }}>
-              Required Skills (Type and press Enter or click Add)
+
             </Typography>
             <Box sx={{ display: "flex", gap: 1, mb: 1.5 }}>
               <TextField

@@ -371,9 +371,21 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(
                     {/* Flexible Vertical Spacer (consumes available vertical space dynamically) */}
                     <div className="notice-flexible-spacer" />
 
-                    {/* 16 & 17. Atomic Institutional Bottom Block: Copy To (Left) & Signature (Right) */}
+                    {/* 16 & 17. Atomic Institutional Bottom Block: Signature (Right, ABOVE) & Copy To (Left, BELOW) */}
                     <div className="notice-bottom-section notice-footer-container">
-                      {/* Copy To Section (Structured Institutional Layout) */}
+                      {/* Signature / Issuing Authority Block — Right Aligned, ABOVE Copy to */}
+                      <div className="signature-row-wrapper">
+                        <div className="fromto-signature-block signature-section">
+                          <p className="sig-sd">Sd/-</p>
+                          <p className="sig-name">{formData.From || "(Dr. Zahir Aalam)"}</p>
+                          <p className="sig-designation">
+                            {formData.From_designation ||
+                              "Training and Placement Officer (TPO), TCET"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Copy To Section (Structured Institutional Layout) — Left Aligned, BELOW Signature */}
                       <div className="notice-copyto-block copy-to-section">
                         <div className="copyto-header">Copy to:</div>
                         <div className="copyto-grid">
@@ -398,16 +410,6 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(
                             </div>
                           </div>
                         </div>
-                      </div>
-
-                      {/* Signature / Issuing Authority Block */}
-                      <div className="fromto-signature-block signature-section">
-                        <p className="sig-sd">Sd/-</p>
-                        <p className="sig-name">{formData.From || "(Dr. Zahir Aalam)"}</p>
-                        <p className="sig-designation">
-                          {formData.From_designation ||
-                            "Training and Placement Officer (TPO), TCET"}
-                        </p>
                       </div>
                     </div>
                   </div>
