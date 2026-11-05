@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useReactToPrint } from "react-to-print";
 import { Printer, Plus, Trash2, RotateCcw, FolderOpen, Save } from "lucide-react";
+import { TextField } from "@mui/material";
 import toast from "react-hot-toast";
 import "@/pages/DutyChart.css";
 import NoticePreview from "./NoticePreview";
@@ -401,24 +402,25 @@ const InfrastructureBooking = () => {
               </h3>
               <div className="dc-grid-2">
                 <div className="dc-form-group">
-                  <input
-                    type="text"
+                  <TextField
+                    label="Reference Number"
                     name="refNo"
                     value={formData.refNo}
                     onChange={handleInputChange}
-                    placeholder="Reference Number"
-                    className="dc-input"
-                    style={{ color: "#000000" }}
+                    fullWidth
+                    size="small"
                   />
                 </div>
                 <div className="dc-form-group">
-                  <input
+                  <TextField
+                    label="Notice Date"
                     type="date"
                     name="date"
                     value={formData.date}
                     onChange={handleInputChange}
-                    className="dc-input"
-                    style={{ color: "#000000" }}
+                    fullWidth
+                    size="small"
+                    InputLabelProps={{ shrink: true }}
                   />
                 </div>
               </div>
@@ -432,25 +434,25 @@ const InfrastructureBooking = () => {
               </h3>
               <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                 <div className="dc-form-group">
-                  <input
-                    type="text"
+                  <TextField
+                    label="Subject"
                     name="subject"
                     value={formData.subject}
                     onChange={handleInputChange}
-                    placeholder="Subject"
-                    className="dc-input"
-                    style={{ color: "#000000" }}
+                    fullWidth
+                    size="small"
                   />
                 </div>
                 <div className="dc-form-group">
-                  <textarea
+                  <TextField
+                    label="Introduction"
                     name="introParagraph"
                     value={formData.introParagraph}
                     onChange={handleInputChange}
+                    fullWidth
+                    multiline
                     rows={3}
-                    placeholder="Introduction"
-                    className="dc-textarea"
-                    style={{ color: "#000000" }}
+                    size="small"
                   />
                 </div>
               </div>
@@ -617,14 +619,15 @@ const InfrastructureBooking = () => {
                 Note:
               </h3>
               <div className="dc-form-group">
-                <textarea
+                <TextField
+                  label="Note"
                   name="note"
                   value={formData.note}
                   onChange={handleInputChange}
+                  fullWidth
+                  multiline
                   rows={2}
-                  placeholder="Note"
-                  className="dc-textarea"
-                  style={{ color: "#000000" }}
+                  size="small"
                 />
               </div>
             </div>

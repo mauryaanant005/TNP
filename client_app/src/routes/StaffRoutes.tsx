@@ -22,6 +22,8 @@ const StaffRoutes = () => {
         <Route index element={<StaffNotice />} />
         <Route path="duty-chart" element={<DutyChartPage />} />
         <Route path="reports" element={<ReportManagement />} />
+        <Route path="reports/:tab" element={<ReportManagement />} />
+        <Route path="reports/:tab/:subtab" element={<ReportManagement />} />
         <Route path="placement_companies" element={<CompanyPage />} />
         <Route
           path="placement_companies/register"

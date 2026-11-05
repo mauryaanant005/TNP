@@ -176,87 +176,89 @@ export const PlacementRegisterTab: React.FC<Props> = ({
   return (
     <div className="space-y-6">
       {/* Official Sheet Header */}
-      <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-        <div className="text-center pb-3 border-b border-gray-200">
-          <h2 className="text-xl font-bold tracking-wide text-gray-900">TCET</h2>
-          <h3 className="text-base font-semibold text-blue-900">
+      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <div className="text-center pb-4">
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900">TCET</h2>
+          <h3 className="text-sm font-semibold text-gray-700 mt-1">
             Students Placement Register of {report.batch} Batch ({report.program})
           </h3>
-          <div className="flex flex-wrap justify-between items-center text-xs text-gray-600 mt-2 px-4">
-            <span className="font-mono">{report.ref_no || "TCET/TNP/FRM/IP-06/02"}</span>
-            <span className="font-medium bg-blue-50 text-blue-800 px-2 py-0.5 rounded">
+          <div className="flex flex-wrap justify-center items-center gap-x-5 gap-y-1.5 text-xs text-gray-600 mt-3 pt-3 border-t border-gray-100 font-sans">
+            <span className="font-medium text-gray-800">{report.ref_no || "TCET/TNP/FRM/IP-06/02"}</span>
+            <span className="text-gray-300 font-light select-none">|</span>
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/60 font-sans">
               Revision: {report.revision || "B"}
             </span>
-            <span>REF: {report.report_no || "TCET/ T&P/ REP 95 of 2026"}</span>
-            <span>Date: {report.report_date || "16/10/2026"}</span>
+            <span className="text-gray-300 font-light select-none">|</span>
+            <span>
+              REF: <span className="font-semibold text-gray-900">{report.report_no || "TCET/ T&P/ REP 95 of 2026"}</span>
+            </span>
+            <span className="text-gray-300 font-light select-none">|</span>
+            <span>
+              Date: <span className="font-semibold text-gray-900">{report.report_date || "16/10/2026"}</span>
+            </span>
           </div>
-        </div>
-
-        <div className="mt-3 bg-amber-50 border border-amber-200 p-2.5 rounded-lg text-xs text-amber-900 font-medium">
-          <strong>Note:</strong> Employer Category <strong>Cat-1</strong> represents Super Dream Companies,{" "}
-          <strong>Cat-2</strong> represents Dream Companies, and <strong>Cat-3</strong> represents Normal Companies.
         </div>
       </div>
 
-      {/* Summary Metrics Cards */}
+      {/* Summary Metrics Cards — uniform gray-border style */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-        <div className="bg-white p-3.5 rounded-xl border border-blue-100 shadow-sm">
+        <div className="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm">
           <div className="text-xs text-gray-500 flex items-center gap-1 font-medium">
             <Briefcase className="w-3.5 h-3.5 text-blue-600" />
             Total Placed
           </div>
-          <div className="text-2xl font-bold text-blue-700 mt-1">{entries.length}</div>
+          <div className="text-2xl font-bold text-gray-900 mt-1">{entries.length}</div>
           <div className="text-[11px] text-gray-400 mt-0.5">Students</div>
         </div>
 
-        <div className="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-sm">
+        <div className="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm">
           <div className="text-xs text-gray-500 flex items-center gap-1 font-medium">
-            <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+            <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
             Max Salary
           </div>
-          <div className="text-2xl font-bold text-emerald-700 mt-1">
+          <div className="text-2xl font-bold text-gray-900 mt-1">
             {salaryStats.max !== null ? `${salaryStats.max} LPA` : "—"}
           </div>
           <div className="text-[11px] text-gray-400 mt-0.5">Min: {salaryStats.min || "—"} LPA</div>
         </div>
 
-        <div className="bg-white p-3.5 rounded-xl border border-indigo-100 shadow-sm">
+        <div className="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm">
           <div className="text-xs text-gray-500 flex items-center gap-1 font-medium">
-            <TrendingUp className="w-3.5 h-3.5 text-indigo-600" />
+            <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
             Average Salary
           </div>
-          <div className="text-2xl font-bold text-indigo-700 mt-1">
+          <div className="text-2xl font-bold text-gray-900 mt-1">
             {salaryStats.avg !== null ? `${salaryStats.avg} LPA` : "—"}
           </div>
           <div className="text-[11px] text-gray-400 mt-0.5">Median: {salaryStats.median || "—"} LPA</div>
         </div>
 
-        <div className="bg-white p-3.5 rounded-xl border border-purple-100 shadow-sm">
+        <div className="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm">
           <div className="text-xs text-gray-500 flex items-center gap-1 font-medium">
-            <TrendingUp className="w-3.5 h-3.5 text-purple-600" />
+            <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
             Mode Salary
           </div>
-          <div className="text-2xl font-bold text-purple-700 mt-1">
+          <div className="text-2xl font-bold text-gray-900 mt-1">
             {salaryStats.mode !== null ? `${salaryStats.mode} LPA` : "—"}
           </div>
           <div className="text-[11px] text-gray-400 mt-0.5">Most common package</div>
         </div>
 
-        <div className="bg-white p-3.5 rounded-xl border border-amber-100 shadow-sm">
+        <div className="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm">
           <div className="text-xs text-gray-500 flex items-center gap-1 font-medium">
-            <CheckCircle className="w-3.5 h-3.5 text-amber-600" />
+            <CheckCircle className="w-3.5 h-3.5 text-blue-600" />
             Dual Offers
           </div>
-          <div className="text-2xl font-bold text-amber-700 mt-1">{dualOfferCount}</div>
+          <div className="text-2xl font-bold text-gray-900 mt-1">{dualOfferCount}</div>
           <div className="text-[11px] text-gray-400 mt-0.5">Student(s) placed twice</div>
         </div>
 
-        <div className="bg-white p-3.5 rounded-xl border border-cyan-100 shadow-sm">
+        <div className="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm">
           <div className="text-xs text-gray-500 flex items-center gap-1 font-medium">
-            <Building className="w-3.5 h-3.5 text-cyan-600" />
+            <Building className="w-3.5 h-3.5 text-blue-600" />
             Avg Stipend
           </div>
-          <div className="text-2xl font-bold text-cyan-700 mt-1">
+          <div className="text-2xl font-bold text-gray-900 mt-1">
             {stipendStats.avg !== null ? `₹${stipendStats.avg}` : "—"}
           </div>
           <div className="text-[11px] text-gray-400 mt-0.5">Max: ₹{stipendStats.max || "—"}</div>
@@ -271,10 +273,10 @@ export const PlacementRegisterTab: React.FC<Props> = ({
             <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
             <input
               type="text"
-              placeholder="Search by name, T&P UID, or company..."
+              placeholder="Search by name, T&amp;P UID, or company..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50/50"
             />
           </div>
 
@@ -282,7 +284,7 @@ export const PlacementRegisterTab: React.FC<Props> = ({
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="text-xs py-2 px-2.5 rounded-lg border border-gray-300 bg-white font-medium text-gray-700 focus:ring-2 focus:ring-blue-500"
+            className="text-xs py-1.5 px-3 rounded-lg border border-gray-200 bg-white font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="ALL">All Categories</option>
             <option value="CAT-1">CAT-1 (Super Dream)</option>
@@ -294,7 +296,7 @@ export const PlacementRegisterTab: React.FC<Props> = ({
           <select
             value={campusFilter}
             onChange={(e) => setCampusFilter(e.target.value)}
-            className="text-xs py-2 px-2.5 rounded-lg border border-gray-300 bg-white font-medium text-gray-700 focus:ring-2 focus:ring-blue-500"
+            className="text-xs py-1.5 px-3 rounded-lg border border-gray-200 bg-white font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="ALL">All Campus</option>
             <option value="ON">ON Campus</option>
@@ -305,7 +307,7 @@ export const PlacementRegisterTab: React.FC<Props> = ({
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="text-xs py-2 px-2.5 rounded-lg border border-gray-300 bg-white font-medium text-gray-700 focus:ring-2 focus:ring-blue-500"
+            className="text-xs py-1.5 px-3 rounded-lg border border-gray-200 bg-white font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="ALL">All Types</option>
             <option value="Regular">Regular</option>
@@ -317,10 +319,10 @@ export const PlacementRegisterTab: React.FC<Props> = ({
 
         <button
           onClick={handleOpenAdd}
-          className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow transition"
+          className="inline-flex items-center gap-1.5 h-8 px-3.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-lg text-xs font-medium shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/30"
         >
-          <Plus className="w-4 h-4" />
-          Add Placement Entry
+          <Plus className="w-3.5 h-3.5" />
+          <span>Add Placement Entry</span>
         </button>
       </div>
 
@@ -328,7 +330,7 @@ export const PlacementRegisterTab: React.FC<Props> = ({
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
           <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-gray-100 text-gray-700 sticky top-0 z-10 font-bold border-b border-gray-300">
+            <thead className="bg-slate-50 text-gray-700 sticky top-0 z-10 font-semibold border-b border-gray-200">
               <tr>
                 <th className="p-2.5 border-r border-gray-200 text-center w-12">Sr. No.</th>
                 <th className="p-2.5 border-r border-gray-200 w-20">Branch</th>
@@ -423,17 +425,17 @@ export const PlacementRegisterTab: React.FC<Props> = ({
                       </span>
                     </td>
                     <td className="p-2.5 text-center no-print">
-                      <div className="flex items-center justify-center gap-1.5">
+                      <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => handleOpenEdit(entries.indexOf(row))}
-                          className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
+                          className="inline-flex items-center justify-center w-7 h-7 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
                           title="Edit Entry"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDelete(entries.indexOf(row))}
-                          className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
+                          className="inline-flex items-center justify-center w-7 h-7 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
                           title="Delete Entry"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -733,17 +735,17 @@ export const PlacementRegisterTab: React.FC<Props> = ({
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t mt-4">
+              <div className="flex justify-end gap-2 pt-3 border-t mt-4">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 font-medium"
+                  className="h-8 px-3.5 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 active:bg-gray-100 text-xs font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold shadow"
+                  className="h-8 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium text-xs rounded-lg shadow-sm transition-colors"
                 >
                   {editingIndex !== null ? "Update Entry" : "Save Entry"}
                 </button>

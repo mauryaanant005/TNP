@@ -124,19 +124,26 @@ export const ListOfCompanyTab: React.FC<Props> = ({
   return (
     <div className="space-y-6">
       {/* Official Document Header */}
-      <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-        <div className="text-center pb-3 border-b border-gray-200">
-          <h2 className="text-xl font-bold tracking-wide text-gray-900">TCET</h2>
-          <h3 className="text-base font-semibold text-blue-900">
-            List of Company — (Batch-wise & Company-wise Placement Record)
+      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <div className="text-center pb-4">
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900">TCET</h2>
+          <h3 className="text-sm font-semibold text-gray-700 mt-1">
+            List of Company — (Batch-wise &amp; Company-wise Placement Record)
           </h3>
-          <div className="flex flex-wrap justify-between items-center text-xs text-gray-600 mt-2 px-4">
-            <span className="font-mono">TCET/T&P/FRM/IP-06/11</span>
-            <span className="font-medium bg-blue-50 text-blue-800 px-2 py-0.5 rounded">
+          <div className="flex flex-wrap justify-center items-center gap-x-5 gap-y-1.5 text-xs text-gray-600 mt-3 pt-3 border-t border-gray-100 font-sans">
+            <span className="font-medium text-gray-800">TCET/T&amp;P/FRM/IP-06/11</span>
+            <span className="text-gray-300 font-light select-none">|</span>
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/60">
               Revision: B
             </span>
-            <span>Date: 05/09/2024</span>
-            <span>REF: TCET/ T&P/ REP 97 of 2026</span>
+            <span className="text-gray-300 font-light select-none">|</span>
+            <span>
+              REF: <span className="font-semibold text-gray-900">TCET/ T&amp;P/ REP 97 of 2026</span>
+            </span>
+            <span className="text-gray-300 font-light select-none">|</span>
+            <span>
+              Date: <span className="font-semibold text-gray-900">05/09/2024</span>
+            </span>
           </div>
         </div>
       </div>
@@ -146,13 +153,15 @@ export const ListOfCompanyTab: React.FC<Props> = ({
         <div className="flex flex-wrap gap-3 items-center flex-1 min-w-[280px]">
           {/* Search */}
           <div className="relative flex-1 min-w-[220px]">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="w-4 h-4 text-gray-400" />
+            </div>
             <input
               type="text"
               placeholder="Search companies by name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full h-8 pl-9 pr-3.5 bg-white text-gray-900 placeholder:text-gray-500 text-xs sm:text-[13px] rounded-lg border border-gray-200 hover:border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-150"
             />
           </div>
 
@@ -160,7 +169,7 @@ export const ListOfCompanyTab: React.FC<Props> = ({
           <select
             value={mncFilter}
             onChange={(e) => setMncFilter(e.target.value)}
-            className="text-xs py-2 px-2.5 rounded-lg border border-gray-300 bg-white font-medium text-gray-700 focus:ring-2 focus:ring-blue-500"
+            className="text-xs py-1.5 px-3 rounded-lg border border-gray-200 bg-white font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="ALL">All Company Types</option>
             <option value="MNCs">MNCs Only</option>
@@ -168,12 +177,12 @@ export const ListOfCompanyTab: React.FC<Props> = ({
           </select>
 
           {/* Current Batch Toggle */}
-          <label className="flex items-center gap-2 text-xs font-semibold text-gray-700 cursor-pointer bg-gray-50 border px-3 py-2 rounded-lg">
+          <label className="flex items-center gap-2 text-xs font-medium text-gray-700 cursor-pointer bg-white border border-gray-200 px-3 py-1.5 rounded-lg select-none">
             <input
               type="checkbox"
               checked={currentOnly}
               onChange={(e) => setCurrentOnly(e.target.checked)}
-              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+              className="w-3.5 h-3.5 text-blue-600 rounded focus:ring-blue-500"
             />
             Current 2027 Batch Only
           </label>
@@ -181,10 +190,10 @@ export const ListOfCompanyTab: React.FC<Props> = ({
 
         <button
           onClick={handleOpenAdd}
-          className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow transition"
+          className="inline-flex items-center gap-1.5 h-8 px-3.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-lg text-xs font-medium shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/30"
         >
-          <Plus className="w-4 h-4" />
-          Add Company
+          <Plus className="w-3.5 h-3.5" />
+          <span>Add Company</span>
         </button>
       </div>
 
@@ -192,7 +201,7 @@ export const ListOfCompanyTab: React.FC<Props> = ({
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
           <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-gray-100 text-gray-700 sticky top-0 z-10 font-bold border-b border-gray-300">
+            <thead className="bg-slate-50 text-gray-700 sticky top-0 z-10 font-semibold border-b border-gray-200">
               <tr>
                 <th className="p-2.5 border-r border-gray-200 text-center w-12" rowSpan={2}>
                   Sr. No.
@@ -207,7 +216,7 @@ export const ListOfCompanyTab: React.FC<Props> = ({
                   MNC / Indian
                 </th>
                 <th
-                  className="p-1 border-r border-gray-200 text-center bg-blue-50 text-blue-900"
+                  className="p-1 border-r border-gray-200 text-center bg-blue-50/70 text-blue-900 font-semibold"
                   colSpan={BATCH_YEARS.length}
                 >
                   Batch-wise Placement
@@ -222,7 +231,7 @@ export const ListOfCompanyTab: React.FC<Props> = ({
                   Actions
                 </th>
               </tr>
-              <tr className="bg-gray-50 border-t border-gray-200">
+              <tr className="bg-slate-50/60 border-t border-gray-200">
                 {BATCH_YEARS.map((y) => (
                   <th
                     key={y}
@@ -307,17 +316,17 @@ export const ListOfCompanyTab: React.FC<Props> = ({
                       )}
                     </td>
                     <td className="p-2.5 text-center no-print">
-                      <div className="flex items-center justify-center gap-1.5">
+                      <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => handleOpenEdit(companies.indexOf(c))}
-                          className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
+                          className="inline-flex items-center justify-center w-7 h-7 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
                           title="Edit Company"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDelete(companies.indexOf(c))}
-                          className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
+                          className="inline-flex items-center justify-center w-7 h-7 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
                           title="Delete Company"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -473,17 +482,17 @@ export const ListOfCompanyTab: React.FC<Props> = ({
                 </label>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t">
+              <div className="flex justify-end gap-2 pt-3 border-t">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 font-medium"
+                  className="h-8 px-3.5 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 active:bg-gray-100 text-xs font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold shadow"
+                  className="h-8 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium text-xs rounded-lg shadow-sm transition-colors"
                 >
                   {editingIndex !== null ? "Update Company" : "Save Company"}
                 </button>

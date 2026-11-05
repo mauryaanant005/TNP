@@ -3,7 +3,7 @@ import headerImage from "@/assets/tcet header.png";
 import footerImage from "@/assets/tcet footer.png";
 import logoWatermark from "@/assets/img/logo.png";
 
-export const PRINCIPAL_NAME = "(Dr. B.K. Mishra)";
+export const PRINCIPAL_NAME = "Dr. B.K. Mishra";
 export const PRINCIPAL_DESIGNATION = "Principal";
 
 export const PERMANENT_COPY_TO = [

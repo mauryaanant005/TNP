@@ -9,6 +9,7 @@ import {
   RotateCcw,
   FolderOpen,
 } from "lucide-react";
+import { TextField } from "@mui/material";
 import toast from "react-hot-toast";
 import { apiFetch } from "@/lib/api";
 import {
@@ -433,32 +434,35 @@ export const DutyChart: React.FC = () => {
               </h3>
               <div className="dc-grid-3">
                 <div className="dc-form-group">
-                  <input
-                    type="text"
+                  <TextField
+                    label="Reference Number"
                     name="srNo"
                     value={formData.srNo}
                     onChange={handleInputChange}
-                    className="dc-input"
-                    placeholder="Reference Number"
+                    fullWidth
+                    size="small"
                   />
                 </div>
                 <div className="dc-form-group">
-                  <input
+                  <TextField
+                    label="Notice Date"
                     type="date"
                     name="date"
                     value={formData.date}
                     onChange={handleInputChange}
-                    className="dc-input"
+                    fullWidth
+                    size="small"
+                    InputLabelProps={{ shrink: true }}
                   />
                 </div>
                 <div className="dc-form-group">
-                  <input
-                    type="text"
+                  <TextField
+                    label="Recipient (To)"
                     name="to"
                     value={formData.to}
                     onChange={handleInputChange}
-                    className="dc-input"
-                    placeholder="To"
+                    fullWidth
+                    size="small"
                   />
                 </div>
               </div>
@@ -472,23 +476,25 @@ export const DutyChart: React.FC = () => {
               </h3>
               <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                 <div className="dc-form-group">
-                  <input
-                    type="text"
+                  <TextField
+                    label="Subject"
                     name="subject"
                     value={formData.subject}
                     onChange={handleInputChange}
-                    className="dc-input"
-                    placeholder="Subject"
+                    fullWidth
+                    size="small"
                   />
                 </div>
                 <div className="dc-form-group">
-                  <textarea
+                  <TextField
+                    label="Introduction"
                     name="intro"
                     value={formData.intro}
                     onChange={handleInputChange}
-                    className="dc-textarea"
+                    fullWidth
+                    multiline
                     rows={3}
-                    placeholder="Introduction"
+                    size="small"
                   />
                 </div>
               </div>
@@ -770,20 +776,15 @@ export const DutyChart: React.FC = () => {
                     Notes textarea uses its own raw state so Enter inserts newlines
                     naturally. We flush to formData.notes only on blur.
                   */}
-                  <textarea
+                  <TextField
+                    label="Note"
                     value={notesRaw}
                     onChange={(e) => setNotesRaw(e.target.value)}
                     onBlur={handleNotesBlur}
-                    onKeyDown={(e) => {
-                      // Allow Enter to insert a newline — do NOT submit or preventDefault
-                      if (e.key === "Enter") {
-                        // Let the browser handle it naturally
-                        return;
-                      }
-                    }}
-                    className="dc-textarea"
+                    fullWidth
+                    multiline
                     rows={3}
-                    placeholder="Note"
+                    size="small"
                   />
                 </div>
 
