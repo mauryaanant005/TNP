@@ -18,6 +18,10 @@ const TABS: { key: NoticeTab; label: string }[] = [
 const StaffNotice = () => {
   const [activeTab, setActiveTab] = React.useState<NoticeTab>("placement");
 
+  if (activeTab === "placement") {
+    return <PlacementNotice activeTab={activeTab} onTabChange={setActiveTab} />;
+  }
+
   return (
     <div
       style={{
@@ -28,7 +32,7 @@ const StaffNotice = () => {
       }}
     >
       {/* Header */}
-      <div style={{ marginBottom: "24px" }}>
+      <div style={{ marginBottom: "20px" }}>
         <h1
           style={{
             margin: 0,
@@ -39,7 +43,6 @@ const StaffNotice = () => {
         >
           Notice Management
         </h1>
-
       </div>
 
       {/* White card container */}
@@ -98,7 +101,6 @@ const StaffNotice = () => {
 
         {/* Tab content */}
         <div style={{ padding: "0" }}>
-          {activeTab === "placement" && <PlacementNotice />}
           {activeTab === "internship" && <InternshipNotice />}
           {activeTab === "training" && <TrainingNotice />}
           {activeTab === "Infrastructure" && <InfrastructureBooking />}
