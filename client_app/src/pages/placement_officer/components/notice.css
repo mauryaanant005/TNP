@@ -509,10 +509,20 @@
 }
 
 /* ── Institutional Footer Area (Fixed to bottom of every page in print) ──── */
+/*
+ * No horizontal padding — the footer image asset already contains the
+ * correct institutional left/right margins internally.  Adding side padding
+ * here narrows the rendered image and makes it misalign with the full-bleed
+ * header image and the body content column.
+ *
+ * Bottom padding gives breathing room between the last body line and the
+ * footer image on screen, but we do NOT apply it in print (handled below).
+ */
 .notice-footer-fixed {
-  padding: 0 12mm 10mm 12mm;
+  padding: 0 0 10mm 0;
   margin-top: auto;
   box-sizing: border-box;
+  width: 100%;
 }
 
 .footer-image {
@@ -769,13 +779,18 @@
   }
 
   /* Anchored institutional footer at bottom of EVERY page */
+  /*
+   * No horizontal padding — the footer PNG asset contains its own margins.
+   * Side padding would narrow the image relative to the full 210mm page width,
+   * creating the misalignment gap seen between the header and footer widths.
+   */
   .notice-footer-fixed {
     position: fixed !important;
     bottom: 0 !important;
     left: 0 !important;
     width: 210mm !important;
     box-sizing: border-box !important;
-    padding: 0 12mm 4mm 12mm !important;
+    padding: 0 !important;
     margin: 0 !important;
     z-index: 9999 !important;
     display: block !important;
