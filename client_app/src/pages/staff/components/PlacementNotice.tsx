@@ -1,24 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
+  Container,
   TextField,
   Button,
   Typography,
   Grid,
+  Paper,
   IconButton,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
+  Divider,
+  Box,
   Chip,
   Alert,
   CircularProgress,
-  Dialog,
-  DialogContent,
 } from "@mui/material";
 import {
-  Menu,
   Save,
   Send,
   Copy,
@@ -29,27 +30,12 @@ import {
   Trash2,
   AlertTriangle,
   RotateCcw,
-  FileText,
-  Maximize2,
-  Minimize2,
-  ZoomIn,
-  ZoomOut,
-  Eye,
-  Edit3,
-  Download,
-  CheckCircle2,
-  ChevronDown,
-  ChevronUp,
-  FileEdit,
-  Sparkles,
-  Building2,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { getCookie } from "../../../utils";
 import Notice, { NoticeData, NoticeTableRow } from "../../placement_officer/components/notice";
 import toast from "react-hot-toast";
 import { useReactToPrint } from "react-to-print";
-import { useStaffLayout } from "../StaffLayout";
 
 // Modals & Subcomponents
 import OpportunitySearchCard, { OpportunityItem } from "./placement/OpportunitySearchCard";
@@ -59,25 +45,7 @@ import SavedDraftsModal from "./placement/SavedDraftsModal";
 
 const emptyRow = (): NoticeTableRow => ({ type: "Regular", salary: "", position: "" });
 
-export interface PlacementNoticeProps {
-  activeTab?: string;
-  onTabChange?: (tab: any) => void;
-}
-
-const NOTICE_TABS = [
-  { key: "placement", label: "Placement" },
-  { key: "internship", label: "Internship" },
-  { key: "training", label: "Training" },
-  { key: "Infrastructure", label: "Infrastructure" },
-  { key: "Duty Chart", label: "Duty Chart" },
-];
-
-const PlacementNotice: React.FC<PlacementNoticeProps> = ({
-  activeTab = "placement",
-  onTabChange,
-}) => {
-  const { toggleSidebar } = useStaffLayout();
-
+const PlacementNotice: React.FC = () => {
   // --- Selected Opportunity Context ---
   const [selectedOpportunity, setSelectedOpportunity] = useState<OpportunityItem | null>(null);
   const [noticeId, setNoticeId] = useState<number | null>(null);
@@ -85,12 +53,6 @@ const PlacementNotice: React.FC<PlacementNoticeProps> = ({
   const [versionCount, setVersionCount] = useState<number>(1);
   const [isDirty, setIsDirty] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-
-  // --- Responsive & Workspace View Controls ---
-  const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
-  const [zoom, setZoom] = useState<number>(90);
-  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-  const [searchCardCollapsed, setSearchCardCollapsed] = useState<boolean>(false);
 
   // --- Form State ---
   const [formData, setFormData] = useState({
@@ -128,35 +90,7 @@ const PlacementNotice: React.FC<PlacementNoticeProps> = ({
 
   // Printing & Live Preview Ref
   const contentRef = useRef<HTMLDivElement>(null);
-  const fullscreenContentRef = useRef<HTMLDivElement>(null);
-
-  const printDocumentTitle = useMemo(() => {
-    const cleanCompany = formData.company_name ? formData.company_name.replace(/[^a-zA-Z0-9_-]/g, "_") : "TCET";
-    const cleanSr = formData.srNo ? formData.srNo.replace(/[^a-zA-Z0-9_-]/g, "_") : "Draft";
-    return `${cleanCompany}_Notice_${cleanSr}`;
-  }, [formData.company_name, formData.srNo]);
-
-  const reactPrintFn = useReactToPrint({
-    contentRef,
-    documentTitle: printDocumentTitle,
-  });
-
-  const fullscreenPrintFn = useReactToPrint({
-    contentRef: fullscreenContentRef,
-    documentTitle: printDocumentTitle,
-  });
-
-  // Warn user before navigating away with unsaved changes
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isDirty) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [isDirty]);
+  const reactPrintFn = useReactToPrint({ contentRef });
 
   // Initial next serial number on mount
   useEffect(() => {
@@ -167,7 +101,7 @@ const PlacementNotice: React.FC<PlacementNoticeProps> = ({
           setFormData((prev) => ({ ...prev, srNo: res.data.sr_no }));
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -238,6 +172,7 @@ const PlacementNotice: React.FC<PlacementNoticeProps> = ({
       const auto = res.data;
       const compName = auto.company_name || opp.company_name || "";
 
+      // Cleanly replace previously auto-filled values without leaking prior company data
       setFormData({
         company_name: compName,
         srNo: auto.sr_no || "",
@@ -261,16 +196,14 @@ const PlacementNotice: React.FC<PlacementNoticeProps> = ({
 
       setTableRows(auto.table_data && auto.table_data.length > 0 ? auto.table_data : [emptyRow()]);
 
-      const skills =
-        opp.skills && opp.skills.length > 0
-          ? opp.skills
-          : auto.skill_required
+      const skills = opp.skills && opp.skills.length > 0
+        ? opp.skills
+        : auto.skill_required
           ? auto.skill_required.split(",").map((s: string) => s.trim()).filter(Boolean)
           : [];
       setSkillTags(skills);
 
       setIsDirty(true);
-      setSearchCardCollapsed(true);
       toast.success(`Auto-filled notice details for ${opp.company_name} (${opp.designation})!`);
     } catch (err) {
       console.error("Autofill failed:", err);
@@ -391,10 +324,9 @@ const PlacementNotice: React.FC<PlacementNoticeProps> = ({
           setFormData((prev) => ({ ...prev, srNo: res.data.sr_no }));
         }
       })
-      .catch(() => {});
+      .catch(() => { });
 
     setIsDirty(false);
-    toast.success("Editor reset to blank notice.");
   };
 
   // --- Save Draft Handler ---
@@ -448,6 +380,7 @@ const PlacementNotice: React.FC<PlacementNoticeProps> = ({
 
   // --- Publish Handler (Version 1 or Version N+1) ---
   const handlePublish = async () => {
+    // Basic pre-publish validations
     if (!formData.subject.trim()) {
       toast.error("Notice Subject is required.");
       return;
@@ -468,6 +401,7 @@ const PlacementNotice: React.FC<PlacementNoticeProps> = ({
     const csrfToken = getCookie("csrftoken");
     const validRows = tableRows.filter((r) => r.type.trim() || r.salary.trim() || r.position.trim());
 
+    // If notice does not exist in backend yet, save draft first to obtain ID
     let currentId = noticeId;
     if (!currentId) {
       try {
@@ -579,7 +513,7 @@ const PlacementNotice: React.FC<PlacementNoticeProps> = ({
     }
   };
 
-  // --- Construct Live Preview Data Object (Direct single-source-of-truth) ---
+  // --- Construct Live Preview Data Object (Matches official Notice letterhead template) ---
   const livePreviewData: NoticeData = useMemo(() => {
     const validRows = tableRows.filter((r) => r.type.trim() || r.salary.trim() || r.position.trim());
     return {
@@ -605,843 +539,543 @@ const PlacementNotice: React.FC<PlacementNoticeProps> = ({
     };
   }, [formData, tableRows, skillTags, noticeId]);
 
-  // --- Quality Checklist ---
+  // --- Missing Information Quality Indicators ---
   const qualityChecklist = useMemo(() => {
     const items = [];
     if (!formData.subject.trim()) items.push({ label: "Notice Subject is missing", critical: true });
     if (!formData.to.trim()) items.push({ label: "Recipient (To) is missing", critical: true });
     if (!formData.eligibility_criteria.trim()) items.push({ label: "Eligibility criteria is missing", critical: true });
-    if (tableRows.every((r) => !r.salary.trim() && !r.position.trim()))
-      items.push({ label: "Job position & salary not specified", critical: false });
-    if (!formData.Company_registration_Link.trim())
-      items.push({ label: "Company registration link is empty", critical: false });
+    if (tableRows.every((r) => !r.salary.trim() && !r.position.trim())) items.push({ label: "Job position & salary not specified", critical: false });
+    if (!formData.Company_registration_Link.trim()) items.push({ label: "Company registration link is empty", critical: false });
     if (skillTags.length === 0) items.push({ label: "No skill tags added", critical: false });
     return items;
   }, [formData, tableRows, skillTags]);
 
-  const handleZoomIn = () => setZoom((prev) => Math.min(prev + 10, 150));
-  const handleZoomOut = () => setZoom((prev) => Math.max(prev - 10, 50));
-  const handleResetZoom = () => setZoom(90);
-
   return (
-    <div className="w-full flex-1 flex flex-col bg-slate-100 min-h-screen text-slate-900 font-sans">
-      {/* ── TOP WORKSPACE HEADER ────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-3 sm:px-4 py-2 flex items-center justify-between gap-3 shadow-sm select-none">
-        {/* Left: Sidebar Toggle, Title, Status Badges */}
-        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-          <button
-            type="button"
-            onClick={toggleSidebar}
-            className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-            aria-label="Toggle navigation sidebar"
-            title="Toggle Navigation Sidebar"
+    <Container maxWidth="xl" sx={{ py: 3, px: { xs: 1, sm: 2, md: 3 }, width: "100%", maxWidth: "100%", boxSizing: "border-box" }}>
+      {/* Step 1: Intelligent Opportunity Search */}
+      <OpportunitySearchCard
+        onSelectOpportunity={handleSelectOpportunity}
+        selectedOpportunity={selectedOpportunity}
+        selectedOppId={selectedOpportunity?.id}
+        onClearSelection={handleClearOpportunity}
+        noticeStatus={noticeStatus}
+        isDirty={isDirty}
+        onOpenDrafts={() => setDraftsOpen(true)}
+      />
+
+      {/* Step 2: Placement Notice Form Editor */}
+      <Paper elevation={0} sx={{ p: { xs: 2, sm: 3, md: 3.5 }, mb: 4, borderRadius: 3, border: "1px solid #e2e8f0", bgcolor: "#ffffff", width: "100%", boxSizing: "border-box" }}>
+        {/* Form Section A: Communication Meta */}
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#1e293b", mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+          <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#3b82f6" }} />
+          Communication & Institutional Meta
+        </Typography>
+
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Serial Number"
+              name="srNo"
+              value={formData.srNo}
+              onChange={handleChange}
+              fullWidth
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Notice Date"
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+              fullWidth
+              size="small"
+              InputLabelProps={{ shrink: true }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Company Name"
+              name="company_name"
+              value={formData.company_name}
+              onChange={handleCompanyNameChange}
+              fullWidth
+              size="small"
+              placeholder="e.g. Tata Consultancy Services"
+              helperText="Auto-fills Subject, Intro & About"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Recipient (To)"
+              name="to"
+              value={formData.to}
+              onChange={handleChange}
+              fullWidth
+              size="small"
+              placeholder="e.g. All concerned Students of 2027 Batch (COMP, IT, AI&DS)"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="Subject"
+              name="subject"
+              value={formData.subject}
+              onChange={handleChange}
+              fullWidth
+              size="small"
+              required
+              placeholder="e.g. Campus Recruitment Drive - Tata Consultancy Services for 2027 Batch"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Job Location"
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+              fullWidth
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Deadline to Register"
+              name="deadline"
+              value={formData.deadline}
+              onChange={handleChange}
+              fullWidth
+              size="small"
+              placeholder="e.g. 30.09.2026 by 10.00 am"
+              helperText="Date & time (e.g. 30.09.2026 by 10.00 am)"
+            />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* Form Section B: Introduction & Company Snapshot */}
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#1e293b", mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+          <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#3b82f6" }} />
+          Introduction & Company Background
+        </Typography>
+
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={12}>
+            <TextField
+              label="Introduction Text"
+              name="intro"
+              value={formData.intro}
+              onChange={handleChange}
+              fullWidth
+              multiline
+              rows={2}
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="About Company (Snapshot for Notice)"
+              name="about"
+              value={formData.about}
+              onChange={handleChange}
+              fullWidth
+              multiline
+              rows={3}
+              size="small"
+            />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* Form Section C: Repeatable Job Positions Table */}
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#1e293b", display: "flex", alignItems: "center", gap: 1 }}>
+            <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#3b82f6" }} />
+            Job Positions & CTC (Repeatable Table)
+          </Typography>
+          <Button
+            size="small"
+            variant="outlined"
+            color="primary"
+            startIcon={<Plus size={14} />}
+            onClick={addRow}
+            sx={{ textTransform: "none", borderRadius: 1.5 }}
           >
-            <Menu size={20} />
-          </button>
+            Add Position
+          </Button>
+        </Box>
 
-          <div className="flex items-center gap-2 min-w-0">
-            <h1 className="text-base sm:text-lg font-bold text-slate-900 truncate tracking-tight">
-              Notice Creation
-            </h1>
+        <Table size="small" sx={{ mb: 3, border: "1px solid #e2e8f0", borderRadius: 2 }}>
+          <TableHead sx={{ bgcolor: "#f8fafc" }}>
+            <TableRow>
+              <TableCell sx={{ fontWeight: 700, width: "25%" }}>Offer Type</TableCell>
+              <TableCell sx={{ fontWeight: 700, width: "30%" }}>CTC / Stipend</TableCell>
+              <TableCell sx={{ fontWeight: 700, width: "35%" }}>Position / Role</TableCell>
+              <TableCell sx={{ width: "10%" }} align="center">Action</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {tableRows.map((row, index) => (
+              <TableRow key={index}>
+                <TableCell>
+                  <TextField
+                    size="small"
+                    value={row.type}
+                    onChange={(e) => handleRowChange(index, "type", e.target.value)}
+                    placeholder="e.g. Regular / Dream"
+                    fullWidth
+                  />
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    size="small"
+                    value={row.salary}
+                    onChange={(e) => handleRowChange(index, "salary", e.target.value)}
+                    placeholder="e.g. ₹7.5 LPA"
+                    fullWidth
+                  />
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    size="small"
+                    value={row.position}
+                    onChange={(e) => handleRowChange(index, "position", e.target.value)}
+                    placeholder="e.g. Software Engineer"
+                    fullWidth
+                  />
+                </TableCell>
+                <TableCell align="center">
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={() => removeRow(index)}
+                    disabled={tableRows.length === 1}
+                  >
+                    <Trash2 size={16} />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
 
-            {/* Document Status Chip */}
-            {noticeStatus === "PUBLISHED" ? (
-              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-300">
-                <CheckCircle2 size={11} className="text-emerald-600" />
-                Published v{versionCount}
-              </span>
-            ) : noticeStatus === "DRAFT" ? (
-              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-300">
-                <FileEdit size={11} className="text-amber-600" />
-                Draft #{noticeId}
-              </span>
-            ) : (
-              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-300">
-                <Sparkles size={11} className="text-slate-500" />
-                New Notice
-              </span>
-            )}
+        <Divider sx={{ my: 3 }} />
 
-            {/* Unsaved Changes Indicator */}
-            {isDirty && (
-              <span
-                className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200"
-                title="You have unsaved changes"
+        {/* Form Section D: Eligibility & Skills */}
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#1e293b", mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+          <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#3b82f6" }} />
+          Eligibility Criteria & Skills
+        </Typography>
+
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={12}>
+            <TextField
+              label="Eligibility Criteria"
+              name="eligibility_criteria"
+              value={formData.eligibility_criteria}
+              onChange={handleChange}
+              fullWidth
+              multiline
+              rows={3}
+              size="small"
+            />
+          </Grid>
+
+          {/* Skills Chip Input */}
+          <Grid item xs={12}>
+            <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, display: "block", mb: 1 }}>
+
+            </Typography>
+            <Box sx={{ display: "flex", gap: 1, mb: 1.5 }}>
+              <TextField
+                size="small"
+                placeholder="e.g. Python, Spring Boot, React, SQL"
+                value={skillInput}
+                onChange={(e) => setSkillInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddSkill();
+                  }
+                }}
+                sx={{ flex: 1 }}
+              />
+              <Button
+                variant="outlined"
+                onClick={handleAddSkill}
+                disabled={!skillInput.trim()}
+                sx={{ textTransform: "none", borderRadius: 2 }}
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                <span className="hidden md:inline">Unsaved edits</span>
-              </span>
-            )}
-          </div>
-        </div>
+                Add Skill
+              </Button>
+            </Box>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8 }}>
+              {skillTags.map((skill, i) => (
+                <Chip
+                  key={i}
+                  label={skill}
+                  size="small"
+                  onDelete={() => handleRemoveSkill(skill)}
+                  sx={{ bgcolor: "#eff6ff", color: "#1d4ed8", fontWeight: 600 }}
+                />
+              ))}
+            </Box>
+          </Grid>
+        </Grid>
 
-        {/* Center: Notice Sub-Type Switcher Pills (Placement, Internship, Training, etc.) */}
-        <div className="hidden xl:flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs">
-          {NOTICE_TABS.map((tab) => {
-            const isTabActive = activeTab === tab.key;
-            return (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => onTabChange?.(tab.key)}
-                className={`px-3 py-1 rounded-md font-medium transition-all ${
-                  isTabActive
-                    ? "bg-white text-blue-700 shadow-sm font-semibold"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
+        <Divider sx={{ my: 3 }} />
+
+        {/* Form Section E: Selection Process & Logistics */}
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#1e293b", mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+          <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#3b82f6" }} />
+          Selection Process, Logistics & Links
+        </Typography>
+
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={12}>
+            <TextField
+              label="Selection Process"
+              name="Walk_in_interview"
+              value={formData.Walk_in_interview}
+              onChange={handleChange}
+              fullWidth
+              multiline
+              rows={2}
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="Roles & Responsibilities"
+              name="roles_responsibilities"
+              value={formData.roles_responsibilities}
+              onChange={handleChange}
+              fullWidth
+              multiline
+              rows={3}
+              size="small"
+              placeholder="Enter company-specific roles & responsibilities (leave empty if not specified)"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="Company Registration Link"
+              name="Company_registration_Link"
+              value={formData.Company_registration_Link}
+              onChange={handleChange}
+              fullWidth
+              size="small"
+              placeholder="https://careers.company.com/apply"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="Important Note for Students"
+              name="Note"
+              value={formData.Note}
+              onChange={handleChange}
+              fullWidth
+              multiline
+              rows={2}
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Signatory Name"
+              name="From"
+              value={formData.From}
+              onChange={handleChange}
+              fullWidth
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Signatory Designation"
+              name="From_designation"
+              value={formData.From_designation}
+              onChange={handleChange}
+              fullWidth
+              size="small"
+            />
+          </Grid>
+        </Grid>
+
+        {/* Quality / Missing Info Alerts */}
+        {qualityChecklist.length > 0 && (
+          <Box sx={{ mb: 3 }}>
+            {qualityChecklist.map((item, idx) => (
+              <Alert
+                key={idx}
+                severity={item.critical ? "error" : "warning"}
+                icon={<AlertTriangle size={16} />}
+                sx={{ mb: 1, py: 0.5, borderRadius: 2, fontSize: "12px" }}
               >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
+                {item.label}
+              </Alert>
+            ))}
+          </Box>
+        )}
 
-        {/* Right: Primary Workspace Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Saved Drafts Trigger */}
-          <button
-            type="button"
-            onClick={() => setDraftsOpen(true)}
-            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors shadow-2xs"
-            title="Browse saved drafts"
-          >
-            <FileText size={14} className="text-slate-500" />
-            <span className="hidden md:inline">Drafts</span>
-          </button>
-
-          {/* Save Draft Button */}
-          <button
-            type="button"
-            onClick={handleSaveDraft}
-            disabled={loading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold text-blue-700 bg-blue-50 border border-blue-300 hover:bg-blue-100 active:bg-blue-200 rounded-lg transition-colors shadow-2xs disabled:opacity-50"
-            title="Save draft"
-          >
-            {loading ? <CircularProgress size={14} color="inherit" /> : <Save size={15} />}
-            <span>Save Draft</span>
-          </button>
-
-          {/* Publish Notice Button */}
-          <button
-            type="button"
+        {/* Bottom Form Action Buttons */}
+        <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center", pt: 2.5, borderTop: "1px solid #f1f5f9" }}>
+          <Button
+            variant="contained"
+            color={noticeStatus === "PUBLISHED" ? "secondary" : "primary"}
+            startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <Send size={16} />}
             onClick={handlePublish}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg transition-colors shadow-sm disabled:opacity-50"
-            title="Publish notice"
+            sx={{ textTransform: "none", borderRadius: 2, px: 3, fontWeight: 700 }}
           >
-            {loading ? <CircularProgress size={14} color="inherit" /> : <Send size={15} />}
-            <span className="hidden sm:inline">
-              {noticeStatus === "PUBLISHED" ? `Update v${versionCount + 1}` : "Publish"}
-            </span>
-          </button>
+            {noticeStatus === "PUBLISHED" ? `Update Notice (Create v${versionCount + 1})` : "Publish Notice (v1)"}
+          </Button>
 
-          {/* Reset / Clear Form */}
-          <button
-            type="button"
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={loading ? <CircularProgress size={16} /> : <Save size={16} />}
+            onClick={handleSaveDraft}
+            disabled={loading}
+            sx={{ textTransform: "none", borderRadius: 2, px: 2.5, fontWeight: 600 }}
+          >
+            Save Draft
+          </Button>
+
+          {noticeId && (
+            <>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<History size={16} />}
+                onClick={() => setHistoryOpen(true)}
+                sx={{ textTransform: "none", borderRadius: 2 }}
+              >
+                Version History {versionCount > 1 && `(${versionCount})`}
+              </Button>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<ShieldCheck size={16} />}
+                onClick={() => setAuditOpen(true)}
+                sx={{ textTransform: "none", borderRadius: 2 }}
+              >
+                Audit Trail
+              </Button>
+              <Button
+                size="small"
+                variant="outlined"
+                color="secondary"
+                startIcon={<Copy size={16} />}
+                onClick={handleCloneAsNew}
+                disabled={loading}
+                sx={{ textTransform: "none", borderRadius: 2 }}
+              >
+                Clone as New
+              </Button>
+            </>
+          )}
+
+          <Button
+            variant="text"
+            startIcon={<RotateCcw size={16} />}
             onClick={handleResetNewNotice}
-            className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
-            title="Reset form"
-            aria-label="Reset form"
+            sx={{ textTransform: "none" }}
           >
-            <RotateCcw size={16} />
-          </button>
-        </div>
-      </header>
+            Reset Form
+          </Button>
 
-      {/* ── RESPONSIVE MOBILE / TABLET TAB BAR (<1024px) ────────────────── */}
-      <div className="lg:hidden bg-white border-b border-slate-200 px-3 py-2 flex items-center justify-between gap-2 shadow-2xs">
-        <div className="inline-flex p-1 bg-slate-100 rounded-lg w-full max-w-md mx-auto">
-          <button
-            type="button"
-            onClick={() => setMobileTab("edit")}
-            className={`flex-1 py-1.5 px-3 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
-              mobileTab === "edit"
-                ? "bg-white text-blue-700 shadow-sm"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
+          <Button
+            variant="outlined"
+            color="inherit"
+            startIcon={<Printer size={16} />}
+            onClick={() => reactPrintFn()}
+            sx={{ textTransform: "none", borderRadius: 2, ml: "auto" }}
           >
-            <Edit3 size={14} />
-            <span>Notice Editor</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setMobileTab("preview")}
-            className={`flex-1 py-1.5 px-3 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
-              mobileTab === "preview"
-                ? "bg-white text-blue-700 shadow-sm"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            <Eye size={14} />
-            <span>Live Document</span>
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse ml-0.5" />
-          </button>
-        </div>
-      </div>
+            Print / Save PDF
+          </Button>
+        </Box>
+      </Paper>
 
-      {/* ── MAIN SPLIT-SCREEN WORKSPACE ─────────────────────────────────── */}
-      <div className="flex-1 w-full flex flex-col lg:flex-row min-h-0 overflow-hidden">
-        {/* ── LEFT PANEL: NOTICE EDITOR (Approx 48%) ────────────────────── */}
-        <section
-          aria-label="Notice Editor"
-          className={`${
-            mobileTab === "preview" ? "hidden" : "flex"
-          } lg:flex flex-col w-full lg:w-[48%] xl:w-[47%] border-r border-slate-200 bg-white overflow-y-auto min-h-0`}
-          style={{ maxHeight: "calc(100vh - 58px)" }}
-        >
-          <div className="p-4 sm:p-5 lg:p-6 space-y-5">
-            {/* 1. Opportunity Search & Auto-Fill Card (Collapsible) */}
-            <div className="rounded-xl border border-slate-200 bg-slate-50/70 overflow-hidden transition-all shadow-2xs">
-              <div
-                className="px-4 py-3 bg-slate-100/80 border-b border-slate-200 flex items-center justify-between cursor-pointer select-none"
-                onClick={() => setSearchCardCollapsed((prev) => !prev)}
-              >
-                <div className="flex items-center gap-2">
-                  <Building2 size={16} className="text-blue-600" />
-                  <span className="text-xs sm:text-sm font-bold text-slate-800">
-                    Opportunity Search &amp; Auto-fill
-                  </span>
-                  {selectedOpportunity && (
-                    <span className="text-[11px] font-semibold text-blue-700 bg-blue-100/70 px-2 py-0.5 rounded-full">
-                      {selectedOpportunity.company_name}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500 font-medium">
-                    {searchCardCollapsed ? "Expand" : "Collapse"}
-                  </span>
-                  {searchCardCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-                </div>
-              </div>
-
-              {!searchCardCollapsed && (
-                <div className="p-3.5 sm:p-4">
-                  <OpportunitySearchCard
-                    onSelectOpportunity={handleSelectOpportunity}
-                    selectedOpportunity={selectedOpportunity}
-                    selectedOppId={selectedOpportunity?.id}
-                    onClearSelection={handleClearOpportunity}
-                    noticeStatus={noticeStatus}
-                    isDirty={isDirty}
-                    onOpenDrafts={() => setDraftsOpen(true)}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Quality Alerts */}
-            {qualityChecklist.length > 0 && (
-              <div className="space-y-1.5">
-                {qualityChecklist.map((item, idx) => (
-                  <Alert
-                    key={idx}
-                    severity={item.critical ? "error" : "warning"}
-                    icon={<AlertTriangle size={15} />}
-                    sx={{ py: 0.25, px: 1.5, borderRadius: 2, fontSize: "12px" }}
-                  >
-                    {item.label}
-                  </Alert>
-                ))}
-              </div>
-            )}
-
-            {/* Section 1: Communication & Institutional Meta */}
-            <div className="rounded-xl border border-slate-200 p-4 sm:p-5 bg-white shadow-2xs space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                  1. Communication &amp; Institutional Meta
-                </h2>
-              </div>
-
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Serial Number"
-                    name="srNo"
-                    value={formData.srNo}
-                    onChange={handleChange}
-                    fullWidth
-                    size="small"
-                    placeholder="e.g. TCET/T&P/OFF/2026/PL-001"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Notice Date"
-                    type="date"
-                    name="date"
-                    value={formData.date}
-                    onChange={handleChange}
-                    fullWidth
-                    size="small"
-                    InputLabelProps={{ shrink: true }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Company Name"
-                    name="company_name"
-                    value={formData.company_name}
-                    onChange={handleCompanyNameChange}
-                    fullWidth
-                    size="small"
-                    placeholder="e.g. Tata Consultancy Services"
-                    helperText="Auto-fills subject, intro & about text"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Recipient (To)"
-                    name="to"
-                    value={formData.to}
-                    onChange={handleChange}
-                    fullWidth
-                    size="small"
-                    placeholder="e.g. All concerned Students of 2027 Batch"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    fullWidth
-                    size="small"
-                    required
-                    placeholder="e.g. Campus Recruitment Drive - Tata Consultancy Services"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Job Location"
-                    name="location"
-                    value={formData.location}
-                    onChange={handleChange}
-                    fullWidth
-                    size="small"
-                    placeholder="TCET Campus / Mumbai / Remote"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Registration Deadline"
-                    name="deadline"
-                    value={formData.deadline}
-                    onChange={handleChange}
-                    fullWidth
-                    size="small"
-                    placeholder="e.g. 30.09.2026 by 10.00 am"
-                    helperText="Format: 30.09.2026 by 10.00 am"
-                  />
-                </Grid>
-              </Grid>
-            </div>
-
-            {/* Section 2: Introduction & Company Background */}
-            <div className="rounded-xl border border-slate-200 p-4 sm:p-5 bg-white shadow-2xs space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                  2. Introduction &amp; Company Background
-                </h2>
-              </div>
-
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Introduction Text"
-                    name="intro"
-                    value={formData.intro}
-                    onChange={handleChange}
-                    fullWidth
-                    multiline
-                    rows={2}
-                    size="small"
-                    placeholder="All eligible students are hereby informed that..."
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    label="About Company (Notice Snapshot)"
-                    name="about"
-                    value={formData.about}
-                    onChange={handleChange}
-                    fullWidth
-                    multiline
-                    rows={3}
-                    size="small"
-                    placeholder="Company overview, domain, global footprint..."
-                  />
-                </Grid>
-              </Grid>
-            </div>
-
-            {/* Section 3: Job Positions & CTC (Repeatable Table) */}
-            <div className="rounded-xl border border-slate-200 p-4 sm:p-5 bg-white shadow-2xs space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                  <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                    3. Job Positions &amp; CTC
-                  </h2>
-                </div>
-                <button
-                  type="button"
-                  onClick={addRow}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 rounded-md transition-colors"
-                >
-                  <Plus size={14} />
-                  <span>Add Position</span>
-                </button>
-              </div>
-
-              <div className="border border-slate-200 rounded-lg overflow-x-auto">
-                <Table size="small">
-                  <TableHead className="bg-slate-50">
-                    <TableRow>
-                      <TableCell sx={{ fontWeight: 700, fontSize: "12px", width: "26%" }}>Offer Type</TableCell>
-                      <TableCell sx={{ fontWeight: 700, fontSize: "12px", width: "28%" }}>CTC / Stipend</TableCell>
-                      <TableCell sx={{ fontWeight: 700, fontSize: "12px", width: "36%" }}>Role / Position</TableCell>
-                      <TableCell sx={{ width: "10%" }} align="center">Del</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {tableRows.map((row, index) => (
-                      <TableRow key={index} className="hover:bg-slate-50/50">
-                        <TableCell sx={{ py: 1 }}>
-                          <TextField
-                            size="small"
-                            value={row.type}
-                            onChange={(e) => handleRowChange(index, "type", e.target.value)}
-                            placeholder="Regular / Dream"
-                            fullWidth
-                          />
-                        </TableCell>
-                        <TableCell sx={{ py: 1 }}>
-                          <TextField
-                            size="small"
-                            value={row.salary}
-                            onChange={(e) => handleRowChange(index, "salary", e.target.value)}
-                            placeholder="e.g. ₹7.5 LPA"
-                            fullWidth
-                          />
-                        </TableCell>
-                        <TableCell sx={{ py: 1 }}>
-                          <TextField
-                            size="small"
-                            value={row.position}
-                            onChange={(e) => handleRowChange(index, "position", e.target.value)}
-                            placeholder="e.g. Software Engineer"
-                            fullWidth
-                          />
-                        </TableCell>
-                        <TableCell sx={{ py: 1 }} align="center">
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => removeRow(index)}
-                            disabled={tableRows.length === 1}
-                            title="Remove row"
-                          >
-                            <Trash2 size={15} />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-
-            {/* Section 4: Eligibility Criteria & Required Skills */}
-            <div className="rounded-xl border border-slate-200 p-4 sm:p-5 bg-white shadow-2xs space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                  4. Eligibility &amp; Required Skills
-                </h2>
-              </div>
-
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Eligibility Criteria"
-                    name="eligibility_criteria"
-                    value={formData.eligibility_criteria}
-                    onChange={handleChange}
-                    fullWidth
-                    multiline
-                    rows={3}
-                    size="small"
-                    placeholder="e.g. B.E. (COMP, IT, AI&DS) with 60% throughout without backlogs"
-                  />
-                </Grid>
-
-                {/* Skills Tag Input */}
-                <Grid item xs={12}>
-                  <Typography variant="caption" sx={{ color: "#475569", fontWeight: 600, display: "block", mb: 0.5 }}>
-                    Required Technical / Soft Skills
-                  </Typography>
-                  <div className="flex gap-2 mb-2">
-                    <TextField
-                      size="small"
-                      placeholder="Type skill & press Enter (e.g. Python, React, SQL)"
-                      value={skillInput}
-                      onChange={(e) => setSkillInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          handleAddSkill();
-                        }
-                      }}
-                      sx={{ flex: 1 }}
-                    />
-                    <Button
-                      variant="outlined"
-                      onClick={handleAddSkill}
-                      disabled={!skillInput.trim()}
-                      sx={{ textTransform: "none", borderRadius: 1.5 }}
-                    >
-                      Add
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {skillTags.map((skill, i) => (
-                      <Chip
-                        key={i}
-                        label={skill}
-                        size="small"
-                        onDelete={() => handleRemoveSkill(skill)}
-                        sx={{ bgcolor: "#eff6ff", color: "#1d4ed8", fontWeight: 600, border: "1px solid #bfdbfe" }}
-                      />
-                    ))}
-                    {skillTags.length === 0 && (
-                      <span className="text-xs text-slate-400 italic">No skills added yet</span>
-                    )}
-                  </div>
-                </Grid>
-              </Grid>
-            </div>
-
-            {/* Section 5: Selection Process, Logistics & Instructions */}
-            <div className="rounded-xl border border-slate-200 p-4 sm:p-5 bg-white shadow-2xs space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                  5. Selection Process, Logistics &amp; Instructions
-                </h2>
-              </div>
-
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Selection Process Rounds"
-                    name="Walk_in_interview"
-                    value={formData.Walk_in_interview}
-                    onChange={handleChange}
-                    fullWidth
-                    multiline
-                    rows={2}
-                    size="small"
-                    placeholder="1. Online Assessment 2. Technical Interview 3. HR Round"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Roles & Responsibilities"
-                    name="roles_responsibilities"
-                    value={formData.roles_responsibilities}
-                    onChange={handleChange}
-                    fullWidth
-                    multiline
-                    rows={3}
-                    size="small"
-                    placeholder="Enter key day-to-day responsibilities (supports bullets/lines)"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Company Registration Link"
-                    name="Company_registration_Link"
-                    value={formData.Company_registration_Link}
-                    onChange={handleChange}
-                    fullWidth
-                    size="small"
-                    placeholder="https://company.com/careers/apply"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Important Note for Students"
-                    name="Note"
-                    value={formData.Note}
-                    onChange={handleChange}
-                    fullWidth
-                    multiline
-                    rows={2}
-                    size="small"
-                    placeholder="Formal attire, reporting time, documents..."
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Signatory Name"
-                    name="From"
-                    value={formData.From}
-                    onChange={handleChange}
-                    fullWidth
-                    size="small"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Signatory Designation"
-                    name="From_designation"
-                    value={formData.From_designation}
-                    onChange={handleChange}
-                    fullWidth
-                    size="small"
-                  />
-                </Grid>
-              </Grid>
-            </div>
-
-            {/* Bottom Form Actions Bar */}
-            <div className="pt-3 pb-6 flex items-center justify-between gap-2 flex-wrap border-t border-slate-200">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="contained"
-                  color={noticeStatus === "PUBLISHED" ? "secondary" : "primary"}
-                  startIcon={loading ? <CircularProgress size={15} color="inherit" /> : <Send size={15} />}
-                  onClick={handlePublish}
-                  disabled={loading}
-                  sx={{ textTransform: "none", fontWeight: 700, borderRadius: 2 }}
-                >
-                  {noticeStatus === "PUBLISHED" ? `Update Notice (v${versionCount + 1})` : "Publish Notice"}
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={loading ? <CircularProgress size={15} /> : <Save size={15} />}
-                  onClick={handleSaveDraft}
-                  disabled={loading}
-                  sx={{ textTransform: "none", fontWeight: 600, borderRadius: 2 }}
-                >
-                  Save Draft
-                </Button>
-              </div>
-
-              {noticeId && (
-                <div className="flex items-center gap-1.5">
-                  <Button
-                    size="small"
-                    variant="text"
-                    startIcon={<History size={14} />}
-                    onClick={() => setHistoryOpen(true)}
-                    sx={{ textTransform: "none" }}
-                  >
-                    History
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="text"
-                    startIcon={<ShieldCheck size={14} />}
-                    onClick={() => setAuditOpen(true)}
-                    sx={{ textTransform: "none" }}
-                  >
-                    Audit
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="text"
-                    startIcon={<Copy size={14} />}
-                    onClick={handleCloneAsNew}
-                    disabled={loading}
-                    sx={{ textTransform: "none" }}
-                  >
-                    Clone
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* ── RIGHT PANEL: LIVE NOTICE PREVIEW (Approx 52%) ──────────────── */}
-        <section
-          aria-label="Live Notice Document Preview"
-          className={`${
-            mobileTab === "edit" ? "hidden" : "flex"
-          } lg:flex flex-col w-full lg:w-[52%] xl:w-[53%] bg-slate-800 text-white min-h-0 overflow-hidden select-none`}
-          style={{ maxHeight: "calc(100vh - 58px)" }}
-        >
-          {/* Preview Toolbar */}
-          <div className="bg-slate-900 border-b border-slate-700/80 px-3 sm:px-4 py-2 flex items-center justify-between gap-2 z-10 flex-wrap">
-            {/* Live Indicator */}
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-              <span className="text-xs font-semibold text-slate-200 tracking-wide">
-                Live Document Preview
-              </span>
-              <span className="hidden xl:inline text-[11px] text-slate-400">
-                • Real-time synchronization
-              </span>
-            </div>
-
-            {/* Toolbar Controls: Zoom, Fullscreen, Print, PDF */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              {/* Zoom Controls */}
-              <div className="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700 text-slate-300">
-                <button
-                  type="button"
-                  onClick={handleZoomOut}
-                  disabled={zoom <= 50}
-                  className="p-1 hover:text-white hover:bg-slate-700 rounded disabled:opacity-40 transition-colors"
-                  title="Zoom Out"
-                  aria-label="Zoom Out"
-                >
-                  <ZoomOut size={14} />
-                </button>
-                <span className="text-[11px] font-mono px-1.5 text-slate-300 select-none">
-                  {zoom}%
-                </span>
-                <button
-                  type="button"
-                  onClick={handleZoomIn}
-                  disabled={zoom >= 150}
-                  className="p-1 hover:text-white hover:bg-slate-700 rounded disabled:opacity-40 transition-colors"
-                  title="Zoom In"
-                  aria-label="Zoom In"
-                >
-                  <ZoomIn size={14} />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleResetZoom}
-                  className="p-1 hover:text-white hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200 border-l border-slate-700/60 ml-0.5 transition-colors"
-                  title="Reset Zoom to 90%"
-                  aria-label="Reset Zoom"
-                >
-                  <RotateCcw size={12} />
-                </button>
-              </div>
-
-              {/* Fullscreen Button */}
-              <button
-                type="button"
-                onClick={() => setIsFullscreen(true)}
-                className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg border border-slate-700 transition-colors"
-                title="Full-screen view"
-                aria-label="Full-screen preview"
-              >
-                <Maximize2 size={14} />
-              </button>
-
-              {/* Print Button */}
-              <button
-                type="button"
-                onClick={() => reactPrintFn()}
-                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:text-white rounded-lg transition-colors shadow-2xs"
-                title="Print document"
-              >
-                <Printer size={13} />
-                <span className="hidden sm:inline">Print</span>
-              </button>
-
-              {/* PDF Download Button */}
-              <button
-                type="button"
-                onClick={() => reactPrintFn()}
-                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors shadow-2xs"
-                title="Save as PDF via Print dialog"
-              >
-                <Download size={13} />
-                <span>PDF</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Canvas Viewport (Scrollable with scaled document) */}
-          <div
-            className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8 flex justify-center items-start bg-[#475569] min-h-0"
-            style={{
-              backgroundImage:
-                "radial-gradient(#64748b 1px, transparent 1px), radial-gradient(#64748b 1px, #475569 1px)",
-              backgroundSize: "24px 24px",
-              backgroundPosition: "0 0, 12px 12px",
-            }}
-          >
-            <div
-              style={{
-                transform: `scale(${zoom / 100})`,
-                transformOrigin: "top center",
-                transition: "transform 0.12s ease-out",
-                boxShadow: "0 20px 40px rgba(0,0,0,0.35)",
-              }}
-              className="rounded"
-            >
-              <Notice formData={livePreviewData} ref={contentRef} isPlacement={true} />
-            </div>
-          </div>
-        </section>
-      </div>
-
-      {/* ── FULLSCREEN PREVIEW MODAL ─────────────────────────────────────── */}
-      <Dialog
-        fullScreen
-        open={isFullscreen}
-        onClose={() => setIsFullscreen(false)}
-        PaperProps={{
-          sx: { bgcolor: "#334155", color: "white" },
+      {/* Step 3: Live Institutional Document Preview (at the bottom) */}
+      <Paper
+        elevation={0}
+        sx={{
+          mb: 4,
+          borderRadius: 3,
+          border: "1px solid #cbd5e1",
+          overflow: "hidden",
+          bgcolor: "#ffffff",
+          width: "100%",
+          boxSizing: "border-box",
         }}
       >
-        <div className="bg-slate-900 border-b border-slate-700 px-4 py-2.5 flex items-center justify-between text-white sticky top-0 z-50">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-            <span className="text-sm font-bold tracking-wide">
-              Full-Screen Document Inspection • {formData.company_name || "TCET Notice"}
-            </span>
-          </div>
+        {/* Preview Section Header */}
+        <Box
+          sx={{
+            p: 2.5,
+            borderBottom: "1px solid #e2e8f0",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 2,
+            bgcolor: "#fafbfd",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Box
+              sx={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                bgcolor: "#22c55e",
+                boxShadow: "0 0 0 4px rgba(34, 197, 94, 0.2)",
+              }}
+            />
+            <Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#0f172a" }}>
+                Live Institutional Preview
+              </Typography>
+              <Typography variant="caption" sx={{ color: "#64748b" }}>
+                Official TCET institutional notice document • Updates live as you edit
+              </Typography>
+            </Box>
+          </Box>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Printer size={16} />}
+            onClick={() => reactPrintFn()}
+            sx={{ textTransform: "none", fontWeight: 700, borderRadius: 2, px: 2.5 }}
+          >
+            Print Preview
+          </Button>
+        </Box>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => fullscreenPrintFn()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg"
-            >
-              <Printer size={14} />
-              <span>Print</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => fullscreenPrintFn()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg"
-            >
-              <Download size={14} />
-              <span>Save PDF</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsFullscreen(false)}
-              className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg ml-2"
-              title="Exit fullscreen (Esc)"
-              aria-label="Exit fullscreen"
-            >
-              <Minimize2 size={18} />
-            </button>
-          </div>
-        </div>
+        {/* Wide Document Canvas Viewer */}
+        <Box
+          sx={{
+            bgcolor: "#525659",
+            p: { xs: 1.5, sm: 3, md: 4 },
+            display: "flex",
+            justifyContent: "center",
+            overflowX: "auto",
+            minHeight: 500,
+            boxSizing: "border-box",
+          }}
+        >
+          <Box sx={{ width: "100%", maxWidth: "850px" }}>
+            <Notice formData={livePreviewData} ref={contentRef} isPlacement={true} />
+          </Box>
+        </Box>
+      </Paper>
 
-        <DialogContent sx={{ p: { xs: 2, sm: 4 }, display: "flex", justifyContent: "center", bgcolor: "#475569" }}>
-          <div style={{ maxWidth: "850px", width: "100%", margin: "0 auto" }}>
-            <Notice formData={livePreviewData} ref={fullscreenContentRef} isPlacement={true} />
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── AUXILIARY MODALS (PRESERVED) ─────────────────────────────────── */}
+      {/* Auxiliary Modals */}
       <NoticeVersionHistoryModal
         open={historyOpen}
         onClose={() => setHistoryOpen(false)}
@@ -1456,8 +1090,7 @@ const PlacementNotice: React.FC<PlacementNoticeProps> = ({
             intro: snap.intro || prev.intro,
             about: snap.about || prev.about,
             eligibility_criteria: snap.eligibility_criteria || prev.eligibility_criteria,
-            roles_responsibilities:
-              snap.roles_responsibilities ?? snap.custom_data?.roles_responsibilities ?? prev.roles_responsibilities,
+            roles_responsibilities: snap.roles_responsibilities ?? snap.custom_data?.roles_responsibilities ?? prev.roles_responsibilities,
             Walk_in_interview: snap.walk_in_interview || prev.Walk_in_interview,
             Company_registration_Link: snap.company_registration_link || prev.Company_registration_Link,
             Note: snap.note || prev.Note,
@@ -1487,7 +1120,7 @@ const PlacementNotice: React.FC<PlacementNoticeProps> = ({
         onSelectDraft={(id) => loadNoticeById(id)}
         onNewNotice={handleResetNewNotice}
       />
-    </div>
+    </Container>
   );
 };
 
