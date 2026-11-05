@@ -12,6 +12,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import { TextTabs, TabItem } from "./TextTabs";
 
 interface Props {
   report: PlacementReport;
@@ -256,39 +257,27 @@ export const ReportTab: React.FC<Props> = ({
     { sr: "7", agency: "Other Rating and Ranking Agencies viz. Outlook, etc.", p1: false, p2: false, p3: false, p4: true, p5: true, p6: true, p7: true, p8: false },
   ];
 
+  type ViewMode = "official" | "edit";
+
+  const VIEW_TABS: TabItem<ViewMode>[] = [
+    { key: "official", label: "Official View", icon: <Eye className="w-4 h-4" /> },
+    { key: "edit", label: "Edit Workspace", icon: <Edit3 className="w-4 h-4" /> },
+  ];
+
   return (
     <div className="space-y-6 print-area">
       {/* ── Mode Switch & Clerk Action Header (Screen-only, no-print) ── */}
-      <div className="no-print bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="inline-flex items-center bg-gray-100 p-0.5 rounded-lg border border-gray-200">
-            <button
-              type="button"
-              onClick={() => setIsEditMode(false)}
-              className={`inline-flex items-center gap-1.5 h-7 px-3 text-xs font-medium rounded-md transition-all ${
-                !isEditMode
-                  ? "bg-white text-blue-700 shadow-sm border border-gray-200/60 font-semibold"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              <Eye className="w-3.5 h-3.5" />
-              <span>Official View</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsEditMode(true)}
-              className={`inline-flex items-center gap-1.5 h-7 px-3 text-xs font-medium rounded-md transition-all ${
-                isEditMode
-                  ? "bg-blue-600 text-white shadow-sm font-semibold"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-              <span>Edit Workspace</span>
-            </button>
-          </div>
+      <div className="no-print flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 pb-2">
+        <div className="flex items-center gap-6">
+          <TextTabs<ViewMode>
+            tabs={VIEW_TABS}
+            activeKey={isEditMode ? "edit" : "official"}
+            onChange={(key) => setIsEditMode(key === "edit")}
+            idPrefix="view-tab"
+            className="border-b-0"
+          />
 
-          <span className="text-xs text-gray-500 hidden sm:inline">
+          <span className="text-xs text-gray-500 hidden md:inline border-l border-gray-200 pl-4 py-0.5">
             {isEditMode
               ? "All report values, processes, admission data, and approvals are directly editable below."
               : "Showing official, printable report preview with active calculated statistics."}
@@ -300,7 +289,7 @@ export const ReportTab: React.FC<Props> = ({
             <button
               type="button"
               onClick={() => setShowAddModal(true)}
-              className="inline-flex items-center gap-1.5 h-8 px-3.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white border border-blue-600 rounded-lg text-xs font-medium shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+              className="inline-flex items-center gap-1.5 h-8 px-3.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-lg text-xs font-medium shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/30"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Company Process</span>
@@ -311,24 +300,24 @@ export const ReportTab: React.FC<Props> = ({
 
       {/* ── Official Institutional Document Header ── */}
       <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm text-center">
-        <h1 className="text-2xl font-bold tracking-wider text-gray-900 uppercase">
-          Thakur College of Engineering and Technology (TCET)
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+          TCET
         </h1>
-        <h2 className="text-base font-semibold text-blue-900 mt-1">
-          Placement Data Analysis ({report.batch} Batch) {report.program}
+        <h2 className="text-sm font-semibold text-gray-700 mt-1">
+          Placement Data Analysis ({report.batch} Batch) — {report.program}
         </h2>
 
         {/* Document Metadata Bar */}
-        <div className="flex flex-wrap justify-between items-center text-xs text-gray-600 mt-3 pt-3 border-t border-gray-200 px-2 font-mono gap-2">
+        <div className="mt-3 pt-3 border-t border-gray-100">
           {isEditMode ? (
-            <div className="w-full grid grid-cols-1 sm:grid-cols-4 gap-2 text-left font-sans">
+            <div className="w-full grid grid-cols-1 sm:grid-cols-4 gap-2 text-left font-sans text-xs">
               <div>
                 <label className="block text-[10px] text-gray-500 font-semibold uppercase">Form Ref No.</label>
                 <input
                   type="text"
                   value={report.ref_no || ""}
                   onChange={(e) => handleReportFieldChange("ref_no", e.target.value)}
-                  className="w-full mt-0.5 px-2 py-1 text-xs border rounded bg-gray-50 border-gray-300 font-mono"
+                  className="w-full mt-0.5 px-2 py-1 text-xs border rounded bg-gray-50 border-gray-200 font-mono"
                   placeholder="TCET/TNP/FRM/IP-06/09"
                 />
               </div>
@@ -337,7 +326,7 @@ export const ReportTab: React.FC<Props> = ({
                 <select
                   value={report.revision || "B"}
                   onChange={(e) => handleReportFieldChange("revision", e.target.value)}
-                  className="w-full mt-0.5 px-2 py-1 text-xs border rounded bg-gray-50 border-gray-300 font-sans"
+                  className="w-full mt-0.5 px-2 py-1 text-xs border rounded bg-gray-50 border-gray-200 font-sans"
                 >
                   <option value="A">Revision A</option>
                   <option value="B">Revision B</option>
@@ -350,7 +339,7 @@ export const ReportTab: React.FC<Props> = ({
                   type="text"
                   value={report.report_no || ""}
                   onChange={(e) => handleReportFieldChange("report_no", e.target.value)}
-                  className="w-full mt-0.5 px-2 py-1 text-xs border rounded bg-gray-50 border-gray-300 font-mono"
+                  className="w-full mt-0.5 px-2 py-1 text-xs border rounded bg-gray-50 border-gray-200 font-mono"
                   placeholder="TCET/ T&P / REP 94 of 2026"
                 />
               </div>
@@ -360,149 +349,157 @@ export const ReportTab: React.FC<Props> = ({
                   type="date"
                   value={report.report_date || "2026-10-16"}
                   onChange={(e) => handleReportFieldChange("report_date", e.target.value)}
-                  className="w-full mt-0.5 px-2 py-1 text-xs border rounded bg-gray-50 border-gray-300 font-mono"
+                  className="w-full mt-0.5 px-2 py-1 text-xs border rounded bg-gray-50 border-gray-200 font-mono"
                 />
               </div>
             </div>
           ) : (
-            <>
-              <span>{report.ref_no || "TCET/TNP/FRM/IP-06/09"}</span>
-              <span className="font-bold bg-blue-50 text-blue-800 px-2.5 py-0.5 rounded font-sans">
+            <div className="flex flex-wrap justify-center items-center gap-x-5 gap-y-1.5 text-xs text-gray-600 font-sans">
+              <span className="font-medium text-gray-800">{report.ref_no || "TCET/TNP/FRM/IP-06/09"}</span>
+              <span className="text-gray-300 font-light select-none">|</span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/60">
                 Revision: {report.revision || "B"}
               </span>
-              <span>REF: {report.report_no || "TCET/ T&P / REP  94    of 2026"}</span>
-              <span>Date: {report.report_date || "16/10/2026"}</span>
-            </>
+              <span className="text-gray-300 font-light select-none">|</span>
+              <span>
+                REF: <span className="font-semibold text-gray-900">{report.report_no || "TCET/ T&P / REP 94 of 2026"}</span>
+              </span>
+              <span className="text-gray-300 font-light select-none">|</span>
+              <span>
+                Date: <span className="font-semibold text-gray-900">{report.report_date || "16/10/2026"}</span>
+              </span>
+            </div>
           )}
         </div>
       </div>
 
       {/* ── Section A: Placement Statistics for Phase-I (01) ── */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-3.5 px-5 flex flex-wrap justify-between items-center gap-2">
+        <div className="bg-white border-b border-gray-200 p-4 px-5 flex flex-wrap justify-between items-center gap-2">
           <div>
-            <h3 className="text-sm font-bold tracking-wide">
+            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2.5">
+              <span className="w-1 h-5 rounded-full bg-blue-600 inline-block flex-shrink-0"></span>
               1. Placement Statistics for Phase-I (01) — {report.program}
             </h3>
-            <p className="text-[11px] text-blue-200 mt-0.5">
+            <p className="text-[11px] text-gray-500 mt-0.5 ml-3.5">
               Individual placement drive processes and cumulative company selections
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs bg-white/20 px-2.5 py-0.5 rounded font-medium">
+            <span className="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full font-medium">
               Batch ({report.batch})
             </span>
             {isEditMode && (
               <button
                 type="button"
                 onClick={() => setShowAddModal(true)}
-                className="no-print inline-flex items-center gap-1.5 h-7 px-3 bg-white hover:bg-gray-100 active:bg-gray-200 text-blue-900 rounded-md text-xs font-semibold shadow-sm transition-colors"
+                className="no-print inline-flex items-center gap-1.5 h-7 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-semibold shadow-sm transition-colors"
               >
-                <Plus className="w-3.5 h-3.5 text-blue-700" />
+                <Plus className="w-3.5 h-3.5" />
                 <span>Add Process Row</span>
               </button>
             )}
           </div>
         </div>
 
-        {/* Section 02 & 03 Admission Summary Banner (Dynamic Live Sync) */}
-        <div className="bg-blue-50/60 border-b border-blue-200 p-3 px-5 grid grid-cols-2 md:grid-cols-7 gap-2 text-center text-xs">
-          <div>
-            <span className="text-gray-500 block text-[10px]">Admitted (02)</span>
+        {/* Section 02 & 03 Admission Summary Banner */}
+        <div className="bg-slate-50/70 border-b border-gray-200 p-3 px-5 grid grid-cols-2 md:grid-cols-7 gap-3 text-center text-xs">
+          <div className="p-2 bg-white rounded-lg border border-gray-200/80 shadow-xs">
+            <span className="text-gray-500 block text-[10px] font-medium">Admitted (02)</span>
             {isEditMode ? (
               <input
                 type="number"
                 value={report.admitted_final_year || 125}
                 onChange={(e) => handleReportFieldChange("admitted_final_year", Number(e.target.value))}
-                className="w-16 mx-auto text-center font-extrabold text-gray-900 text-sm border rounded bg-white px-1 py-0.5"
+                className="w-16 mx-auto text-center font-bold text-gray-900 text-sm border rounded bg-white px-1 py-0.5"
               />
             ) : (
-              <span className="font-extrabold text-gray-900 text-sm">{stats.admitted}</span>
+              <span className="font-bold text-gray-900 text-sm">{stats.admitted}</span>
             )}
           </div>
-          <div>
-            <span className="text-gray-500 block text-[10px]">Opt Out (02)</span>
+          <div className="p-2 bg-white rounded-lg border border-gray-200/80 shadow-xs">
+            <span className="text-gray-500 block text-[10px] font-medium">Opt Out (02)</span>
             {isEditMode ? (
               <input
                 type="number"
                 value={report.opt_out || 4}
                 onChange={(e) => handleReportFieldChange("opt_out", Number(e.target.value))}
-                className="w-16 mx-auto text-center font-extrabold text-gray-900 text-sm border rounded bg-white px-1 py-0.5"
+                className="w-16 mx-auto text-center font-bold text-gray-900 text-sm border rounded bg-white px-1 py-0.5"
               />
             ) : (
-              <span className="font-extrabold text-gray-900 text-sm">{stats.optOut}</span>
+              <span className="font-bold text-gray-900 text-sm">{stats.optOut}</span>
             )}
           </div>
-          <div>
-            <span className="text-gray-500 block text-[10px]">Interested (Auto)</span>
-            <span className="font-extrabold text-blue-700 text-sm">{stats.interested}</span>
+          <div className="p-2 bg-white rounded-lg border border-gray-200/80 shadow-xs">
+            <span className="text-gray-500 block text-[10px] font-medium">Interested (Auto)</span>
+            <span className="font-bold text-gray-900 text-sm">{stats.interested}</span>
           </div>
-          <div>
-            <span className="text-gray-500 block text-[10px]">Eligible (02)</span>
+          <div className="p-2 bg-white rounded-lg border border-gray-200/80 shadow-xs">
+            <span className="text-gray-500 block text-[10px] font-medium">Eligible (02)</span>
             {isEditMode ? (
               <input
                 type="number"
                 value={report.eligible || 117}
                 onChange={(e) => handleReportFieldChange("eligible", Number(e.target.value))}
-                className="w-16 mx-auto text-center font-extrabold text-gray-900 text-sm border rounded bg-white px-1 py-0.5"
+                className="w-16 mx-auto text-center font-bold text-gray-900 text-sm border rounded bg-white px-1 py-0.5"
               />
             ) : (
-              <span className="font-extrabold text-gray-900 text-sm">{stats.eligible}</span>
+              <span className="font-bold text-gray-900 text-sm">{stats.eligible}</span>
             )}
           </div>
-          <div>
-            <span className="text-gray-500 block text-[10px]">Not-Eligible (Auto)</span>
-            <span className="font-extrabold text-gray-900 text-sm">{stats.notEligible}</span>
+          <div className="p-2 bg-white rounded-lg border border-gray-200/80 shadow-xs">
+            <span className="text-gray-500 block text-[10px] font-medium">Not-Eligible (Auto)</span>
+            <span className="font-bold text-gray-900 text-sm">{stats.notEligible}</span>
           </div>
-          <div>
-            <span className="text-gray-500 block text-[10px]">Companies Visited</span>
-            <span className="font-extrabold text-purple-700 text-sm">{stats.companiesVisited}</span>
+          <div className="p-2 bg-white rounded-lg border border-gray-200/80 shadow-xs">
+            <span className="text-gray-500 block text-[10px] font-medium">Companies Visited</span>
+            <span className="font-bold text-gray-900 text-sm">{stats.companiesVisited}</span>
           </div>
-          <div>
-            <span className="text-gray-500 block text-[10px]">Placed (Phase-I)</span>
-            <span className="font-extrabold text-emerald-700 text-sm">{stats.placedCount}</span>
+          <div className="p-2 bg-white rounded-lg border border-gray-200/80 shadow-xs">
+            <span className="text-gray-500 block text-[10px] font-medium">Placed (Phase-I)</span>
+            <span className="font-bold text-blue-700 text-sm">{stats.placedCount}</span>
           </div>
         </div>
 
         {/* Process Table with Editable Row Support */}
         <div className="p-4 overflow-x-auto">
-          <table className="w-full text-left text-[11px] border-collapse border border-gray-300 official-table">
-            <thead className="bg-gray-100 font-bold text-gray-800 text-center">
+          <table className="w-full text-left text-[11px] border-collapse border border-gray-200 official-table">
+            <thead className="bg-slate-50 font-semibold text-gray-700 text-center border-b border-gray-200">
               <tr>
-                <th className="p-1.5 border border-gray-300 w-10">Sr. No.</th>
-                <th className="p-1.5 border border-gray-300 w-20">Notice Month</th>
-                <th className="p-1.5 border border-gray-300 w-28">Date of Process</th>
-                <th className="p-1.5 border border-gray-300 min-w-[180px] text-left">Name of Employer</th>
-                <th className="p-1.5 border border-gray-300 w-16">Category</th>
-                <th className="p-1.5 border border-gray-300 w-20">Type</th>
-                <th className="p-1.5 border border-gray-300 w-20 text-right">Salary (LPA)</th>
-                <th className="p-1.5 border border-gray-300 w-14">Selected</th>
-                <th className="p-1.5 border border-gray-300 w-14">Appeared</th>
-                <th className="p-1.5 border border-gray-300 w-16">% age</th>
-                <th className="p-1.5 border border-gray-300 bg-blue-50 text-blue-950 font-bold" colSpan={7}>
+                <th className="p-2 border border-gray-200 w-10">Sr. No.</th>
+                <th className="p-2 border border-gray-200 w-20">Notice Month</th>
+                <th className="p-2 border border-gray-200 w-28">Date of Process</th>
+                <th className="p-2 border border-gray-200 min-w-[180px] text-left">Name of Employer</th>
+                <th className="p-2 border border-gray-200 w-16">Category</th>
+                <th className="p-2 border border-gray-200 w-20">Type</th>
+                <th className="p-2 border border-gray-200 w-20 text-right">Salary (LPA)</th>
+                <th className="p-2 border border-gray-200 w-14">Selected</th>
+                <th className="p-2 border border-gray-200 w-14">Appeared</th>
+                <th className="p-2 border border-gray-200 w-16">% age</th>
+                <th className="p-2 border border-gray-200 bg-blue-50/60 text-blue-900 font-bold" colSpan={7}>
                   Admission, Consent & Eligibility Status
                 </th>
-                {isEditMode && <th className="p-1.5 border border-gray-300 w-12 no-print">Actions</th>}
+                {isEditMode && <th className="p-2 border border-gray-200 w-12 no-print">Actions</th>}
               </tr>
-              <tr className="bg-blue-50 text-blue-900 text-[10px]">
-                <th colSpan={10} className="border border-gray-300 bg-gray-50 text-gray-500">
+              <tr className="bg-blue-50/40 text-blue-900 text-[10px]">
+                <th colSpan={10} className="border border-gray-200 bg-slate-50 text-gray-500 p-1">
                   Process Details
                 </th>
-                <th className="border border-gray-300 p-1 w-14">Admitted</th>
-                <th className="border border-gray-300 p-1 w-14">Opt Out</th>
-                <th className="border border-gray-300 p-1 w-14">Interested</th>
-                <th className="border border-gray-300 p-1 w-14">Eligible</th>
-                <th className="border border-gray-300 p-1 w-14">Not Eligible</th>
-                <th className="border border-gray-300 p-1 w-14">Companies</th>
-                <th className="border border-gray-300 p-1 w-14">Placed</th>
-                {isEditMode && <th className="border border-gray-300 p-1 no-print"></th>}
+                <th className="border border-gray-200 p-1 w-14">Admitted</th>
+                <th className="border border-gray-200 p-1 w-14">Opt Out</th>
+                <th className="border border-gray-200 p-1 w-14">Interested</th>
+                <th className="border border-gray-200 p-1 w-14">Eligible</th>
+                <th className="border border-gray-200 p-1 w-14">Not Eligible</th>
+                <th className="border border-gray-200 p-1 w-14">Companies</th>
+                <th className="border border-gray-200 p-1 w-14">Placed</th>
+                {isEditMode && <th className="border border-gray-200 p-1 no-print"></th>}
               </tr>
             </thead>
             <tbody>
               {processes.map((c, idx) => (
                 <tr key={idx} className="hover:bg-gray-50">
                   {/* Sr. No */}
-                  <td className="p-1.5 border border-gray-300 text-center font-medium text-gray-600">
+                  <td className="p-1.5 border border-gray-200 text-center font-medium text-gray-600">
                     {isEditMode ? (
                       <input
                         type="text"
@@ -516,7 +513,7 @@ export const ReportTab: React.FC<Props> = ({
                   </td>
 
                   {/* Notice Month */}
-                  <td className="p-1.5 border border-gray-300 text-gray-700">
+                  <td className="p-1.5 border border-gray-200 text-gray-700">
                     {isEditMode ? (
                       <input
                         type="text"
@@ -530,7 +527,7 @@ export const ReportTab: React.FC<Props> = ({
                   </td>
 
                   {/* Date of Process */}
-                  <td className="p-1.5 border border-gray-300 font-mono text-[10px] text-gray-600">
+                  <td className="p-1.5 border border-gray-200 font-mono text-[10px] text-gray-600">
                     {isEditMode ? (
                       <input
                         type="text"
@@ -544,7 +541,7 @@ export const ReportTab: React.FC<Props> = ({
                   </td>
 
                   {/* Name of Employer */}
-                  <td className="p-1.5 border border-gray-300 font-medium text-gray-900">
+                  <td className="p-1.5 border border-gray-200 font-medium text-gray-900">
                     {isEditMode ? (
                       <input
                         type="text"
@@ -558,7 +555,7 @@ export const ReportTab: React.FC<Props> = ({
                   </td>
 
                   {/* Category */}
-                  <td className="p-1.5 border border-gray-300 text-center">
+                  <td className="p-1.5 border border-gray-200 text-center">
                     {isEditMode ? (
                       <select
                         value={c.employer_category || "CAT-2"}
@@ -585,7 +582,7 @@ export const ReportTab: React.FC<Props> = ({
                   </td>
 
                   {/* Type */}
-                  <td className="p-1.5 border border-gray-300 text-gray-700">
+                  <td className="p-1.5 border border-gray-200 text-gray-700">
                     {isEditMode ? (
                       <input
                         type="text"
@@ -599,7 +596,7 @@ export const ReportTab: React.FC<Props> = ({
                   </td>
 
                   {/* Salary (LPA) */}
-                  <td className="p-1.5 border border-gray-300 text-right font-bold text-gray-800">
+                  <td className="p-1.5 border border-gray-200 text-right font-bold text-gray-800">
                     {isEditMode ? (
                       <input
                         type="text"
@@ -613,7 +610,7 @@ export const ReportTab: React.FC<Props> = ({
                   </td>
 
                   {/* Selected */}
-                  <td className="p-1.5 border border-gray-300 text-center font-bold text-emerald-700">
+                  <td className="p-1.5 border border-gray-200 text-center font-bold text-emerald-700">
                     {isEditMode ? (
                       <input
                         type="number"
@@ -627,7 +624,7 @@ export const ReportTab: React.FC<Props> = ({
                   </td>
 
                   {/* Appeared */}
-                  <td className="p-1.5 border border-gray-300 text-center text-gray-600">
+                  <td className="p-1.5 border border-gray-200 text-center text-gray-600">
                     {isEditMode ? (
                       <input
                         type="number"
@@ -641,7 +638,7 @@ export const ReportTab: React.FC<Props> = ({
                   </td>
 
                   {/* % age */}
-                  <td className="p-1.5 border border-gray-300 text-center font-medium">
+                  <td className="p-1.5 border border-gray-200 text-center font-medium">
                     {isEditMode ? (
                       <input
                         type="text"
@@ -657,43 +654,43 @@ export const ReportTab: React.FC<Props> = ({
                   {/* Summary columns (independent cells for clean multi-page print page-break support) */}
                   {idx === 0 ? (
                     <>
-                      <td className="p-1.5 border border-gray-300 text-center font-bold text-gray-900 bg-gray-50/70">
+                      <td className="p-1.5 border border-gray-200 text-center font-bold text-gray-900 bg-gray-50/70">
                         {stats.admitted}
                       </td>
-                      <td className="p-1.5 border border-gray-300 text-center font-bold text-gray-900 bg-gray-50/70">
+                      <td className="p-1.5 border border-gray-200 text-center font-bold text-gray-900 bg-gray-50/70">
                         {stats.optOut}
                       </td>
-                      <td className="p-1.5 border border-gray-300 text-center font-bold text-blue-700 bg-gray-50/70">
+                      <td className="p-1.5 border border-gray-200 text-center font-bold text-blue-700 bg-gray-50/70">
                         {stats.interested}
                       </td>
-                      <td className="p-1.5 border border-gray-300 text-center font-bold text-gray-900 bg-gray-50/70">
+                      <td className="p-1.5 border border-gray-200 text-center font-bold text-gray-900 bg-gray-50/70">
                         {stats.eligible}
                       </td>
-                      <td className="p-1.5 border border-gray-300 text-center font-bold text-gray-900 bg-gray-50/70">
+                      <td className="p-1.5 border border-gray-200 text-center font-bold text-gray-900 bg-gray-50/70">
                         {stats.notEligible}
                       </td>
-                      <td className="p-1.5 border border-gray-300 text-center font-bold text-purple-700 bg-gray-50/70">
+                      <td className="p-1.5 border border-gray-200 text-center font-bold text-purple-700 bg-gray-50/70">
                         {stats.companiesVisited}
                       </td>
-                      <td className="p-1.5 border border-gray-300 text-center font-bold text-emerald-700 bg-emerald-50/70">
+                      <td className="p-1.5 border border-gray-200 text-center font-bold text-emerald-700 bg-emerald-50/70">
                         {stats.placedCount}
                       </td>
                     </>
                   ) : (
                     <>
-                      <td className="p-1.5 border border-gray-300 text-center text-gray-300 bg-gray-50/20">—</td>
-                      <td className="p-1.5 border border-gray-300 text-center text-gray-300 bg-gray-50/20">—</td>
-                      <td className="p-1.5 border border-gray-300 text-center text-gray-300 bg-gray-50/20">—</td>
-                      <td className="p-1.5 border border-gray-300 text-center text-gray-300 bg-gray-50/20">—</td>
-                      <td className="p-1.5 border border-gray-300 text-center text-gray-300 bg-gray-50/20">—</td>
-                      <td className="p-1.5 border border-gray-300 text-center text-gray-300 bg-gray-50/20">—</td>
-                      <td className="p-1.5 border border-gray-300 text-center text-gray-300 bg-gray-50/20">—</td>
+                      <td className="p-1.5 border border-gray-200 text-center text-gray-300 bg-gray-50/20">—</td>
+                      <td className="p-1.5 border border-gray-200 text-center text-gray-300 bg-gray-50/20">—</td>
+                      <td className="p-1.5 border border-gray-200 text-center text-gray-300 bg-gray-50/20">—</td>
+                      <td className="p-1.5 border border-gray-200 text-center text-gray-300 bg-gray-50/20">—</td>
+                      <td className="p-1.5 border border-gray-200 text-center text-gray-300 bg-gray-50/20">—</td>
+                      <td className="p-1.5 border border-gray-200 text-center text-gray-300 bg-gray-50/20">—</td>
+                      <td className="p-1.5 border border-gray-200 text-center text-gray-300 bg-gray-50/20">—</td>
                     </>
                   )}
 
                   {/* Actions column in edit mode */}
                   {isEditMode && (
-                    <td className="p-1 border border-gray-300 text-center no-print">
+                    <td className="p-1 border border-gray-200 text-center no-print">
                       <button
                         type="button"
                         onClick={() => handleDeleteProcess(idx)}
@@ -713,10 +710,14 @@ export const ReportTab: React.FC<Props> = ({
 
       {/* ── Section B: Comprehensive Placement Statistics (04 to 07) ── */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-3.5 px-5">
-          <h3 className="text-sm font-bold tracking-wide">
+        <div className="bg-white border-b border-gray-200 p-4 px-5">
+          <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2.5">
+            <span className="w-1 h-5 rounded-full bg-blue-600 inline-block flex-shrink-0"></span>
             2. Detailed Placement Statistics & Quality Analysis (Sections 04 - 07)
           </h3>
+          <p className="text-[11px] text-gray-500 mt-0.5 ml-3.5">
+            Students admission, consent, salary distribution, and qualitative placement indicators
+          </p>
         </div>
 
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
@@ -726,75 +727,75 @@ export const ReportTab: React.FC<Props> = ({
               <span>Students Admission, Consent & Cumulative Offers</span>
               {isEditMode && <span className="text-[10px] text-blue-600 font-normal lowercase">(auto-calculated)</span>}
             </h4>
-            <table className="w-full border-collapse border border-gray-300 official-table">
+            <table className="w-full border-collapse border border-gray-200 official-table">
               <tbody>
                 <tr className="bg-gray-50 font-bold">
-                  <td className="p-2 border border-gray-300">Total Number of Students Placed</td>
-                  <td className="p-2 border border-gray-300 text-right font-extrabold text-blue-700">
+                  <td className="p-2 border border-gray-200">Total Number of Students Placed</td>
+                  <td className="p-2 border border-gray-200 text-right font-extrabold text-blue-700">
                     {stats.placedCount}
                   </td>
                 </tr>
                 <tr>
-                  <td className="p-2 border border-gray-300">Total Offers (Single + Dual)</td>
-                  <td className="p-2 border border-gray-300 text-right font-semibold">
+                  <td className="p-2 border border-gray-200">Total Offers (Single + Dual)</td>
+                  <td className="p-2 border border-gray-200 text-right font-semibold">
                     {stats.totalOffers}
                   </td>
                 </tr>
                 <tr>
-                  <td className="p-2 border border-gray-300">Single Offers (On Campus)</td>
-                  <td className="p-2 border border-gray-300 text-right">{stats.singleOffers}</td>
+                  <td className="p-2 border border-gray-200">Single Offers (On Campus)</td>
+                  <td className="p-2 border border-gray-200 text-right">{stats.singleOffers}</td>
                 </tr>
                 <tr>
-                  <td className="p-2 border border-gray-300">Off-Campus Offers</td>
-                  <td className="p-2 border border-gray-300 text-right">{stats.offCampus}</td>
+                  <td className="p-2 border border-gray-200">Off-Campus Offers</td>
+                  <td className="p-2 border border-gray-200 text-right">{stats.offCampus}</td>
                 </tr>
                 <tr className="bg-blue-50/50 font-medium">
-                  <td className="p-2 border border-gray-300">
+                  <td className="p-2 border border-gray-200">
                     Cumulative Figures (On + Off Campus) out of Interested
                   </td>
-                  <td className="p-2 border border-gray-300 text-right font-bold text-blue-900">
+                  <td className="p-2 border border-gray-200 text-right font-bold text-blue-900">
                     {stats.placedCount} ({stats.pctInterested}%)
                   </td>
                 </tr>
                 <tr className="bg-blue-50/50 font-medium">
-                  <td className="p-2 border border-gray-300">
+                  <td className="p-2 border border-gray-200">
                     Cumulative Figures (On + Off Campus) out of Eligible
                   </td>
-                  <td className="p-2 border border-gray-300 text-right font-bold text-blue-900">
+                  <td className="p-2 border border-gray-200 text-right font-bold text-blue-900">
                     {stats.placedCount} ({stats.pctEligible}%)
                   </td>
                 </tr>
                 <tr>
-                  <td className="p-2 border border-gray-300">
+                  <td className="p-2 border border-gray-200">
                     Cumulative Figures (On + Off Campus) out of Not-Eligible
                   </td>
-                  <td className="p-2 border border-gray-300 text-right">{stats.offCampus} ({stats.pctNotEligible}%)</td>
+                  <td className="p-2 border border-gray-200 text-right">{stats.offCampus} ({stats.pctNotEligible}%)</td>
                 </tr>
                 <tr className="bg-gray-100 font-bold text-gray-900">
-                  <td className="p-2 border border-gray-300">Students Admitted in Final Year</td>
-                  <td className="p-2 border border-gray-300 text-right font-bold">{stats.admitted}</td>
+                  <td className="p-2 border border-gray-200">Students Admitted in Final Year</td>
+                  <td className="p-2 border border-gray-200 text-right font-bold">{stats.admitted}</td>
                 </tr>
                 <tr>
-                  <td className="p-2 border border-gray-300">Opt Out of Campus Placement</td>
-                  <td className="p-2 border border-gray-300 text-right font-medium">
+                  <td className="p-2 border border-gray-200">Opt Out of Campus Placement</td>
+                  <td className="p-2 border border-gray-200 text-right font-medium">
                     {stats.optOut} ({((stats.optOut / (stats.admitted || 1)) * 100).toFixed(1)}%)
                   </td>
                 </tr>
                 <tr>
-                  <td className="p-2 border border-gray-300">Students Interested in Placement</td>
-                  <td className="p-2 border border-gray-300 text-right font-bold text-indigo-700">
+                  <td className="p-2 border border-gray-200">Students Interested in Placement</td>
+                  <td className="p-2 border border-gray-200 text-right font-bold text-indigo-700">
                     {stats.interested} ({((stats.interested / (stats.admitted || 1)) * 100).toFixed(1)}%)
                   </td>
                 </tr>
                 <tr>
-                  <td className="p-2 border border-gray-300">Students Eligible for Placement</td>
-                  <td className="p-2 border border-gray-300 text-right font-bold text-indigo-700">
+                  <td className="p-2 border border-gray-200">Students Eligible for Placement</td>
+                  <td className="p-2 border border-gray-200 text-right font-bold text-indigo-700">
                     {stats.eligible} ({((stats.eligible / (stats.interested || 1)) * 100).toFixed(2)}%)
                   </td>
                 </tr>
                 <tr>
-                  <td className="p-2 border border-gray-300">Students Not-Eligible for Placement</td>
-                  <td className="p-2 border border-gray-300 text-right font-medium text-gray-600">
+                  <td className="p-2 border border-gray-200">Students Not-Eligible for Placement</td>
+                  <td className="p-2 border border-gray-200 text-right font-medium text-gray-600">
                     {stats.notEligible} ({((stats.notEligible / (stats.interested || 1)) * 100).toFixed(2)}%)
                   </td>
                 </tr>
@@ -807,63 +808,63 @@ export const ReportTab: React.FC<Props> = ({
             <h4 className="font-bold text-gray-900 border-b pb-1.5 text-xs uppercase tracking-wider text-blue-900">
               Placement Percentage & Salary Quality (06 & 07)
             </h4>
-            <table className="w-full border-collapse border border-gray-300 official-table">
+            <table className="w-full border-collapse border border-gray-200 official-table">
               <tbody>
                 <tr className="bg-emerald-50/70 font-bold">
-                  <td className="p-2 border border-gray-300">% of Placement out of Interested Students</td>
-                  <td className="p-2 border border-gray-300 text-right font-extrabold text-emerald-800 text-sm">
+                  <td className="p-2 border border-gray-200">% of Placement out of Interested Students</td>
+                  <td className="p-2 border border-gray-200 text-right font-extrabold text-emerald-800 text-sm">
                     {stats.pctInterested}%
                   </td>
                 </tr>
                 <tr className="bg-emerald-50/70 font-bold">
-                  <td className="p-2 border border-gray-300">% of Placement out of Eligible Students</td>
-                  <td className="p-2 border border-gray-300 text-right font-extrabold text-emerald-800 text-sm">
+                  <td className="p-2 border border-gray-200">% of Placement out of Eligible Students</td>
+                  <td className="p-2 border border-gray-200 text-right font-extrabold text-emerald-800 text-sm">
                     {stats.pctEligible}%
                   </td>
                 </tr>
                 <tr>
-                  <td className="p-2 border border-gray-300">% of Placement out of Not-Eligible</td>
-                  <td className="p-2 border border-gray-300 text-right">{stats.pctNotEligible}%</td>
+                  <td className="p-2 border border-gray-200">% of Placement out of Not-Eligible</td>
+                  <td className="p-2 border border-gray-200 text-right">{stats.pctNotEligible}%</td>
                 </tr>
                 <tr className="bg-purple-50 font-semibold">
-                  <td className="p-2 border border-gray-300">No. of Super Dream / Dream Placements</td>
-                  <td className="p-2 border border-gray-300 text-right font-bold text-purple-800">
+                  <td className="p-2 border border-gray-200">No. of Super Dream / Dream Placements</td>
+                  <td className="p-2 border border-gray-200 text-right font-bold text-purple-800">
                     {stats.superDreamDream} ({stats.superDreamPct}%)
                   </td>
                 </tr>
                 <tr>
-                  <td className="p-2 border border-gray-300">Maximum Salary (INR - LPA)</td>
-                  <td className="p-2 border border-gray-300 text-right font-bold text-gray-900">
+                  <td className="p-2 border border-gray-200">Maximum Salary (INR - LPA)</td>
+                  <td className="p-2 border border-gray-200 text-right font-bold text-gray-900">
                     {stats.salaryStats.max !== null ? `${stats.salaryStats.max} LPA` : "14.00 LPA"}
                   </td>
                 </tr>
                 <tr>
-                  <td className="p-2 border border-gray-300">Minimum Salary (INR - LPA)</td>
-                  <td className="p-2 border border-gray-300 text-right font-bold text-gray-900">
+                  <td className="p-2 border border-gray-200">Minimum Salary (INR - LPA)</td>
+                  <td className="p-2 border border-gray-200 text-right font-bold text-gray-900">
                     {stats.salaryStats.min !== null ? `${stats.salaryStats.min} LPA` : "3.50 LPA"}
                   </td>
                 </tr>
                 <tr>
-                  <td className="p-2 border border-gray-300">Average Salary (INR - LPA)</td>
-                  <td className="p-2 border border-gray-300 text-right font-bold text-gray-900">
+                  <td className="p-2 border border-gray-200">Average Salary (INR - LPA)</td>
+                  <td className="p-2 border border-gray-200 text-right font-bold text-gray-900">
                     {stats.salaryStats.avg !== null ? `${stats.salaryStats.avg} LPA` : "4.80 LPA"}
                   </td>
                 </tr>
                 <tr>
-                  <td className="p-2 border border-gray-300">Median Salary (INR - LPA)</td>
-                  <td className="p-2 border border-gray-300 text-right font-bold text-gray-900">
+                  <td className="p-2 border border-gray-200">Median Salary (INR - LPA)</td>
+                  <td className="p-2 border border-gray-200 text-right font-bold text-gray-900">
                     {stats.salaryStats.median !== null ? `${stats.salaryStats.median} LPA` : "4.25 LPA"}
                   </td>
                 </tr>
                 <tr>
-                  <td className="p-2 border border-gray-300">Mode Salary (INR - LPA)</td>
-                  <td className="p-2 border border-gray-300 text-right font-bold text-gray-900">
+                  <td className="p-2 border border-gray-200">Mode Salary (INR - LPA)</td>
+                  <td className="p-2 border border-gray-200 text-right font-bold text-gray-900">
                     {stats.salaryStats.mode !== null ? `${stats.salaryStats.mode} LPA` : "4.25 LPA"}
                   </td>
                 </tr>
                 <tr className="bg-gray-100 font-bold">
-                  <td className="p-2 border border-gray-300">Number of Companies Visited</td>
-                  <td className="p-2 border border-gray-300 text-right font-extrabold text-indigo-700">
+                  <td className="p-2 border border-gray-200">Number of Companies Visited</td>
+                  <td className="p-2 border border-gray-200 text-right font-extrabold text-indigo-700">
                     {stats.companiesVisited}
                   </td>
                 </tr>
@@ -875,40 +876,44 @@ export const ReportTab: React.FC<Props> = ({
 
       {/* ── Section C: Comparative Placement Data (08) & Accreditation Mapping ── */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-3.5 px-5">
-          <h3 className="text-sm font-bold tracking-wide">
+        <div className="bg-white border-b border-gray-200 p-4 px-5">
+          <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2.5">
+            <span className="w-1 h-5 rounded-full bg-blue-600 inline-block flex-shrink-0"></span>
             3. Comparative Placement Data (08) & Accrediting Bodies Mapping
           </h3>
+          <p className="text-[11px] text-gray-500 mt-0.5 ml-3.5">
+            NBA parameter calculation and accreditation agency compliance matrix
+          </p>
         </div>
 
         <div className="p-6 space-y-6 text-xs">
           {/* NBA Parameter calculation */}
-          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-            <h4 className="font-bold text-gray-900 mb-3 text-xs uppercase tracking-wider text-blue-900">
+          <div className="bg-gray-50/70 p-4 rounded-xl border border-gray-200">
+            <h4 className="font-bold text-gray-900 mb-3 text-xs uppercase tracking-wider text-gray-800">
               NBA Parameter Calculation
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white p-3 rounded-lg border">
-                <span className="text-gray-500 block">Total Final Year Regular Students (N)</span>
-                <span className="text-xl font-extrabold text-gray-900 mt-1 block">
+              <div className="bg-white p-3.5 rounded-lg border border-gray-200 shadow-xs">
+                <span className="text-gray-500 block text-[11px] font-medium">Total Final Year Regular Students (N)</span>
+                <span className="text-xl font-bold text-gray-900 mt-1 block">
                   {stats.admitted}
                 </span>
               </div>
-              <div className="bg-white p-3 rounded-lg border">
-                <span className="text-gray-500 block">No. of Students Placed (X)</span>
-                <span className="text-xl font-extrabold text-blue-700 mt-1 block">
+              <div className="bg-white p-3.5 rounded-lg border border-gray-200 shadow-xs">
+                <span className="text-gray-500 block text-[11px] font-medium">No. of Students Placed (X)</span>
+                <span className="text-xl font-bold text-blue-700 mt-1 block">
                   {stats.placedCount}
                 </span>
               </div>
-              <div className="bg-white p-3 rounded-lg border">
-                <span className="text-gray-500 block">Total Placement Index</span>
-                <span className="text-xl font-extrabold text-purple-700 mt-1 block">
+              <div className="bg-white p-3.5 rounded-lg border border-gray-200 shadow-xs">
+                <span className="text-gray-500 block text-[11px] font-medium">Total Placement Index</span>
+                <span className="text-xl font-bold text-gray-900 mt-1 block">
                   {stats.placedCount}
                 </span>
               </div>
-              <div className="bg-white p-3 rounded-lg border">
-                <span className="text-gray-500 block">(X)/N (Average Placement)</span>
-                <span className="text-xl font-extrabold text-emerald-700 mt-1 block">
+              <div className="bg-white p-3.5 rounded-lg border border-gray-200 shadow-xs">
+                <span className="text-gray-500 block text-[11px] font-medium">(X)/N (Average Placement)</span>
+                <span className="text-xl font-bold text-gray-900 mt-1 block">
                   {stats.avgPlacementIndex}
                 </span>
               </div>
@@ -921,61 +926,61 @@ export const ReportTab: React.FC<Props> = ({
               Mapping with Accrediting Bodies / Rating / Ranking Agencies
             </h4>
             <div className="overflow-x-auto">
-              <table className="w-full text-center border-collapse border border-gray-300 official-table">
+              <table className="w-full text-center border-collapse border border-gray-200 official-table">
                 <thead className="bg-gray-100 font-bold text-gray-800">
                   <tr>
-                    <th className="p-2 border border-gray-300 w-12" rowSpan={2}>
+                    <th className="p-2 border border-gray-200 w-12" rowSpan={2}>
                       Sr.No.
                     </th>
-                    <th className="p-2 border border-gray-300 text-left min-w-[240px]" rowSpan={2}>
+                    <th className="p-2 border border-gray-200 text-left min-w-[240px]" rowSpan={2}>
                       Mapping with Accrediting Bodies / Ranking Agencies
                     </th>
-                    <th className="p-1 border border-gray-300 bg-blue-50 text-blue-900" colSpan={8}>
+                    <th className="p-1 border border-gray-200 bg-blue-50 text-blue-900" colSpan={8}>
                       Report Section Matrix Mapping
                     </th>
                   </tr>
                   <tr className="bg-gray-50 text-[10px]">
-                    <th className="p-1 border border-gray-300 w-10">1</th>
-                    <th className="p-1 border border-gray-300 w-10">2</th>
-                    <th className="p-1 border border-gray-300 w-10">3</th>
-                    <th className="p-1 border border-gray-300 w-10">4</th>
-                    <th className="p-1 border border-gray-300 w-10">5</th>
-                    <th className="p-1 border border-gray-300 w-10">6</th>
-                    <th className="p-1 border border-gray-300 w-10">7</th>
-                    <th className="p-1 border border-gray-300 w-10">8</th>
+                    <th className="p-1 border border-gray-200 w-10">1</th>
+                    <th className="p-1 border border-gray-200 w-10">2</th>
+                    <th className="p-1 border border-gray-200 w-10">3</th>
+                    <th className="p-1 border border-gray-200 w-10">4</th>
+                    <th className="p-1 border border-gray-200 w-10">5</th>
+                    <th className="p-1 border border-gray-200 w-10">6</th>
+                    <th className="p-1 border border-gray-200 w-10">7</th>
+                    <th className="p-1 border border-gray-200 w-10">8</th>
                   </tr>
                 </thead>
                 <tbody>
                   {accreditationRows.map((row) => (
                     <tr key={row.sr} className="hover:bg-gray-50">
-                      <td className="p-2 border border-gray-300 text-gray-500 font-medium">
+                      <td className="p-2 border border-gray-200 text-gray-500 font-medium">
                         {row.sr}
                       </td>
-                      <td className="p-2 border border-gray-300 text-left font-semibold text-gray-800">
+                      <td className="p-2 border border-gray-200 text-left font-semibold text-gray-800">
                         {row.agency}
                       </td>
-                      <td className="p-2 border border-gray-300">
+                      <td className="p-2 border border-gray-200">
                         {row.p1 ? <span className="text-emerald-600 font-bold text-sm">✓</span> : "—"}
                       </td>
-                      <td className="p-2 border border-gray-300">
+                      <td className="p-2 border border-gray-200">
                         {row.p2 ? <span className="text-emerald-600 font-bold text-sm">✓</span> : "—"}
                       </td>
-                      <td className="p-2 border border-gray-300">
+                      <td className="p-2 border border-gray-200">
                         {row.p3 ? <span className="text-emerald-600 font-bold text-sm">✓</span> : "—"}
                       </td>
-                      <td className="p-2 border border-gray-300">
+                      <td className="p-2 border border-gray-200">
                         {row.p4 ? <span className="text-emerald-600 font-bold text-sm">✓</span> : "—"}
                       </td>
-                      <td className="p-2 border border-gray-300">
+                      <td className="p-2 border border-gray-200">
                         {row.p5 ? <span className="text-emerald-600 font-bold text-sm">✓</span> : "—"}
                       </td>
-                      <td className="p-2 border border-gray-300">
+                      <td className="p-2 border border-gray-200">
                         {row.p6 ? <span className="text-emerald-600 font-bold text-sm">✓</span> : "—"}
                       </td>
-                      <td className="p-2 border border-gray-300">
+                      <td className="p-2 border border-gray-200">
                         {row.p7 ? <span className="text-emerald-600 font-bold text-sm">✓</span> : "—"}
                       </td>
-                      <td className="p-2 border border-gray-300">
+                      <td className="p-2 border border-gray-200">
                         {row.p8 ? <span className="text-emerald-600 font-bold text-sm">✓</span> : "—"}
                       </td>
                     </tr>
@@ -998,7 +1003,7 @@ export const ReportTab: React.FC<Props> = ({
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center signatures-grid">
           {/* Clerk */}
-          <div className="border border-gray-300 p-4 rounded-lg bg-gray-50/50 sig-block text-left sm:text-center">
+          <div className="border border-gray-200 p-4 rounded-lg bg-gray-50/50 sig-block text-left sm:text-center">
             {isEditMode ? (
               <div className="space-y-1.5">
                 <input
@@ -1037,7 +1042,7 @@ export const ReportTab: React.FC<Props> = ({
           </div>
 
           {/* Placement Officer */}
-          <div className="border border-gray-300 p-4 rounded-lg bg-gray-50/50 sig-block text-left sm:text-center">
+          <div className="border border-gray-200 p-4 rounded-lg bg-gray-50/50 sig-block text-left sm:text-center">
             {isEditMode ? (
               <div className="space-y-1.5">
                 <input
@@ -1078,7 +1083,7 @@ export const ReportTab: React.FC<Props> = ({
           </div>
 
           {/* Vice-Principal */}
-          <div className="border border-gray-300 p-4 rounded-lg bg-gray-50/50 sig-block text-left sm:text-center">
+          <div className="border border-gray-200 p-4 rounded-lg bg-gray-50/50 sig-block text-left sm:text-center">
             {isEditMode ? (
               <div className="space-y-1.5">
                 <input
@@ -1117,7 +1122,7 @@ export const ReportTab: React.FC<Props> = ({
           </div>
 
           {/* Dean */}
-          <div className="border border-gray-300 p-4 rounded-lg bg-gray-50/50 sig-block text-left sm:text-center">
+          <div className="border border-gray-200 p-4 rounded-lg bg-gray-50/50 sig-block text-left sm:text-center">
             {isEditMode ? (
               <div className="space-y-1.5">
                 <input
@@ -1345,7 +1350,7 @@ export const ReportTab: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="h-8 px-3.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 active:bg-gray-100 text-xs font-medium transition-colors"
+                  className="h-8 px-3.5 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 active:bg-gray-100 text-xs font-medium transition-colors"
                 >
                   Cancel
                 </button>

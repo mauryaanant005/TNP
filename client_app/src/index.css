@@ -120,3 +120,76 @@ body {
 body {
   font-family: "Poppins", sans-serif;
 }
+
+@keyframes reportFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.report-tab-content {
+  animation: reportFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Unified Enterprise Phase Table Styling */
+.report-phase-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  font-size: 13.5px !important;
+  background-color: #ffffff !important;
+}
+
+.report-phase-table th,
+.report-phase-table td {
+  border: 1px solid #e2e8f0 !important;
+  padding: 12px 16px !important;
+  box-sizing: border-box !important;
+  vertical-align: middle !important;
+}
+
+.report-phase-table th {
+  background-color: #f8fafc !important;
+  color: #334155 !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+
+.report-phase-table tbody tr:hover td {
+  background-color: #f8fafc !important;
+}
+
+.report-phase-table tr.row-subtotal td {
+  background-color: #f8fafc !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.report-phase-table tr.row-percentage td {
+  background-color: #eff6ff !important;
+  color: #1d4ed8 !important;
+  font-weight: 700 !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.report-phase-table tr.row-combined td {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.report-phase-table tr.row-grandtotal td {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  border: 1px solid #e2e8f0 !important;
+}

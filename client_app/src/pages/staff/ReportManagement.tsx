@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router";
 import {
   PlacementReport,
   PlacementRegisterEntry,
@@ -10,6 +11,7 @@ import { PhaseWiseTab } from "./components/reports/PhaseWiseTab";
 import { ListOfCompanyTab } from "./components/reports/ListOfCompanyTab";
 import { PlacementRegisterTab } from "./components/reports/PlacementRegisterTab";
 import { PrintReportModal } from "./components/reports/PrintReportModal";
+import { TextTabs } from "./components/reports/TextTabs";
 import "./components/reports/report.print.css";
 
 import {
@@ -58,7 +60,29 @@ const initialReportData: PlacementReport = {
 };
 
 const ReportManagement: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<ReportCategory>("report");
+  const { tab, subtab } = useParams<{ tab?: string; subtab?: string }>();
+  const navigate = useNavigate();
+
+  // Normalize URL route parameter to tab key
+  const normalizeTab = (t?: string): ReportCategory => {
+    if (!t) return "report";
+    const lower = t.toLowerCase();
+    if (lower === "phasewise" || lower === "phase-wise" || lower === "phase") return "phasewise";
+    if (lower === "companies" || lower === "list-of-company" || lower === "company") return "companies";
+    if (lower === "register" || lower === "placement-register") return "register";
+    return "report";
+  };
+
+  const activeTab = normalizeTab(tab);
+
+  const handleTabChange = (nextTab: ReportCategory) => {
+    if (nextTab === "report") {
+      navigate("/staff/reports");
+    } else {
+      navigate(`/staff/reports/${nextTab}`);
+    }
+  };
+
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState<boolean>(false);
@@ -214,98 +238,55 @@ const ReportManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* White Card Container */}
-      <div
-        style={{
-          background: "#ffffff",
-          borderRadius: "16px",
-          boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-          overflow: "hidden",
-        }}
-        className="no-print"
-      >
-        {/* Top Tab Bar */}
-        <div
-          style={{
-            display: "flex",
-            gap: "4px",
-            padding: "12px 16px 0",
-            borderBottom: "1px solid #e8ecf4",
-            backgroundColor: "#fafbfd",
-          }}
-          className="overflow-x-auto"
-        >
-          {TABS.map((tab) => {
-            const isActive = activeTab === tab.key;
-            return (
-              <button
-                key={tab.key}
-                id={`report-tab-${tab.key}`}
-                data-testid={`report-tab-${tab.key}`}
-                onClick={() => setActiveTab(tab.key)}
-                style={{
-                  padding: "10px 22px",
-                  borderRadius: "10px 10px 0 0",
-                  border: "none",
-                  cursor: "pointer",
-                  fontWeight: isActive ? 600 : 400,
-                  fontSize: "14px",
-                  transition: "all 0.2s ease",
-                  color: isActive ? "#2563eb" : "#6b7a99",
-                  background: isActive ? "#ffffff" : "transparent",
-                  boxShadow: isActive
-                    ? "0 -2px 0 #2563eb inset, 0 2px 8px rgba(37,99,235,0.08)"
-                    : "none",
-                  borderBottom: isActive ? "2px solid #2563eb" : "2px solid transparent",
-                  outline: "none",
-                  userSelect: "none",
-                  whiteSpace: "nowrap",
-                }}
-                aria-selected={isActive}
-                role="tab"
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
+      {/* Top Tab Bar — Simple Horizontal Text Tabs with Moving Blue Underline */}
+      <div className="mt-2 mb-6 no-print">
+        <TextTabs<ReportCategory>
+          tabs={TABS}
+          activeKey={activeTab}
+          onChange={handleTabChange}
+          idPrefix="report-tab"
+        />
+      </div>
 
-        {/* Tab Workspace Content */}
-        <div className="p-6">
-          {activeTab === "report" && (
-            <ReportTab
-              report={report}
-              entries={entries}
-              phaseReports={phaseReports}
-              onUpdateReport={(updated) => setReport(updated)}
-            />
-          )}
+      {/* Tab Workspace Content */}
+      <div className="report-tab-content">
+        {activeTab === "report" && (
+          <ReportTab
+            report={report}
+            entries={entries}
+            phaseReports={phaseReports}
+            onUpdateReport={(updated) => setReport(updated)}
+          />
+        )}
 
-          {activeTab === "phasewise" && (
-            <PhaseWiseTab
-              report={report}
-              phaseReports={phaseReports}
-              onUpdatePhases={(updated) => setPhaseReports(updated)}
-            />
-          )}
+        {activeTab === "phasewise" && (
+          <PhaseWiseTab
+            report={report}
+            phaseReports={phaseReports}
+            onUpdatePhases={(updated) => setPhaseReports(updated)}
+            subtab={subtab}
+            onSubTabChange={(phaseKey) => {
+              navigate(`/staff/reports/phasewise/${phaseKey}`);
+            }}
+          />
+        )}
 
-          {activeTab === "companies" && (
-            <ListOfCompanyTab
-              companies={companies}
-              onUpdateCompanies={(updated) => setCompanies(updated)}
-            />
-          )}
+        {activeTab === "companies" && (
+          <ListOfCompanyTab
+            companies={companies}
+            onUpdateCompanies={(updated) => setCompanies(updated)}
+          />
+        )}
 
-          {activeTab === "register" && (
-            <PlacementRegisterTab
-              report={report}
-              entries={entries}
-              companyNames={companies.map((c) => c.company_name)}
-              onUpdateEntries={(updated) => setEntries(updated)}
-              onSaveReport={(updated) => setReport(updated)}
-            />
-          )}
-        </div>
+        {activeTab === "register" && (
+          <PlacementRegisterTab
+            report={report}
+            entries={entries}
+            companyNames={companies.map((c) => c.company_name)}
+            onUpdateEntries={(updated) => setEntries(updated)}
+            onSaveReport={(updated) => setReport(updated)}
+          />
+        )}
       </div>
 
       {/* Print / PDF Modal */}
