@@ -6,6 +6,9 @@ import toast from "react-hot-toast";
 interface Props {
   companies: CompanyRecord[];
   onUpdateCompanies: (companies: CompanyRecord[]) => void;
+  loading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
 const BATCH_YEARS = ["2019", "2020", "2021", "2022", "2023", "2024", "2027"];
@@ -31,6 +34,9 @@ const emptyCompany: CompanyRecord = {
 export const ListOfCompanyTab: React.FC<Props> = ({
   companies,
   onUpdateCompanies,
+  loading = false,
+  error = null,
+  onRetry,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [mncFilter, setMncFilter] = useState("ALL");
@@ -245,10 +251,38 @@ export const ListOfCompanyTab: React.FC<Props> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filtered.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={13} className="p-8 text-center text-gray-500">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-xs font-medium text-gray-600">Loading company records...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={13} className="p-8 text-center">
+                    <div className="inline-flex flex-col items-center gap-2 text-rose-600">
+                      <span className="font-medium text-xs">{error}</span>
+                      {onRetry && (
+                        <button
+                          type="button"
+                          onClick={onRetry}
+                          className="mt-1 px-3 py-1 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded border border-blue-200 transition-colors cursor-pointer"
+                        >
+                          Retry Loading
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan={13} className="p-8 text-center text-gray-400">
-                    No company records found.
+                    {searchTerm || mncFilter !== "ALL" || currentOnly
+                      ? "No company records match the current filters."
+                      : "No company records found."}
                   </td>
                 </tr>
               ) : (

@@ -21,7 +21,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, toList } from "@/lib/api";
 import { getCookie } from "@/utils";
 
 type ReportCategory = "report" | "phasewise" | "companies" | "register";
@@ -92,34 +92,61 @@ const ReportManagement: React.FC = () => {
   const [entries, setEntries] = useState<PlacementRegisterEntry[]>([]);
   const [companies, setCompanies] = useState<CompanyRecord[]>([]);
   const [phaseReports, setPhaseReports] = useState<PhaseWiseReport[]>([]);
+  const [companiesLoading, setCompaniesLoading] = useState<boolean>(true);
+  const [companiesError, setCompaniesError] = useState<string | null>(null);
 
   // Fetch report data on mount
   const loadReportData = async () => {
     setLoading(true);
+    setCompaniesLoading(true);
+    setCompaniesError(null);
     try {
       // 1. Fetch main report by batch & program
-      const res = await apiFetch("/api/reports/reports/by-batch/?batch=2027&program=MCA");
-      if (res.ok) {
-        const data = await res.json();
-        setReport(data);
-        if (data.register_entries) {
-          setEntries(data.register_entries);
+      try {
+        const res = await apiFetch("/api/reports/reports/by-batch/?batch=2027&program=MCA", {
+          headers: { Accept: "application/json" },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setReport(data);
+          if (data.register_entries) {
+            setEntries(data.register_entries);
+          }
+          if (data.phase_reports) {
+            setPhaseReports(data.phase_reports);
+          }
         }
-        if (data.phase_reports) {
-          setPhaseReports(data.phase_reports);
-        }
+      } catch (rErr) {
+        console.error("Failed to load report by batch:", rErr);
       }
 
       // 2. Fetch company master records
-      const compRes = await apiFetch("/api/reports/companies/");
-      if (compRes.ok) {
-        const compData = await compRes.json();
-        setCompanies(compData);
+      try {
+        const compRes = await apiFetch("/api/reports/companies/", {
+          headers: { Accept: "application/json" },
+        });
+        if (compRes.ok) {
+          const compData = await compRes.json();
+          const list = toList<CompanyRecord>(compData);
+          setCompanies(list);
+          setCompaniesError(null);
+        } else {
+          const errText = `Failed to load company records (HTTP ${compRes.status}).`;
+          console.error(`Company fetch failed: ${compRes.status} ${compRes.statusText}`);
+          setCompaniesError(errText);
+        }
+      } catch (cErr: any) {
+        const msg = cErr?.message || "Network error while loading company records.";
+        console.error("Failed to fetch companies:", cErr);
+        setCompaniesError(msg);
+      } finally {
+        setCompaniesLoading(false);
       }
     } catch (err) {
       console.error("Failed to load reports from API, using cached state:", err);
     } finally {
       setLoading(false);
+      setCompaniesLoading(false);
     }
   };
 
@@ -279,6 +306,9 @@ const ReportManagement: React.FC = () => {
           <ListOfCompanyTab
             companies={companies}
             onUpdateCompanies={(updated) => setCompanies(updated)}
+            loading={companiesLoading}
+            error={companiesError}
+            onRetry={loadReportData}
           />
         )}
 
