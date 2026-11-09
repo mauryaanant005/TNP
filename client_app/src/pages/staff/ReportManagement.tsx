@@ -185,10 +185,14 @@ const ReportManagement: React.FC = () => {
         minHeight: "100vh",
         padding: "24px 20px",
         fontFamily: "'Inter', 'Segoe UI', sans-serif",
+        borderRadius: "6px",
       }}
     >
       {/* Page Title & Action Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6 no-print">
+      <div
+        className="flex flex-wrap items-center justify-between gap-4 mb-6 no-print"
+        style={{ borderRadius: "6px" }}
+      >
         <div>
           <h1
             style={{

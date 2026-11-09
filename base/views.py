@@ -48,7 +48,12 @@ def redirect_user(request, user):
     login_user(request, user)
     response = redirect(settings.CLIENT_URL)
     domain = getattr(settings, "SESSION_COOKIE_DOMAIN", None)
-    response.set_cookie("is_logged_in", "true", httponly=False, samesite="Lax", domain=domain)
+    # Use the same SameSite/Secure settings as the session cookie so this cookie
+    # is not silently dropped by browsers on cross-subdomain (cross-site) requests
+    # in production (api.tcettnp.in → tcettnp.in).
+    _samesite = getattr(settings, "SESSION_COOKIE_SAMESITE", "Lax")
+    _secure = getattr(settings, "SESSION_COOKIE_SECURE", False)
+    response.set_cookie("is_logged_in", "true", httponly=False, samesite=_samesite, secure=_secure, domain=domain)
     return response
 
 
@@ -612,7 +617,10 @@ def passkey_login_finish(request):
             status=status.HTTP_200_OK,
         )
         domain = getattr(settings, "SESSION_COOKIE_DOMAIN", None)
-        response.set_cookie("is_logged_in", "true", httponly=False, samesite="Lax", domain=domain)
+        # Match SameSite/Secure to session cookie settings for cross-subdomain production use.
+        _samesite = getattr(settings, "SESSION_COOKIE_SAMESITE", "Lax")
+        _secure = getattr(settings, "SESSION_COOKIE_SECURE", False)
+        response.set_cookie("is_logged_in", "true", httponly=False, samesite=_samesite, secure=_secure, domain=domain)
         return response
 
     except PasskeyCredential.DoesNotExist:
@@ -664,8 +672,10 @@ def logout_view(request):
     logout(request)
     response = redirect('login')
     domain = getattr(settings, "SESSION_COOKIE_DOMAIN", None)
-    response.delete_cookie("is_logged_in", domain=domain)
-    response.delete_cookie(settings.SESSION_COOKIE_NAME, domain=domain)
+    _samesite = getattr(settings, "SESSION_COOKIE_SAMESITE", "Lax")
+    _secure = getattr(settings, "SESSION_COOKIE_SECURE", False)
+    response.delete_cookie("is_logged_in", domain=domain, samesite=_samesite)
+    response.delete_cookie(settings.SESSION_COOKIE_NAME, domain=domain, samesite=_samesite)
     return response
 
 

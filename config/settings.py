@@ -663,8 +663,16 @@ SESSION_COOKIE_SECURE = not IS_DEV
 CSRF_COOKIE_SECURE = not IS_DEV
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
-SESSION_COOKIE_SAMESITE = "Lax"
-CSRF_COOKIE_SAMESITE = "Lax"
+# In production the React frontend (tcettnp.in) and the Django API
+# (api.tcettnp.in) are on separate subdomains. Browser SameSite rules
+# treat subdomain-to-subdomain as cross-site, so SameSite=Lax cookies
+# are silently dropped on cross-origin fetch() calls (credentials:include).
+# Django then returns 401, App.tsx sees unauthenticated, and redirects every
+# page load to login — making all protected routes appear broken on the server.
+# Fix: use SameSite=None in production (requires Secure=True, already set).
+# Keep SameSite=Lax in dev (same-origin localhost, no cross-site risk).
+SESSION_COOKIE_SAMESITE = "Lax" if IS_DEV else "None"
+CSRF_COOKIE_SAMESITE = "Lax" if IS_DEV else "None"
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = int(os.getenv("SESSION_COOKIE_AGE", "7200"))
 SESSION_SAVE_EVERY_REQUEST = True

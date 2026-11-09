@@ -139,8 +139,9 @@ def logout_api(request):
     logout(request)
     response = JSONResponse({"message": "Logged out successfully."})
     domain = getattr(settings, "SESSION_COOKIE_DOMAIN", None)
-    response.delete_cookie("is_logged_in", domain=domain)
-    response.delete_cookie(settings.SESSION_COOKIE_NAME, domain=domain)
+    _samesite = getattr(settings, "SESSION_COOKIE_SAMESITE", "Lax")
+    response.delete_cookie("is_logged_in", domain=domain, samesite=_samesite)
+    response.delete_cookie(settings.SESSION_COOKIE_NAME, domain=domain, samesite=_samesite)
     return response
 
 @login_required
