@@ -40,8 +40,7 @@ class Command(BaseCommand):
             if created:
                 self.stdout.write("Created PlacementReport 2027 MCA")
             else:
-                self.stdout.write("PlacementReport 2027 MCA already exists — skipping report creation")
-                return
+                self.stdout.write("PlacementReport 2027 MCA already exists — keeping existing report")
 
             # Placement register entries from Excel
             ENTRIES = [
@@ -63,80 +62,92 @@ class Command(BaseCommand):
                 {"sr_no": 16, "branch": "MCA-A", "division": "", "tnp_uid": "25-MCAA48-27", "student_name": "NAVGHARE SHUBHAM SAMEER SHREYA", "employer_visit_date": "05/10/2026 &06/10/2026", "employer_category": "CAT-2", "placement_type": "Regular", "employer_name": "Capgemini-dev", "stipend_offered": "", "salary_lpa": 5.75, "num_offers": None, "dual_offer": False, "campus_on_off": "OFF"},
             ]
 
-            for e in ENTRIES:
-                PlacementRegisterEntry.objects.create(report=report, **e)
-            self.stdout.write(f"Created {len(ENTRIES)} placement register entries")
+            if not report.register_entries.exists():
+                for e in ENTRIES:
+                    PlacementRegisterEntry.objects.create(report=report, **e)
+                self.stdout.write(f"Created {len(ENTRIES)} placement register entries")
+            else:
+                self.stdout.write(f"Placement register entries already exist ({report.register_entries.count()}) — skipping")
 
             # Phase I data
-            PhaseWiseReport.objects.create(
-                report=report,
-                phase="I",
-                total_admitted=125,
-                opt_out=4,
-                opted_higher_studies=0,
-                interested=121,
-                eligible=117,
-                companies_visited=19,
-                students_placed=15,
-                monthly_data={
-                    "JUNE": {"companies": 2, "placed": 3},
-                    "JULY": {"companies": 0, "placed": 0},
-                    "AUGUST": {"companies": 10, "placed": 3},
-                    "SEPTEMBER": {"companies": 4, "placed": 2},
-                    "OCTOBER": {"companies": 3, "placed": 7},
-                    "NOVEMBER": {"companies": 0, "placed": 0},
-                    "DECEMBER": {"companies": 0, "placed": 0},
-                },
-                due_date=datetime.date(2026, 10, 19),
-                completion_date=datetime.date(2026, 10, 16),
-                reason_if_late="Capgemini result Declared as on 16/10/2026",
-            )
-            self.stdout.write("Created Phase I report")
+            if not report.phase_reports.filter(phase="I").exists():
+                PhaseWiseReport.objects.create(
+                    report=report,
+                    phase="I",
+                    total_admitted=125,
+                    opt_out=4,
+                    opted_higher_studies=0,
+                    interested=121,
+                    eligible=117,
+                    companies_visited=19,
+                    students_placed=15,
+                    monthly_data={
+                        "JUNE": {"companies": 2, "placed": 3},
+                        "JULY": {"companies": 0, "placed": 0},
+                        "AUGUST": {"companies": 10, "placed": 3},
+                        "SEPTEMBER": {"companies": 4, "placed": 2},
+                        "OCTOBER": {"companies": 3, "placed": 7},
+                        "NOVEMBER": {"companies": 0, "placed": 0},
+                        "DECEMBER": {"companies": 0, "placed": 0},
+                    },
+                    due_date=datetime.date(2026, 10, 19),
+                    completion_date=datetime.date(2026, 10, 16),
+                    reason_if_late="Capgemini result Declared as on 16/10/2026",
+                )
+                self.stdout.write("Created Phase I report")
+            else:
+                self.stdout.write("Phase I report already exists — skipping")
 
             # Phase II data (blank — to be filled by clerk)
-            PhaseWiseReport.objects.create(
-                report=report,
-                phase="II",
-                total_admitted=125,
-                opt_out=0,
-                opted_higher_studies=0,
-                interested=0,
-                eligible=0,
-                companies_visited=0,
-                students_placed=0,
-                monthly_data={
-                    "JANUARY": {"companies": 0, "placed": 0},
-                    "FEBRUARY": {"companies": 0, "placed": 0},
-                    "MARCH": {"companies": 0, "placed": 0},
-                    "APRIL": {"companies": 0, "placed": 0},
-                    "MAY": {"companies": 0, "placed": 0},
-                },
-            )
-            self.stdout.write("Created Phase II report (empty)")
+            if not report.phase_reports.filter(phase="II").exists():
+                PhaseWiseReport.objects.create(
+                    report=report,
+                    phase="II",
+                    total_admitted=125,
+                    opt_out=0,
+                    opted_higher_studies=0,
+                    interested=0,
+                    eligible=0,
+                    companies_visited=0,
+                    students_placed=0,
+                    monthly_data={
+                        "JANUARY": {"companies": 0, "placed": 0},
+                        "FEBRUARY": {"companies": 0, "placed": 0},
+                        "MARCH": {"companies": 0, "placed": 0},
+                        "APRIL": {"companies": 0, "placed": 0},
+                        "MAY": {"companies": 0, "placed": 0},
+                    },
+                )
+                self.stdout.write("Created Phase II report (empty)")
+            else:
+                self.stdout.write("Phase II report already exists — skipping")
 
             # Phase III data (blank — to be filled by clerk)
-            PhaseWiseReport.objects.create(
-                report=report,
-                phase="III",
-                total_admitted=125,
-                opt_out=0,
-                opted_higher_studies=0,
-                interested=0,
-                eligible=0,
-                companies_visited=0,
-                students_placed=0,
-                off_campus_placed=0,
-                monthly_data={
-                    "JUNE": {"companies": 0, "placed": 0},
-                    "JULY": {"companies": 0, "placed": 0},
-                    "AUGUST": {"companies": 0, "placed": 0},
-                    "SEPTEMBER": {"companies": 0, "placed": 0},
-                    "OCTOBER": {"companies": 0, "placed": 0},
-                    "NOVEMBER": {"companies": 0, "placed": 0},
-                    "DECEMBER": {"companies": 0, "placed": 0},
-                },
-            )
-            self.stdout.write("Created Phase III report (empty)")
+            if not report.phase_reports.filter(phase="III").exists():
+                PhaseWiseReport.objects.create(
+                    report=report,
+                    phase="III",
+                    total_admitted=125,
+                    opt_out=0,
+                    opted_higher_studies=0,
+                    interested=0,
+                    eligible=0,
+                    companies_visited=0,
+                    students_placed=0,
+                    off_campus_placed=0,
+                    monthly_data={
+                        "JUNE": {"companies": 0, "placed": 0},
+                        "JULY": {"companies": 0, "placed": 0},
+                        "AUGUST": {"companies": 0, "placed": 0},
+                        "SEPTEMBER": {"companies": 0, "placed": 0},
+                        "OCTOBER": {"companies": 0, "placed": 0},
+                        "NOVEMBER": {"companies": 0, "placed": 0},
+                        "DECEMBER": {"companies": 0, "placed": 0},
+                    },
+                )
+                self.stdout.write("Created Phase III report (empty)")
+            else:
+                self.stdout.write("Phase III report already exists — skipping")
 
             # Company records for 2027 batch
             COMPANIES_2027 = [
