@@ -103,7 +103,16 @@ const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
     async (query: string, batch: string, type: string) => {
       const q = query.trim();
       const b = batch.trim();
-      const t = type !== "All" ? type.trim() : "";
+
+      // For Placement and Internship, always filter by their own type automatically
+      let t: string;
+      if (noticeType === "Placement") {
+        t = "Placement";
+      } else if (noticeType === "Internship") {
+        t = "Internship";
+      } else {
+        t = type !== "All" ? type.trim() : "";
+      }
 
       setLoading(true);
       setSearchError(null);
@@ -126,7 +135,7 @@ const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
         setLoading(false);
       }
     },
-    []
+    [noticeType]
   );
 
   // Debounced search trigger (300ms)
@@ -135,7 +144,7 @@ const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
       fetchOpportunities(searchQuery, selectedBatch, typeFilter);
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedBatch, typeFilter, fetchOpportunities]);
+  }, [searchQuery, selectedBatch, typeFilter, fetchOpportunities, noticeType]);
 
   const handleRetry = () => {
     fetchOpportunities(searchQuery, selectedBatch, typeFilter);
@@ -203,7 +212,9 @@ const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
             display: "grid",
             gridTemplateColumns: {
               xs: "1fr auto",
-              md: "1fr minmax(130px, auto) minmax(130px, auto)",
+              md: isTraining
+                ? "1fr minmax(130px, auto) minmax(130px, auto)"
+                : "1fr minmax(140px, auto)",
             },
             gridTemplateRows: "auto auto",
             columnGap: 1.5,
@@ -542,24 +553,26 @@ const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
             </Select>
           </FormControl>
 
-          {/* ── Row 2, Col 3 : All Types dropdown ── */}
-          <FormControl size="small" sx={{ width: "100%" }}>
-            <InputLabel id="type-filter-label">Type</InputLabel>
-            <Select
-              labelId="type-filter-label"
-              value={typeFilter}
-              label="Type"
-              onChange={(e) => {
-                setTypeFilter(e.target.value);
-                setDropdownOpen(true);
-              }}
-              sx={{ bgcolor: "#ffffff", borderRadius: 2 }}
-            >
-              <MenuItem value="All">All Types</MenuItem>
-              <MenuItem value="Placement">Placement</MenuItem>
-              <MenuItem value="Internship">Internship</MenuItem>
-            </Select>
-          </FormControl>
+          {/* ── Row 2, Col 3 : All Types dropdown (Training only) ── */}
+          {isTraining && (
+            <FormControl size="small" sx={{ width: "100%" }}>
+              <InputLabel id="type-filter-label">Type</InputLabel>
+              <Select
+                labelId="type-filter-label"
+                value={typeFilter}
+                label="Type"
+                onChange={(e) => {
+                  setTypeFilter(e.target.value);
+                  setDropdownOpen(true);
+                }}
+                sx={{ bgcolor: "#ffffff", borderRadius: 2 }}
+              >
+                <MenuItem value="All">All Types</MenuItem>
+                <MenuItem value="Placement">Placement</MenuItem>
+                <MenuItem value="Internship">Internship</MenuItem>
+              </Select>
+            </FormControl>
+          )}
         </Box>
 
         {/* Selected Opportunity Summary Banner (visible below search row when opportunity is selected) */}

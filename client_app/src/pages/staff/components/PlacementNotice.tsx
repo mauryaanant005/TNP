@@ -64,13 +64,13 @@ const PlacementNotice: React.FC = () => {
     intro: "",
     about: "",
     eligibility_criteria: "",
-    Walk_in_interview: "Online Assessment followed by Technical and HR Interviews.",
+    Walk_in_interview: "",
     Company_registration_Link: "",
     College_registration_Link: "",
-    Note: "Students must report on time in formal attire. Late entries will not be permitted.",
+    Note: "",
     From: "Dr. Zahir Aalam",
     From_designation: "Dean (TP&IL)",
-    location: "TCET Campus / Online",
+    location: "",
     deadline: "",
     batch: "",
     roles_responsibilities: "",
@@ -305,13 +305,13 @@ const PlacementNotice: React.FC = () => {
       intro: "",
       about: "",
       eligibility_criteria: "",
-      Walk_in_interview: "Online Assessment followed by Technical and HR Interviews.",
+      Walk_in_interview: "",
       Company_registration_Link: "",
       College_registration_Link: "",
-      Note: "Students must report on time in formal attire. Late entries will not be permitted.",
+      Note: "",
       From: "Dr. Zahir Aalam",
       From_designation: "Dean (TP&IL)",
-      location: "TCET Campus / Online",
+      location: "",
       deadline: "",
       batch: "",
       roles_responsibilities: "",
@@ -562,518 +562,491 @@ const PlacementNotice: React.FC = () => {
         noticeStatus={noticeStatus}
         isDirty={isDirty}
         onOpenDrafts={() => setDraftsOpen(true)}
+        noticeType="Placement"
       />
 
-      {/* Step 2: Placement Notice Form Editor */}
-      <Paper elevation={0} sx={{ p: { xs: 2, sm: 3, md: 3.5 }, mb: 4, borderRadius: 3, border: "1px solid #e2e8f0", bgcolor: "#ffffff", width: "100%", boxSizing: "border-box" }}>
-        {/* Form Section A: Communication Meta */}
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#1e293b", mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-          <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#3b82f6" }} />
-          Communication & Institutional Meta
-        </Typography>
-
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Serial Number"
-              name="srNo"
-              value={formData.srNo}
-              onChange={handleChange}
-              fullWidth
-              size="small"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Notice Date"
-              type="date"
-              name="date"
-              value={formData.date}
-              onChange={handleChange}
-              fullWidth
-              size="small"
-              InputLabelProps={{ shrink: true }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Company Name"
-              name="company_name"
-              value={formData.company_name}
-              onChange={handleCompanyNameChange}
-              fullWidth
-              size="small"
-              placeholder="e.g. Tata Consultancy Services"
-              helperText="Auto-fills Subject, Intro & About"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Recipient (To)"
-              name="to"
-              value={formData.to}
-              onChange={handleChange}
-              fullWidth
-              size="small"
-              placeholder="e.g. All concerned Students of 2027 Batch (COMP, IT, AI&DS)"
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              label="Subject"
-              name="subject"
-              value={formData.subject}
-              onChange={handleChange}
-              fullWidth
-              size="small"
-              required
-              placeholder="e.g. Campus Recruitment Drive - Tata Consultancy Services for 2027 Batch"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Job Location"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              fullWidth
-              size="small"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Deadline to Register"
-              name="deadline"
-              value={formData.deadline}
-              onChange={handleChange}
-              fullWidth
-              size="small"
-              placeholder="e.g. 30.09.2026 by 10.00 am"
-              helperText="Date & time (e.g. 30.09.2026 by 10.00 am)"
-            />
-          </Grid>
-        </Grid>
-
-        <Divider sx={{ my: 3 }} />
-
-        {/* Form Section B: Introduction & Company Snapshot */}
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#1e293b", mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-          <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#3b82f6" }} />
-          Introduction & Company Background
-        </Typography>
-
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12}>
-            <TextField
-              label="Introduction Text"
-              name="intro"
-              value={formData.intro}
-              onChange={handleChange}
-              fullWidth
-              multiline
-              rows={2}
-              size="small"
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              label="About Company (Snapshot for Notice)"
-              name="about"
-              value={formData.about}
-              onChange={handleChange}
-              fullWidth
-              multiline
-              rows={3}
-              size="small"
-            />
-          </Grid>
-        </Grid>
-
-        <Divider sx={{ my: 3 }} />
-
-        {/* Form Section C: Repeatable Job Positions Table */}
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#1e293b", display: "flex", alignItems: "center", gap: 1 }}>
-            <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#3b82f6" }} />
-            Job Positions & CTC (Repeatable Table)
-          </Typography>
-          <Button
-            size="small"
-            variant="outlined"
-            color="primary"
-            startIcon={<Plus size={14} />}
-            onClick={addRow}
-            sx={{ textTransform: "none", borderRadius: 1.5 }}
-          >
-            Add Position
-          </Button>
-        </Box>
-
-        <Table size="small" sx={{ mb: 3, border: "1px solid #e2e8f0", borderRadius: 2 }}>
-          <TableHead sx={{ bgcolor: "#f8fafc" }}>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 700, width: "25%" }}>Offer Type</TableCell>
-              <TableCell sx={{ fontWeight: 700, width: "30%" }}>CTC / Stipend</TableCell>
-              <TableCell sx={{ fontWeight: 700, width: "35%" }}>Position / Role</TableCell>
-              <TableCell sx={{ width: "10%" }} align="center">Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {tableRows.map((row, index) => (
-              <TableRow key={index}>
-                <TableCell>
-                  <TextField
-                    size="small"
-                    value={row.type}
-                    onChange={(e) => handleRowChange(index, "type", e.target.value)}
-                    placeholder="e.g. Regular / Dream"
-                    fullWidth
-                  />
-                </TableCell>
-                <TableCell>
-                  <TextField
-                    size="small"
-                    value={row.salary}
-                    onChange={(e) => handleRowChange(index, "salary", e.target.value)}
-                    placeholder="e.g. ₹7.5 LPA"
-                    fullWidth
-                  />
-                </TableCell>
-                <TableCell>
-                  <TextField
-                    size="small"
-                    value={row.position}
-                    onChange={(e) => handleRowChange(index, "position", e.target.value)}
-                    placeholder="e.g. Software Engineer"
-                    fullWidth
-                  />
-                </TableCell>
-                <TableCell align="center">
-                  <IconButton
-                    size="small"
-                    color="error"
-                    onClick={() => removeRow(index)}
-                    disabled={tableRows.length === 1}
-                  >
-                    <Trash2 size={16} />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-
-        <Divider sx={{ my: 3 }} />
-
-        {/* Form Section D: Eligibility & Skills */}
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#1e293b", mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-          <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#3b82f6" }} />
-          Eligibility Criteria & Skills
-        </Typography>
-
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12}>
-            <TextField
-              label="Eligibility Criteria"
-              name="eligibility_criteria"
-              value={formData.eligibility_criteria}
-              onChange={handleChange}
-              fullWidth
-              multiline
-              rows={3}
-              size="small"
-            />
-          </Grid>
-
-          {/* Skills Chip Input */}
-          <Grid item xs={12}>
-            <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, display: "block", mb: 1 }}>
-
+      {/* Step 2: Split-screen Form + Preview */}
+      <Grid container spacing={3}>
+        {/* Left Column: Form Editor */}
+        <Grid item xs={12} md={7}>
+          <Paper elevation={0} sx={{ p: { xs: 2, sm: 3, md: 3.5 }, mb: 4, borderRadius: 3, border: "1px solid #e2e8f0", bgcolor: "#fafbfc", width: "100%", boxSizing: "border-box" }}>
+            {/* Form Section A: Communication Meta */}
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#1e293b", mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+              <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#3b82f6" }} />
+              Communication &amp; Institutional Meta
             </Typography>
-            <Box sx={{ display: "flex", gap: 1, mb: 1.5 }}>
-              <TextField
-                size="small"
-                placeholder="e.g. Python, Spring Boot, React, SQL"
-                value={skillInput}
-                onChange={(e) => setSkillInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddSkill();
-                  }
-                }}
-                sx={{ flex: 1 }}
-              />
-              <Button
-                variant="outlined"
-                onClick={handleAddSkill}
-                disabled={!skillInput.trim()}
-                sx={{ textTransform: "none", borderRadius: 2 }}
-              >
-                Add Skill
-              </Button>
-            </Box>
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8 }}>
-              {skillTags.map((skill, i) => (
-                <Chip
-                  key={i}
-                  label={skill}
+
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Serial Number"
+                  name="srNo"
+                  value={formData.srNo}
+                  onChange={handleChange}
+                  fullWidth
                   size="small"
-                  onDelete={() => handleRemoveSkill(skill)}
-                  sx={{ bgcolor: "#eff6ff", color: "#1d4ed8", fontWeight: 600 }}
                 />
-              ))}
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Notice Date"
+                  type="date"
+                  name="date"
+                  value={formData.date}
+                  onChange={handleChange}
+                  fullWidth
+                  size="small"
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Company Name"
+                  name="company_name"
+                  value={formData.company_name}
+                  onChange={handleCompanyNameChange}
+                  fullWidth
+                  size="small"
+                  placeholder="e.g. Tata Consultancy Services"
+                  helperText="Auto-fills Subject, Intro & About"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Recipient (To)"
+                  name="to"
+                  value={formData.to}
+                  onChange={handleChange}
+                  fullWidth
+                  size="small"
+                  placeholder="e.g. All concerned Students of 2027 Batch (COMP, IT, AI&DS)"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  label="Subject"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  fullWidth
+                  size="small"
+                  required
+                  placeholder="e.g. Campus Recruitment Drive - Tata Consultancy Services for 2027 Batch"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Job Location"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  fullWidth
+                  size="small"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Deadline to Register"
+                  name="deadline"
+                  value={formData.deadline}
+                  onChange={handleChange}
+                  fullWidth
+                  size="small"
+                  placeholder="e.g. 30.09.2026 by 10.00 am"
+                  helperText="Date & time (e.g. 30.09.2026 by 10.00 am)"
+                />
+              </Grid>
+            </Grid>
+
+            <Divider sx={{ my: 3 }} />
+
+            {/* Form Section B: Introduction & Company Snapshot */}
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#1e293b", mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+              <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#3b82f6" }} />
+              Introduction &amp; Company Background
+            </Typography>
+
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={12}>
+                <TextField
+                  label="Introduction Text"
+                  name="intro"
+                  value={formData.intro}
+                  onChange={handleChange}
+                  fullWidth
+                  multiline
+                  rows={2}
+                  size="small"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  label="About Company (Snapshot for Notice)"
+                  name="about"
+                  value={formData.about}
+                  onChange={handleChange}
+                  fullWidth
+                  multiline
+                  rows={3}
+                  size="small"
+                />
+              </Grid>
+            </Grid>
+
+            <Divider sx={{ my: 3 }} />
+
+            {/* Form Section C: Repeatable Job Positions Table */}
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#1e293b", display: "flex", alignItems: "center", gap: 1 }}>
+                <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#3b82f6" }} />
+                Job Positions &amp; CTC (Repeatable Table)
+              </Typography>
+              <Button
+                size="small"
+                variant="outlined"
+                color="primary"
+                startIcon={<Plus size={14} />}
+                onClick={addRow}
+                sx={{ textTransform: "none", borderRadius: 1.5 }}
+              >
+                Add Position
+              </Button>
             </Box>
-          </Grid>
-        </Grid>
 
-        <Divider sx={{ my: 3 }} />
+            <Table size="small" sx={{ mb: 3, border: "1px solid #e2e8f0", borderRadius: 2 }}>
+              <TableHead sx={{ bgcolor: "#f8fafc" }}>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 700, width: "25%" }}>Offer Type</TableCell>
+                  <TableCell sx={{ fontWeight: 700, width: "30%" }}>CTC / Stipend</TableCell>
+                  <TableCell sx={{ fontWeight: 700, width: "35%" }}>Position / Role</TableCell>
+                  <TableCell sx={{ width: "10%" }} align="center">Action</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {tableRows.map((row, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <TextField
+                        size="small"
+                        value={row.type}
+                        onChange={(e) => handleRowChange(index, "type", e.target.value)}
+                        placeholder="e.g. Regular / Dream"
+                        fullWidth
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <TextField
+                        size="small"
+                        value={row.salary}
+                        onChange={(e) => handleRowChange(index, "salary", e.target.value)}
+                        placeholder="e.g. ₹7.5 LPA"
+                        fullWidth
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <TextField
+                        size="small"
+                        value={row.position}
+                        onChange={(e) => handleRowChange(index, "position", e.target.value)}
+                        placeholder="e.g. Software Engineer"
+                        fullWidth
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => removeRow(index)}
+                        disabled={tableRows.length === 1}
+                      >
+                        <Trash2 size={16} />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
 
-        {/* Form Section E: Selection Process & Logistics */}
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#1e293b", mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-          <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#3b82f6" }} />
-          Selection Process, Logistics & Links
-        </Typography>
+            <Divider sx={{ my: 3 }} />
 
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12}>
-            <TextField
-              label="Selection Process"
-              name="Walk_in_interview"
-              value={formData.Walk_in_interview}
-              onChange={handleChange}
-              fullWidth
-              multiline
-              rows={2}
-              size="small"
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              label="Roles & Responsibilities"
-              name="roles_responsibilities"
-              value={formData.roles_responsibilities}
-              onChange={handleChange}
-              fullWidth
-              multiline
-              rows={3}
-              size="small"
-              placeholder="Enter company-specific roles & responsibilities (leave empty if not specified)"
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              label="Company Registration Link"
-              name="Company_registration_Link"
-              value={formData.Company_registration_Link}
-              onChange={handleChange}
-              fullWidth
-              size="small"
-              placeholder="https://careers.company.com/apply"
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              label="Important Note for Students"
-              name="Note"
-              value={formData.Note}
-              onChange={handleChange}
-              fullWidth
-              multiline
-              rows={2}
-              size="small"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Signatory Name"
-              name="From"
-              value={formData.From}
-              onChange={handleChange}
-              fullWidth
-              size="small"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Signatory Designation"
-              name="From_designation"
-              value={formData.From_designation}
-              onChange={handleChange}
-              fullWidth
-              size="small"
-            />
-          </Grid>
-        </Grid>
+            {/* Form Section D: Eligibility & Skills */}
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#1e293b", mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+              <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#3b82f6" }} />
+              Eligibility Criteria &amp; Skills
+            </Typography>
 
-        {/* Quality / Missing Info Alerts */}
-        {qualityChecklist.length > 0 && (
-          <Box sx={{ mb: 3 }}>
-            {qualityChecklist.map((item, idx) => (
-              <Alert
-                key={idx}
-                severity={item.critical ? "error" : "warning"}
-                icon={<AlertTriangle size={16} />}
-                sx={{ mb: 1, py: 0.5, borderRadius: 2, fontSize: "12px" }}
-              >
-                {item.label}
-              </Alert>
-            ))}
-          </Box>
-        )}
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={12}>
+                <TextField
+                  label="Eligibility Criteria"
+                  name="eligibility_criteria"
+                  value={formData.eligibility_criteria}
+                  onChange={handleChange}
+                  fullWidth
+                  multiline
+                  rows={3}
+                  size="small"
+                />
+              </Grid>
 
-        {/* Bottom Form Action Buttons */}
-        <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center", pt: 2.5, borderTop: "1px solid #f1f5f9" }}>
-          <Button
-            variant="contained"
-            color={noticeStatus === "PUBLISHED" ? "secondary" : "primary"}
-            startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <Send size={16} />}
-            onClick={handlePublish}
-            disabled={loading}
-            sx={{ textTransform: "none", borderRadius: 2, px: 3, fontWeight: 700 }}
-          >
-            {noticeStatus === "PUBLISHED" ? `Update Notice (Create v${versionCount + 1})` : "Publish Notice (v1)"}
-          </Button>
+              {/* Skills Chip Input */}
+              <Grid item xs={12}>
+                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, display: "block", mb: 1 }}>
 
-          <Button
-            variant="outlined"
-            color="primary"
-            startIcon={loading ? <CircularProgress size={16} /> : <Save size={16} />}
-            onClick={handleSaveDraft}
-            disabled={loading}
-            sx={{ textTransform: "none", borderRadius: 2, px: 2.5, fontWeight: 600 }}
-          >
-            Save Draft
-          </Button>
+                </Typography>
+                <Box sx={{ display: "flex", gap: 1, mb: 1.5 }}>
+                  <TextField
+                    size="small"
+                    placeholder="e.g. Python, Spring Boot, React, SQL"
+                    value={skillInput}
+                    onChange={(e) => setSkillInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddSkill();
+                      }
+                    }}
+                    sx={{ flex: 1 }}
+                  />
+                  <Button
+                    variant="outlined"
+                    onClick={handleAddSkill}
+                    disabled={!skillInput.trim()}
+                    sx={{ textTransform: "none", borderRadius: 2 }}
+                  >
+                    Add Skill
+                  </Button>
+                </Box>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8 }}>
+                  {skillTags.map((skill, i) => (
+                    <Chip
+                      key={i}
+                      label={skill}
+                      size="small"
+                      onDelete={() => handleRemoveSkill(skill)}
+                      sx={{ bgcolor: "#eff6ff", color: "#1d4ed8", fontWeight: 600 }}
+                    />
+                  ))}
+                </Box>
+              </Grid>
+            </Grid>
 
-          {noticeId && (
-            <>
+            <Divider sx={{ my: 3 }} />
+
+            {/* Form Section E: Selection Process & Logistics */}
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#1e293b", mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+              <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#3b82f6" }} />
+              Selection Process, Logistics &amp; Links
+            </Typography>
+
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={12}>
+                <TextField
+                  label="Selection Process"
+                  name="Walk_in_interview"
+                  value={formData.Walk_in_interview}
+                  onChange={handleChange}
+                  fullWidth
+                  multiline
+                  rows={2}
+                  size="small"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  label="Roles & Responsibilities"
+                  name="roles_responsibilities"
+                  value={formData.roles_responsibilities}
+                  onChange={handleChange}
+                  fullWidth
+                  multiline
+                  rows={3}
+                  size="small"
+                  placeholder="Enter company-specific roles & responsibilities (leave empty if not specified)"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  label="Company Registration Link"
+                  name="Company_registration_Link"
+                  value={formData.Company_registration_Link}
+                  onChange={handleChange}
+                  fullWidth
+                  size="small"
+                  placeholder="https://careers.company.com/apply"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  label="Important Note for Students"
+                  name="Note"
+                  value={formData.Note}
+                  onChange={handleChange}
+                  fullWidth
+                  multiline
+                  rows={2}
+                  size="small"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Signatory Name"
+                  name="From"
+                  value={formData.From}
+                  onChange={handleChange}
+                  fullWidth
+                  size="small"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Signatory Designation"
+                  name="From_designation"
+                  value={formData.From_designation}
+                  onChange={handleChange}
+                  fullWidth
+                  size="small"
+                />
+              </Grid>
+            </Grid>
+
+            {/* Quality / Missing Info Alerts */}
+            {qualityChecklist.length > 0 && (
+              <Box sx={{ mb: 3 }}>
+                {qualityChecklist.map((item, idx) => (
+                  <Alert
+                    key={idx}
+                    severity={item.critical ? "error" : "warning"}
+                    icon={<AlertTriangle size={16} />}
+                    sx={{ mb: 1, py: 0.5, borderRadius: 2, fontSize: "12px" }}
+                  >
+                    {item.label}
+                  </Alert>
+                ))}
+              </Box>
+            )}
+
+            {/* Bottom Form Action Buttons */}
+            <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center", pt: 2.5, borderTop: "1px solid #f1f5f9" }}>
               <Button
-                size="small"
-                variant="outlined"
-                startIcon={<History size={16} />}
-                onClick={() => setHistoryOpen(true)}
-                sx={{ textTransform: "none", borderRadius: 2 }}
-              >
-                Version History {versionCount > 1 && `(${versionCount})`}
-              </Button>
-              <Button
-                size="small"
-                variant="outlined"
-                startIcon={<ShieldCheck size={16} />}
-                onClick={() => setAuditOpen(true)}
-                sx={{ textTransform: "none", borderRadius: 2 }}
-              >
-                Audit Trail
-              </Button>
-              <Button
-                size="small"
-                variant="outlined"
-                color="secondary"
-                startIcon={<Copy size={16} />}
-                onClick={handleCloneAsNew}
+                variant="contained"
+                color={noticeStatus === "PUBLISHED" ? "secondary" : "primary"}
+                startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <Send size={16} />}
+                onClick={handlePublish}
                 disabled={loading}
-                sx={{ textTransform: "none", borderRadius: 2 }}
+                sx={{ textTransform: "none", borderRadius: 2, px: 3, fontWeight: 700 }}
               >
-                Clone as New
+                {noticeStatus === "PUBLISHED" ? `Update Notice (Create v${versionCount + 1})` : "Publish Notice (v1)"}
               </Button>
-            </>
-          )}
 
-          <Button
-            variant="text"
-            startIcon={<RotateCcw size={16} />}
-            onClick={handleResetNewNotice}
-            sx={{ textTransform: "none" }}
+              <Button
+                variant="outlined"
+                color="primary"
+                startIcon={loading ? <CircularProgress size={16} /> : <Save size={16} />}
+                onClick={handleSaveDraft}
+                disabled={loading}
+                sx={{ textTransform: "none", borderRadius: 2, px: 2.5, fontWeight: 600 }}
+              >
+                Save Draft
+              </Button>
+
+              {noticeId && (
+                <>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<History size={16} />}
+                    onClick={() => setHistoryOpen(true)}
+                    sx={{ textTransform: "none", borderRadius: 2 }}
+                  >
+                    Version History {versionCount > 1 && `(${versionCount})`}
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<ShieldCheck size={16} />}
+                    onClick={() => setAuditOpen(true)}
+                    sx={{ textTransform: "none", borderRadius: 2 }}
+                  >
+                    Audit Trail
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="secondary"
+                    startIcon={<Copy size={16} />}
+                    onClick={handleCloneAsNew}
+                    disabled={loading}
+                    sx={{ textTransform: "none", borderRadius: 2 }}
+                  >
+                    Clone as New
+                  </Button>
+                </>
+              )}
+
+              <Button
+                variant="text"
+                startIcon={<RotateCcw size={16} />}
+                onClick={handleResetNewNotice}
+                sx={{ textTransform: "none" }}
+              >
+                Reset Form
+              </Button>
+
+              <Button
+                variant="outlined"
+                color="inherit"
+                startIcon={<Printer size={16} />}
+                onClick={() => reactPrintFn()}
+                sx={{ textTransform: "none", borderRadius: 2, ml: "auto" }}
+              >
+                Print / Save PDF
+              </Button>
+            </Box>
+          </Paper>
+        </Grid>
+
+        {/* Right Column: Live Preview (sticky) */}
+        <Grid item xs={12} md={5}>
+          <Box
+            sx={{
+              position: "sticky",
+              top: 24,
+              maxHeight: "calc(100vh - 48px)",
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              bgcolor: "#525659",
+              p: 2,
+              borderRadius: 3,
+            }}
           >
-            Reset Form
-          </Button>
-
-          <Button
-            variant="outlined"
-            color="inherit"
-            startIcon={<Printer size={16} />}
-            onClick={() => reactPrintFn()}
-            sx={{ textTransform: "none", borderRadius: 2, ml: "auto" }}
-          >
-            Print / Save PDF
-          </Button>
-        </Box>
-      </Paper>
-
-      {/* Step 3: Live Institutional Document Preview (at the bottom) */}
-      <Paper
-        elevation={0}
-        sx={{
-          mb: 4,
-          borderRadius: 3,
-          border: "1px solid #cbd5e1",
-          overflow: "hidden",
-          bgcolor: "#ffffff",
-          width: "100%",
-          boxSizing: "border-box",
-        }}
-      >
-        {/* Preview Section Header */}
-        <Box
-          sx={{
-            p: 2.5,
-            borderBottom: "1px solid #e2e8f0",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 2,
-            bgcolor: "#fafbfd",
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Box
-              sx={{
-                width: 10,
-                height: 10,
-                borderRadius: "50%",
-                bgcolor: "#22c55e",
-                boxShadow: "0 0 0 4px rgba(34, 197, 94, 0.2)",
-              }}
-            />
-            <Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#0f172a" }}>
+            <Box sx={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5, px: 1 }}>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: "#e2e8f0", textTransform: "uppercase", letterSpacing: "1px" }}>
                 Live Institutional Preview
               </Typography>
-              <Typography variant="caption" sx={{ color: "#64748b" }}>
-                Official TCET institutional notice document • Updates live as you edit
-              </Typography>
+              <Button
+                size="small"
+                variant="contained"
+                startIcon={<Printer size={14} />}
+                onClick={() => reactPrintFn()}
+                sx={{
+                  bgcolor: "#2563eb",
+                  textTransform: "none",
+                  fontSize: "12px",
+                  borderRadius: 1.5,
+                }}
+              >
+                Print
+              </Button>
+            </Box>
+            <Box sx={{ width: "100%" }}>
+              <Notice formData={livePreviewData} ref={contentRef} isPlacement={true} />
             </Box>
           </Box>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<Printer size={16} />}
-            onClick={() => reactPrintFn()}
-            sx={{ textTransform: "none", fontWeight: 700, borderRadius: 2, px: 2.5 }}
-          >
-            Print Preview
-          </Button>
-        </Box>
-
-        {/* Wide Document Canvas Viewer */}
-        <Box
-          sx={{
-            bgcolor: "#525659",
-            p: { xs: 1.5, sm: 3, md: 4 },
-            display: "flex",
-            justifyContent: "center",
-            overflowX: "auto",
-            minHeight: 500,
-            boxSizing: "border-box",
-          }}
-        >
-          <Box sx={{ width: "100%", maxWidth: "850px" }}>
-            <Notice formData={livePreviewData} ref={contentRef} isPlacement={true} />
-          </Box>
-        </Box>
-      </Paper>
+        </Grid>
+      </Grid>
 
       {/* Auxiliary Modals */}
       <NoticeVersionHistoryModal

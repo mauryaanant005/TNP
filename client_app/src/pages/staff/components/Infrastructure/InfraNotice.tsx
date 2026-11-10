@@ -5,6 +5,7 @@ import { TextField } from "@mui/material";
 import toast from "react-hot-toast";
 import "@/pages/DutyChart.css";
 import NoticePreview from "./NoticePreview";
+import { api } from "@/lib/api";
 
 export interface InfraTableRow {
   particulars: string;
@@ -61,7 +62,7 @@ const defaultTableRows: InfraTableRow[] = [
 ];
 
 const getInitialFormData = (): InfraFormData => ({
-  refNo: "",
+  refNo: `TCET/ T&P/IB/        /${new Date().getFullYear()}.`,
   date: new Date().toISOString().split("T")[0],
   toName: "The Principal",
   toDesignation: "",
@@ -126,6 +127,22 @@ const InfrastructureBooking = () => {
     } catch {
       // ignore
     }
+  }, []);
+
+  // Fetch or generate a default refNo on mount
+  useEffect(() => {
+    api.get('/api/staff/placement-notices/next-serial-number/?type=Infrastructure')
+      .then(res => {
+        if (res.data?.sr_no) {
+          setFormData(prev => ({ ...prev, refNo: res.data.sr_no }));
+        }
+      })
+      .catch(() => {
+        setFormData(prev => ({
+          ...prev,
+          refNo: prev.refNo || `TCET/T&P/INFRA/${new Date().getFullYear()}/001`
+        }));
+      });
   }, []);
 
   const handleResetForm = () => {

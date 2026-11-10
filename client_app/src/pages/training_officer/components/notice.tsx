@@ -139,18 +139,14 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(({ formData }, ref) => {
                     {/* To Field */}
                     <p className="notice-row">
                       <span className="notice-label">To:</span>
-                      <span>
-                        {formData.to || "All Concerned students of the 2027 / 2028 / 2029 batch"}
-                      </span>
+                      <span>{formData.to || ""}</span>
                     </p>
 
                     {/* Subject (Underlined, Short, No Topic/Content) */}
                     <p className="notice-row subject-row">
                       <u className="subject-underline">
                         <span className="notice-label">Sub:</span>{" "}
-                        <span className="subject-text">
-                          {formData.subject || "Registrations for Free TCS iON Jobinar"}
-                        </span>
+                        <span className="subject-text">{formData.subject || ""}</span>
                       </u>
                     </p>
 
@@ -163,98 +159,93 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(({ formData }, ref) => {
                     )}
 
                     {/* Jobinar / Training Details Block (Borderless, Clean Text Key-Value) */}
-                    <div className="training-details-section">
-                      <div className="training-details-heading">
-                        {formData.details_heading || "The details of the Jobinar are as follows:"}
+                    {(formData.organiser || formData.topic || formData.session_date || formData.session_time || formData.mode || formData.details_heading) && (
+                      <div className="training-details-section">
+                        {formData.details_heading && (
+                          <div className="training-details-heading">
+                            {formData.details_heading}
+                          </div>
+                        )}
+
+                        <table className="training-details-table">
+                          <tbody>
+                            {formData.organiser && (
+                              <tr>
+                                <td className="training-table-label">Organiser:</td>
+                                <td className="training-table-val">{formData.organiser}</td>
+                              </tr>
+                            )}
+                            {formData.topic && (
+                              <tr>
+                                <td className="training-table-label">Topic:</td>
+                                <td className="training-table-val">{formData.topic}</td>
+                              </tr>
+                            )}
+                            {formData.session_date && (
+                              <tr>
+                                <td className="training-table-label">Date:</td>
+                                <td className="training-table-val">{formData.session_date}</td>
+                              </tr>
+                            )}
+                            {formData.session_time && (
+                              <tr>
+                                <td className="training-table-label">Time:</td>
+                                <td className="training-table-val">{formData.session_time}</td>
+                              </tr>
+                            )}
+                            {formData.mode && (
+                              <tr>
+                                <td className="training-table-label">Mode:</td>
+                                <td className="training-table-val">{formData.mode}</td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+
+                        {/* Reasons to Attend */}
+                        {reasonsList.length > 0 && (
+                          <div>
+                            <div className="training-reasons-title">Reasons to Attend:</div>
+                            <ul className="training-reasons-list">
+                              {reasonsList.map((reason, idx) => (
+                                <li key={idx}>{reason}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </div>
-
-                      <table className="training-details-table">
-                        <tbody>
-                          <tr>
-                            <td className="training-table-label">Organiser:</td>
-                            <td className="training-table-val">{formData.organiser || "TCS iON"}</td>
-                          </tr>
-                          <tr>
-                            <td className="training-table-label">Topic:</td>
-                            <td className="training-table-val">
-                              {formData.topic || "Can AI Agents Be Created Without Coding?"}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="training-table-label">Date:</td>
-                            <td className="training-table-val">
-                              {formData.session_date || "22nd October 2026 (Thursday)"}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="training-table-label">Time:</td>
-                            <td className="training-table-val">
-                              {formData.session_time || "5:00 PM to 6:00 PM IST"}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="training-table-label">Mode:</td>
-                            <td className="training-table-val">{formData.mode || "Online"}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-
-                      {/* Reasons to Attend */}
-                      {reasonsList.length > 0 && (
-                        <div>
-                          <div className="training-reasons-title">Reasons to Attend:</div>
-                          <ul className="training-reasons-list">
-                            {reasonsList.map((reason, idx) => (
-                              <li key={idx}>{reason}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
+                    )}
 
                     {/* Online Registration Links & Instructions */}
-                    <div className="training-registration-block">
-                      <div className="training-registration-callout">
-                        {formData.registration_callout ||
-                          "All eligible and interested students are required to register online"}
+                    {(formData.registration_callout || formData.company_registration_link || formData.registration_note) && (
+                      <div className="training-registration-block">
+                        {formData.registration_callout && (
+                          <div className="training-registration-callout">
+                            {formData.registration_callout}
+                          </div>
+                        )}
+
+                        {formData.company_registration_link && (
+                          <div className="training-reg-link-row">
+                            <span className="training-reg-link-label">
+                              Register on the Company Link:
+                            </span>
+                            <a
+                              href={formData.company_registration_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="notice-link"
+                            >
+                              {formData.company_registration_link}
+                            </a>
+                          </div>
+                        )}
+
+                        {formData.registration_note && (
+                          <div className="training-reg-note">{formData.registration_note}</div>
+                        )}
                       </div>
-
-                      {formData.company_registration_link && (
-                        <div className="training-reg-link-row">
-                          <span className="training-reg-link-label">
-                            Register on the Company Link:
-                          </span>
-                          <a
-                            href={formData.company_registration_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="notice-link"
-                          >
-                            {formData.company_registration_link}
-                          </a>
-                        </div>
-                      )}
-
-                      {formData.college_registration_link && (
-                        <div className="training-reg-link-row">
-                          <span className="training-reg-link-label">
-                            Register on the College Link:
-                          </span>
-                          <a
-                            href={formData.college_registration_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="notice-link"
-                          >
-                            {formData.college_registration_link}
-                          </a>
-                        </div>
-                      )}
-
-                      {formData.registration_note && (
-                        <div className="training-reg-note">{formData.registration_note}</div>
-                      )}
-                    </div>
+                    )}
 
                     {/* Legacy Batch Table fallback if populated */}
                     {hasLegacyTable && (

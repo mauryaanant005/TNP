@@ -93,7 +93,7 @@ const formatNoticeDate = (dateStr?: string): string => {
 
 const formatDeadlineSentence = (deadlineStr?: string): string => {
   if (!deadlineStr || !deadlineStr.trim()) {
-    return "All the eligible and interested students are required to register their names online latest by 30.09.2026 by 10.00 am.";
+    return "";
   }
   const trimmed = deadlineStr.trim();
   if (trimmed.toLowerCase().startsWith("all the eligible")) {
@@ -239,7 +239,7 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(
                       {/* 4. To Section */}
                       <p className="notice-row">
                         <span className="notice-label">To:</span>
-                        <span>{formData.to || "All Eligible Final Year Students"}</span>
+                        <span>{formData.to || ""}</span>
                       </p>
 
                       {/* 5. Subject (Both label and content underlined) */}
@@ -327,21 +327,22 @@ const Notice = forwardRef<HTMLDivElement, NoticeProps>(
                       )}
 
                       {/* 12. Selection Process (Replaces Walk-in Interview) */}
-                      <p className="notice-row">
-                        <span className="notice-label">Selection Process:</span>
-                        <div>
-                          {renderBulletList(
-                            formData.Walk_in_interview ||
-                              "Schedule and venue details will be communicated via official T&P cell notification."
-                          )}
-                        </div>
-                      </p>
+                      {formData.Walk_in_interview && formData.Walk_in_interview.trim() && (
+                        <p className="notice-row">
+                          <span className="notice-label">Selection Process:</span>
+                          <div>
+                            {renderBulletList(formData.Walk_in_interview)}
+                          </div>
+                        </p>
+                      )}
 
                       {/* 13. Deadline to Register */}
-                      <p className="notice-row">
-                        <span className="notice-label">Deadline to Register:</span>
-                        <span>{formatDeadlineSentence(formData.deadline)}</span>
-                      </p>
+                      {formData.deadline && formData.deadline.trim() && (
+                        <p className="notice-row">
+                          <span className="notice-label">Deadline to Register:</span>
+                          <span>{formatDeadlineSentence(formData.deadline)}</span>
+                        </p>
+                      )}
 
                       {/* 14. Company Registration Link (College Registration Link removed) */}
                       {formData.Company_registration_Link &&

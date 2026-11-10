@@ -35,26 +35,21 @@ import toast from "react-hot-toast";
 const defaultInitialForm = (): TrainingNoticeFormData => ({
   srNo: `TCET/T&P/ TRG   107     of ${new Date().getFullYear()}`,
   date: new Date().toISOString().split("T")[0],
-  to: "All Concerned students of the 2027 / 2028 / 2029 batch",
-  subject: "Registrations for Free TCS iON Jobinar",
+  to: "",
+  subject: "",
   intro: "",
-  eligibility_criteria: "B.E / B.Tech (All Branch) / MCA / BCA",
-  details_heading: "The details of the Jobinar are as follows:",
-  organiser: "TCS iON",
-  topic: "Can AI Agents Be Created Without Coding?",
-  session_date: "22nd October 2026 (Thursday)",
-  session_time: "5:00 PM to 6:00 PM IST",
-  mode: "Online",
-  reasons_to_attend: [
-    "Discover: Understand how apps, automation, and AI agents bring ideas to life.",
-    "Learn: Explore how to build solutions using Power Platform and Copilot Studio.",
-    "Explore: Learn about available learning paths, certifications, and emerging career opportunities.",
-  ],
-  registration_callout: "All eligible and interested students are required to register online",
-  company_registration_link: "https://iur.ls/TCSiONJobinars",
-  college_registration_link: "https://forms.gle/rA9RSZ4Ju2oUMETbA",
-  registration_note:
-    "(It is mandatory to register on both the links - company link and the college link.)",
+  eligibility_criteria: "",
+  details_heading: "",
+  organiser: "",
+  topic: "",
+  session_date: "",
+  session_time: "",
+  mode: "",
+  reasons_to_attend: [],
+  registration_callout: "",
+  company_registration_link: "",
+  college_registration_link: "",
+  registration_note: "",
   From: "(Dr. Zahir Aalam)",
   From_designation: "Dean (TP&IL)",
 });
@@ -615,24 +610,13 @@ const TrainingNotice: React.FC = () => {
               </Grid>
               <Grid item xs={12}>
                 <TextField
-                  label="College Registration Link"
-                  name="college_registration_link"
-                  value={formData.college_registration_link || ""}
-                  onChange={handleInputChange}
-                  fullWidth
-                  size="small"
-                  placeholder="https://forms.gle/rA9RSZ4Ju2oUMETbA"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
                   label="Registration Mandatory Note"
                   name="registration_note"
                   value={formData.registration_note || ""}
                   onChange={handleInputChange}
                   fullWidth
                   size="small"
-                  placeholder="(It is mandatory to register on both the links - company link and the college link.)"
+                  placeholder="(It is mandatory to register on the company link.)"
                 />
               </Grid>
             </Grid>

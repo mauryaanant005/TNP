@@ -26,8 +26,6 @@ import {
   Trash2,
   AlertTriangle,
   RotateCcw,
-  FileText,
-  Sparkles,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import Notice, { NoticeData, NoticeTableRow } from "../placement_officer/components/notice";
@@ -62,13 +60,13 @@ const defaultInitialForm = () => ({
   intro: "",
   about: "",
   eligibility_criteria: "",
-  Walk_in_interview: "Online Assessment followed by Technical and HR Interviews.",
+  Walk_in_interview: "",
   Company_registration_Link: "",
-  Note: "Students must report on time in formal attire. Late entries will not be permitted.",
+  Note: "",
   From: "Dr. Zahir Aalam",
   From_designation: "Dean (TP&IL)",
   company: "",
-  location: "TCET Campus / Online",
+  location: "",
   deadline: "",
   batch: "",
   roles_responsibilities: "",
@@ -441,20 +439,23 @@ const InternshipNotice: React.FC = () => {
         isDirty={false}
       />
 
-      {/* Main Form Editor */}
-      <Paper
-        elevation={0}
-        sx={{
-          p: { xs: 2, sm: 3, md: 3.5 },
-          mb: 4,
-          borderRadius: 3,
-          border: "1px solid #e2e8f0",
-          bgcolor: "#ffffff",
-          width: "100%",
-          boxSizing: "border-box",
-        }}
-      >
-        <form onSubmit={handleSubmit}>
+      {/* Step 2: Split-screen Form + Preview */}
+      <Grid container spacing={3}>
+        {/* Left Column: Form Editor */}
+        <Grid item xs={12} md={7}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 2, sm: 3, md: 3.5 },
+              mb: 4,
+              borderRadius: 3,
+              border: "1px solid #e2e8f0",
+              bgcolor: "#ffffff",
+              width: "100%",
+              boxSizing: "border-box",
+            }}
+          >
+            <form onSubmit={handleSubmit}>
           {/* Form Section A: Communication Meta */}
           <Typography
             variant="subtitle1"
@@ -910,70 +911,66 @@ const InternshipNotice: React.FC = () => {
           </Box>
         </form>
       </Paper>
+    </Grid>
 
-      {/* Live Document Preview Section */}
-      <Paper
-        elevation={0}
+    {/* Right Column: Live Institutional Preview */}
+    <Grid item xs={12} md={5}>
+      <Box
         sx={{
-          mb: 4,
+          position: "sticky",
+          top: 24,
+          maxHeight: "calc(100vh - 48px)",
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          bgcolor: "#525659",
+          p: 2,
           borderRadius: 3,
-          border: "1px solid #cbd5e1",
-          overflow: "hidden",
-          bgcolor: "#ffffff",
-          width: "100%",
-          boxSizing: "border-box",
         }}
       >
         <Box
           sx={{
-            p: 2.5,
-            borderBottom: "1px solid #e2e8f0",
+            width: "100%",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            flexWrap: "wrap",
-            gap: 2,
-            bgcolor: "#fafbfd",
+            mb: 1.5,
+            px: 1,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Box
-              sx={{
-                width: 10,
-                height: 10,
-                borderRadius: "50%",
-                bgcolor: "#22c55e",
-                boxShadow: "0 0 0 3px rgba(34,197,94,0.2)",
-              }}
-            />
-            <FileText size={18} color="#2563eb" />
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#1e293b" }}>
-              Official Institutional Document Preview (Live)
-            </Typography>
-            <Chip
-              label="Interactive Preview"
-              size="small"
-              icon={<Sparkles size={12} />}
-              sx={{ bgcolor: "#eff6ff", color: "#1d4ed8", fontWeight: 600, fontSize: "11px" }}
-            />
-          </Box>
-
+          <Typography
+            variant="caption"
+            sx={{
+              fontWeight: 700,
+              color: "#e2e8f0",
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+            }}
+          >
+            Live Institutional Preview
+          </Typography>
           <Button
             size="small"
-            variant="outlined"
-            startIcon={<Printer size={15} />}
+            variant="contained"
+            startIcon={<Printer size={14} />}
             onClick={() => reactPrintFn()}
-            sx={{ textTransform: "none", borderRadius: 2 }}
+            sx={{
+              bgcolor: "#2563eb",
+              textTransform: "none",
+              fontSize: "12px",
+              borderRadius: 1.5,
+            }}
           >
-            Print Notice
+            Print / Save PDF
           </Button>
         </Box>
 
-        <Box sx={{ p: { xs: 1, sm: 2, md: 3 }, bgcolor: "#525659", display: "flex", justifyContent: "center" }}>
-          <Notice formData={livePreviewData} ref={contentRef} isPlacement={false} />
-        </Box>
-      </Paper>
-    </Container>
+        <Notice formData={livePreviewData} ref={contentRef} isPlacement={false} />
+      </Box>
+    </Grid>
+  </Grid>
+</Container>
   );
 };
 
