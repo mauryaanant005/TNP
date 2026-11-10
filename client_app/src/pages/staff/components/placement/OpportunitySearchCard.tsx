@@ -197,39 +197,24 @@ const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
           zIndex: dropdownOpen ? 1200 : 1,
         }}
       >
-        {/*
-         * 3-column CSS Grid:
-         *   Col 1 (1fr)         | Col 2 (minmax 130px) | Col 3 (minmax 130px)
-         *   Row 1: Heading      | Saved Draft button   | [spacer]
-         *   Row 2: Search input | Batch dropdown       | All Types dropdown
-         *
-         * Because both rows share the same column track, the left edge of
-         * "Saved Draft" (row 1, col 2) is guaranteed to match the left edge
-         * of "Batch" (row 2, col 2) — no absolute positioning needed.
-         */}
+        {/* ── Row 1: Heading and Saved Draft Button ── */}
         <Box
           sx={{
-            display: "grid",
-            gridTemplateColumns: {
-              xs: "1fr auto",
-              md: isTraining
-                ? "1fr minmax(130px, auto) minmax(130px, auto)"
-                : "1fr minmax(140px, auto)",
-            },
-            gridTemplateRows: "auto auto",
-            columnGap: 1.5,
-            rowGap: 1.5,
+            display: "flex",
+            justifyContent: "space-between",
             alignItems: "center",
+            flexWrap: "wrap",
+            gap: 1.5,
             width: "100%",
             mb: 2,
           }}
         >
-          {/* ── Row 1, Col 1 : Heading ── */}
+          {/* Heading */}
           <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#0f172a", lineHeight: 1.2 }}>
             {title || (isTraining ? "Search Company / Training & Jobinar Opportunity" : isInternship ? "Search Company / Internship Opportunity" : "Search Company / Placement Opportunity")}
           </Typography>
 
-          {/* ── Row 1, Col 2 : Saved Draft button (+ status chip when saved) ── */}
+          {/* Saved Draft button (+ status chip when saved) */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             {noticeStatus === "DRAFT" && !isDirty && (
               <Chip
@@ -267,12 +252,21 @@ const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
               Saved Draft
             </Button>
           </Box>
+        </Box>
 
-          {/* ── Row 1, Col 3 : empty spacer (preserves All Types column width on md+) ── */}
-          <Box sx={{ display: { xs: "none", md: "block" } }} />
-
-          {/* ── Row 2, Col 1 : Search Input with absolute floating dropdown ── */}
-          <Box sx={{ position: "relative" }}>
+        {/* ── Row 2: Search Input + Batch Dropdown (+ Type Dropdown for Training) ── */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 1.5,
+            alignItems: "center",
+            width: "100%",
+            mb: 2,
+          }}
+        >
+          {/* Search Input with absolute floating dropdown */}
+          <Box sx={{ position: "relative", flex: 1, width: "100%" }}>
             <TextField
               inputRef={inputRef}
               size="small"
@@ -531,8 +525,8 @@ const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
             )}
           </Box>
 
-          {/* ── Row 2, Col 2 : Batch dropdown ── */}
-          <FormControl size="small" sx={{ width: "100%" }}>
+          {/* Batch dropdown */}
+          <FormControl size="small" sx={{ width: { xs: "100%", sm: "160px" }, flexShrink: 0 }}>
             <InputLabel id="batch-filter-label">Batch</InputLabel>
             <Select
               labelId="batch-filter-label"
@@ -553,9 +547,9 @@ const OpportunitySearchCard: React.FC<OpportunitySearchCardProps> = ({
             </Select>
           </FormControl>
 
-          {/* ── Row 2, Col 3 : All Types dropdown (Training only) ── */}
+          {/* All Types dropdown (Training only) */}
           {isTraining && (
-            <FormControl size="small" sx={{ width: "100%" }}>
+            <FormControl size="small" sx={{ width: { xs: "100%", sm: "150px" }, flexShrink: 0 }}>
               <InputLabel id="type-filter-label">Type</InputLabel>
               <Select
                 labelId="type-filter-label"

@@ -9,7 +9,6 @@ import {
   Paper,
   IconButton,
   Box,
-  Chip,
   Divider,
 } from "@mui/material";
 import {
@@ -18,7 +17,6 @@ import {
   Plus,
   Trash2,
   RotateCcw,
-  Check,
   Building2,
   Calendar,
   Clock,
@@ -256,103 +254,7 @@ const TrainingNotice: React.FC = () => {
     : [];
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3, px: { xs: 1, md: 3 } }}>
-      {/* ── Top Header and Action Bar ── */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 2,
-          mb: 3,
-          pb: 2,
-          borderBottom: "1px solid #e2e8f0",
-        }}
-      >
-        <Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a", letterSpacing: "-0.5px" }}>
-              Notice for Training
-            </Typography>
-            <Chip
-              label="TCET/FRM/MP-04/11 Rev B"
-              size="small"
-              sx={{ bgcolor: "#eff6ff", color: "#1d4ed8", fontWeight: 700, fontSize: "12px" }}
-            />
-            {isSaved && (
-              <Chip
-                icon={<Check size={14} color="#16a34a" />}
-                label="Saved"
-                size="small"
-                sx={{ bgcolor: "#f0fdf4", color: "#16a34a", fontWeight: 600 }}
-              />
-            )}
-            {isDirty && (
-              <Chip
-                label="Unsaved Changes"
-                size="small"
-                sx={{ bgcolor: "#fffbeb", color: "#b45309", fontWeight: 600, border: "1px solid #fde68a" }}
-              />
-            )}
-          </Box>
-          <Typography variant="body2" sx={{ color: "#64748b", mt: 0.5 }}>
-            Automate official institutional training announcements in compliance with TCET ISO formats.
-          </Typography>
-        </Box>
-
-        {/* Action Buttons */}
-        <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
-          <Button
-            variant="outlined"
-            startIcon={<RotateCcw size={16} />}
-            onClick={handleResetForm}
-            sx={{
-              borderColor: "#cbd5e1",
-              color: "#475569",
-              "&:hover": { bgcolor: "#f1f5f9", borderColor: "#94a3b8" },
-              fontWeight: 600,
-              textTransform: "none",
-              borderRadius: 2,
-            }}
-          >
-            Reset Form
-          </Button>
-
-          <Button
-            variant="outlined"
-            startIcon={<Save size={16} />}
-            onClick={handleSaveDraft}
-            sx={{
-              borderColor: "#93c5fd",
-              color: "#1d4ed8",
-              bgcolor: "#f0f7ff",
-              "&:hover": { bgcolor: "#dbeafe", borderColor: "#60a5fa" },
-              fontWeight: 600,
-              textTransform: "none",
-              borderRadius: 2,
-            }}
-          >
-            Save Draft
-          </Button>
-
-          <Button
-            variant="contained"
-            startIcon={<Printer size={16} />}
-            onClick={() => reactPrintFn()}
-            sx={{
-              bgcolor: "#0f172a",
-              "&:hover": { bgcolor: "#1e293b" },
-              fontWeight: 600,
-              textTransform: "none",
-              borderRadius: 2,
-            }}
-          >
-            Print Notice
-          </Button>
-        </Box>
-      </Box>
-
+    <Container maxWidth="xl" sx={{ py: 2, px: { xs: 1, md: 3 } }}>
       {/* ── Opportunity Search & Master Data Autofill Card ── */}
       <Box sx={{ mb: 3 }}>
         <OpportunitySearchCard
@@ -360,6 +262,8 @@ const TrainingNotice: React.FC = () => {
           selectedOpportunity={selectedOpportunity}
           onClearSelection={() => setSelectedOpportunity(null)}
           noticeType="Training"
+          noticeStatus={isSaved ? "DRAFT" : "NEW"}
+          isDirty={isDirty}
           title="Search Training Opportunity / Company Master Data"
           searchPlaceholder="Search company, training partner, topic (e.g. TCS iON, AWS, AI Agents, 2026)..."
         />
@@ -652,6 +556,45 @@ const TrainingNotice: React.FC = () => {
                 />
               </Grid>
             </Grid>
+
+            {/* Form Footer Action Buttons */}
+            <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center", pt: 2.5, mt: 3, borderTop: "1px solid #f1f5f9" }}>
+              <Button
+                variant="outlined"
+                startIcon={<Save size={16} />}
+                onClick={handleSaveDraft}
+                sx={{
+                  borderColor: "#93c5fd",
+                  color: "#1d4ed8",
+                  bgcolor: "#f0f7ff",
+                  "&:hover": { bgcolor: "#dbeafe", borderColor: "#60a5fa" },
+                  fontWeight: 600,
+                  textTransform: "none",
+                  borderRadius: 2,
+                }}
+              >
+                Save Draft
+              </Button>
+
+              <Button
+                variant="text"
+                startIcon={<RotateCcw size={16} />}
+                onClick={handleResetForm}
+                sx={{ textTransform: "none", color: "#64748b" }}
+              >
+                Reset Form
+              </Button>
+
+              <Button
+                variant="outlined"
+                color="inherit"
+                startIcon={<Printer size={16} />}
+                onClick={() => reactPrintFn()}
+                sx={{ textTransform: "none", borderRadius: 2, ml: "auto" }}
+              >
+                Print / Save PDF
+              </Button>
+            </Box>
           </Paper>
         </Grid>
 
@@ -661,34 +604,71 @@ const TrainingNotice: React.FC = () => {
             sx={{
               position: "sticky",
               top: 24,
-              maxHeight: "calc(100vh - 48px)",
-              overflowY: "auto",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              bgcolor: "#e2e8f0",
+              bgcolor: "#525659",
               p: 2,
               borderRadius: 3,
             }}
           >
-            <Box sx={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5, px: 1 }}>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "1px" }}>
-                Live Notice Preview (A4 Letterhead)
-              </Typography>
-              <Button
-                size="small"
-                variant="contained"
-                startIcon={<Printer size={14} />}
-                onClick={() => reactPrintFn()}
+            <Box
+              sx={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 1.5,
+                px: 1,
+                flexWrap: "wrap",
+                gap: 1,
+              }}
+            >
+              <Typography
+                variant="caption"
                 sx={{
-                  bgcolor: "#2563eb",
-                  textTransform: "none",
-                  fontSize: "12px",
-                  borderRadius: 1.5,
+                  fontWeight: 700,
+                  color: "#e2e8f0",
+                  textTransform: "uppercase",
+                  letterSpacing: "1px",
                 }}
               >
-                Print
-              </Button>
+                Live Notice Preview (A4 Letterhead)
+              </Typography>
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<Save size={14} />}
+                  onClick={handleSaveDraft}
+                  sx={{
+                    bgcolor: "rgba(255,255,255,0.1)",
+                    color: "#ffffff",
+                    borderColor: "rgba(255,255,255,0.3)",
+                    "&:hover": { bgcolor: "rgba(255,255,255,0.2)", borderColor: "#ffffff" },
+                    textTransform: "none",
+                    fontSize: "12px",
+                    borderRadius: 1.5,
+                  }}
+                >
+                  Save Draft
+                </Button>
+                <Button
+                  size="small"
+                  variant="contained"
+                  startIcon={<Printer size={14} />}
+                  onClick={() => reactPrintFn()}
+                  sx={{
+                    bgcolor: "#2563eb",
+                    "&:hover": { bgcolor: "#1d4ed8" },
+                    textTransform: "none",
+                    fontSize: "12px",
+                    borderRadius: 1.5,
+                  }}
+                >
+                  Print / Save PDF
+                </Button>
+              </Box>
             </Box>
 
             {/* Notice Component Render */}

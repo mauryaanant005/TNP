@@ -398,7 +398,7 @@ export const DutyChart: React.FC = () => {
   };
 
   return (
-    <div className="dc-manager-container">
+    <div className="dc-manager-container" style={{ maxWidth: "100%", padding: "16px" }}>
       {/* ── Toolbar (replaces removed blue header) ────────────────────────── */}
       <div className="dc-toolbar dc-toolbar-top">
         <button
@@ -417,15 +417,28 @@ export const DutyChart: React.FC = () => {
           <FolderOpen size={13} /> Load Draft
         </button>
 
-        <span style={{ marginLeft: "auto", fontSize: "12px", color: "#64748b" }}>
-          Total Assignments: <strong>{tableData.length}</strong>
-        </span>
+        <div style={{ marginLeft: "auto", display: "flex", gap: "8px", alignItems: "center" }}>
+          <span style={{ fontSize: "12px", color: "#64748b", marginRight: "6px" }}>
+            Total Assignments: <strong>{tableData.length}</strong>
+          </span>
+          <button
+            type="button"
+            onClick={handleSaveDraft}
+            disabled={saving}
+            className="dc-btn dc-btn-primary dc-btn-sm"
+          >
+            <Save size={13} /> {saving ? "Saving…" : "Save Draft"}
+          </button>
+        </div>
       </div>
 
-      {/* ── Form Card ─────────────────────────────────────────────────────── */}
-      <div className="dc-card">
-        <div className="dc-card-body">
-          <form onSubmit={(e) => e.preventDefault()} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      {/* ── Split Screen: Form Editor (Left) & Live Preview (Right) ───── */}
+      <div style={{ display: "flex", gap: "24px", alignItems: "flex-start", flexWrap: "wrap", width: "100%" }}>
+        {/* Left Column: Form Editor */}
+        <div style={{ flex: "1 1 540px", minWidth: "0" }}>
+          <div className="dc-card">
+            <div className="dc-card-body">
+              <form onSubmit={(e) => e.preventDefault()} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             {/* Section: Document Metadata */}
             <div>
               <h3 style={sectionTitleStyle}>
@@ -857,48 +870,60 @@ export const DutyChart: React.FC = () => {
           </form>
         </div>
       </div>
+    </div>
 
-      {/* ── Permanently Visible Live Preview Card ───────── */}
-      <div className="dc-card">
+    {/* Right Column: Live Duty Chart Preview */}
+    <div style={{ flex: "1 1 480px", minWidth: "0" }}>
+      <div className="dc-card" style={{ position: "sticky", top: 24 }}>
         <div
           style={{
-            padding: "12px 20px",
+            padding: "12px 16px",
             backgroundColor: "#f8fafc",
             borderBottom: "1px solid #e2e8f0",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             flexWrap: "wrap",
-            gap: "12px",
+            gap: "10px",
           }}
         >
           <span
             style={{
               fontWeight: 700,
-              fontSize: "15px",
+              fontSize: "14px",
               color: "#1e3a8a",
             }}
           >
             Live Duty Chart Preview
           </span>
 
-          <button
-            type="button"
-            onClick={() => reactPrintFn()}
-            className="dc-btn dc-btn-primary dc-btn-sm"
-            style={{ padding: "6px 16px", fontSize: "13px", fontWeight: 600 }}
-          >
-            <Printer size={15} /> Print / Save PDF
-          </button>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              disabled={saving}
+              className="dc-btn dc-btn-secondary dc-btn-sm"
+              style={{ padding: "6px 14px", fontSize: "13px", fontWeight: 600 }}
+            >
+              <Save size={14} /> {saving ? "Saving…" : "Save Draft"}
+            </button>
+            <button
+              type="button"
+              onClick={() => reactPrintFn()}
+              className="dc-btn dc-btn-primary dc-btn-sm"
+              style={{ padding: "6px 14px", fontSize: "13px", fontWeight: 600 }}
+            >
+              <Printer size={14} /> Print / Save PDF
+            </button>
+          </div>
         </div>
 
         <div
           style={{
             backgroundColor: "#525659",
-            padding: "24px",
+            padding: "16px",
             display: "flex",
             justifyContent: "center",
-            overflowX: "auto",
           }}
         >
           <div style={{ width: "100%", maxWidth: "850px" }}>
@@ -911,6 +936,8 @@ export const DutyChart: React.FC = () => {
           </div>
         </div>
       </div>
+    </div>
+  </div>
 
       {/* Saved Drafts Modal */}
       {showDraftsModal && (

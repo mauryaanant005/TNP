@@ -1012,8 +1012,6 @@ const PlacementNotice: React.FC = () => {
             sx={{
               position: "sticky",
               top: 24,
-              maxHeight: "calc(100vh - 48px)",
-              overflowY: "auto",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
@@ -1022,24 +1020,56 @@ const PlacementNotice: React.FC = () => {
               borderRadius: 3,
             }}
           >
-            <Box sx={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5, px: 1 }}>
+            <Box
+              sx={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 1.5,
+                px: 1,
+                flexWrap: "wrap",
+                gap: 1,
+              }}
+            >
               <Typography variant="caption" sx={{ fontWeight: 700, color: "#e2e8f0", textTransform: "uppercase", letterSpacing: "1px" }}>
                 Live Institutional Preview
               </Typography>
-              <Button
-                size="small"
-                variant="contained"
-                startIcon={<Printer size={14} />}
-                onClick={() => reactPrintFn()}
-                sx={{
-                  bgcolor: "#2563eb",
-                  textTransform: "none",
-                  fontSize: "12px",
-                  borderRadius: 1.5,
-                }}
-              >
-                Print
-              </Button>
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={loading ? <CircularProgress size={14} color="inherit" /> : <Save size={14} />}
+                  onClick={handleSaveDraft}
+                  disabled={loading}
+                  sx={{
+                    bgcolor: "rgba(255,255,255,0.1)",
+                    color: "#ffffff",
+                    borderColor: "rgba(255,255,255,0.3)",
+                    "&:hover": { bgcolor: "rgba(255,255,255,0.2)", borderColor: "#ffffff" },
+                    textTransform: "none",
+                    fontSize: "12px",
+                    borderRadius: 1.5,
+                  }}
+                >
+                  Save Draft
+                </Button>
+                <Button
+                  size="small"
+                  variant="contained"
+                  startIcon={<Printer size={14} />}
+                  onClick={() => reactPrintFn()}
+                  sx={{
+                    bgcolor: "#2563eb",
+                    "&:hover": { bgcolor: "#1d4ed8" },
+                    textTransform: "none",
+                    fontSize: "12px",
+                    borderRadius: 1.5,
+                  }}
+                >
+                  Print / Save PDF
+                </Button>
+              </Box>
             </Box>
             <Box sx={{ width: "100%" }}>
               <Notice formData={livePreviewData} ref={contentRef} isPlacement={true} />
